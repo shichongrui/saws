@@ -1,7 +1,14 @@
 import esbuild from 'esbuild';
 
-export const buildLambda = (entryPoints: string[], outPath: string) => {
-    return esbuild.build({
+
+let buildResult: esbuild.BuildIncremental;
+export const buildLambda = async (entryPoints: string[], outPath: string) => {
+    if (buildResult != null) {
+        await buildResult.rebuild();
+        return;
+    }
+
+    buildResult = await esbuild.build({
         entryPoints,
         bundle: true,
         outfile: outPath,
@@ -15,9 +22,9 @@ type BuildParameters = {
     outPath: string,
 }
 
-const build = async ({
+export const build = async ({
     entryPoints,
     outPath,
 }: BuildParameters) => {
-    
+    await buildLambda(entryPoints, outPath);
 }

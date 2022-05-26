@@ -1,7 +1,8 @@
 import watch from "node-watch";
 import { HandlerRef } from "./dev-server";
 
-export const startWatcher = (handlerRef: HandlerRef, modulePath: string, rebuild: Function, ) => {
+export const startWatcher = async (handlerRef: HandlerRef, modulePath: string, build: Function) => {
+    await build();
     watch('.', { recursive: true, filter: (f, skip) => {
         // skip node_modules
         if (/node_modules/.test(f)) return skip;
@@ -10,7 +11,7 @@ export const startWatcher = (handlerRef: HandlerRef, modulePath: string, rebuild
         return true;
     }}, async () => {
         console.log('Detected changes, rebuilding');
-        await rebuild();
+        await build();
         delete require.cache[require.resolve(modulePath)];
         const module = require(modulePath).default;
         handlerRef.current = module.apolloServer.createHandler();
