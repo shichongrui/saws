@@ -1,0 +1,33 @@
+{
+  "name": "@saws/postgres",
+  "version": "1.0.0",
+  "description": "",
+  "exports": {
+    "./postgres-service": "./dist/src/service/PostgresService.js",
+    "./get-prisma-client": "./dist/src/library/get-prisma-client.js"
+  },
+  "keywords": [],
+  "files": [
+    "./dist"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@saws/aws": "workspace:^",
+    "@saws/secrets": "workspace:^",
+    "@saws/utils": "workspace:^",
+    "chokidar": "^3.6.0",
+    "pg": "^8.11.3"
+  },
+  "devDependencies": {
+    "@prisma/client": "^5.10.2",
+    "@saws/core": "workspace:^",
+    "@types/pg": "^8.11.0",
+    "prisma": "^5.10.2"
+  },
+  "peerDependencies": {
+    "@saws/core": ">=1.0.0",
+    "@prisma/client": ">=5.0.0",
+    "prisma": ">=5.0.0"
+  }
+}

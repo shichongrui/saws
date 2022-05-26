@@ -1,0 +1,44 @@
+{
+  "name": "@saws/utils",
+  "version": "1.0.0",
+  "description": "",
+  "keywords": [],
+  "exports": {
+    "./aws-permission": "./dist/src/aws-permission.js",
+    "./binary-types": "./dist/src/binary-types.js",
+    "./build-code-zip": "./dist/src/build-code-zip.js",
+    "./collect-http-body": "./dist/src/collect-http-body.js",
+    "./constants": "./dist/src/constants.js",
+    "./copy-directory": "./dist/src/copy-directory.js",
+    "./create-directories": "./dist/src/create-directories.js",
+    "./create-file-if-not-exists": "./dist/src/create-file-if-not-exists.js",
+    "./docker": "./dist/src/docker.js",
+    "./generate-token": "./dist/src/generate-token.js",
+    "./get-aws-account-id": "./dist/src/get-aws-account-id.js",
+    "./get-project-name": "./dist/src/get-project-name.js",
+    "./dependency-management": "./dist/src/dependency-management.js",
+    "./on-exit": "./dist/src/on-exit.js",
+    "./parameterized-env-var-name": "./dist/src/parameterized-env-var-name.js",
+    "./recursively-read-dir": "./dist/src/recursively-read-dir.js",
+    "./retry-until": "./dist/src/retry-until.js",
+    "./stage-outputs": "./dist/src/stage-outputs.js",
+    "./transform-incoming-message-to-lambda-event": "./dist/src/transform-incoming-message-to-lambda-event.js",
+    "./uppercase": "./dist/src/uppercase.js"
+  },
+  "files": [
+    "./dist"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/adm-zip": "^0.5.5",
+    "@types/find-package-json": "^1.2.6",
+    "@types/node": "^20.11.19"
+  },
+  "dependencies": {
+    "@saws/aws": "workspace:^",
+    "adm-zip": "^0.5.10",
+    "docker-cli-js": "^2.10.0",
+    "find-package-json": "^1.2.0"
+  }
+}

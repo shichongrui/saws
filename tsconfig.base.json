@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "lib": ["DOM", "ES2022"],
+    "target": "ES2022",
+    "module": "Node16",
+    "composite": true,
+    "esModuleInterop": true,
+    "inlineSourceMap": true,
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true,
+    "moduleResolution": "Node16",
+    "declaration": true,
+    "strict": true,
+    "jsx": "react",
+    "resolveJsonModule": true,
+    "incremental": true
+  }
+}

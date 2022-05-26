@@ -1,0 +1,16 @@
+{
+  "name": "@saws/lambda-server",
+  "version": "1.0.0",
+  "description": "",
+  "keywords": [],
+  "files": [
+    "./dist"
+  ],
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@saws/utils": "workspace:^"
+  }
+}

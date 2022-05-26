@@ -1,0 +1,39 @@
+{
+  "name": "saws",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "tsc -b -w",
+    "build": "./scripts/build.sh",
+    "bump:patch": "./scripts/increment-version.sh patch",
+    "bump:minor": "./scripts/increment-version.sh minor",
+    "bump:major": "./scripts/increment-version.sh major",
+    "prepublish": "npm run build"
+  },
+  "repository": {
+    "url": "git@github.com:shichongrui/saws.git"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.11.19",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "@saws/lambda-server": "workspace:^",
+    "@saws/api": "workspace:^",
+    "@saws/aws": "workspace:^",
+    "@saws/cli": "workspace:^",
+    "@saws/cognito": "workspace:^",
+    "@saws/container": "workspace:^",
+    "@saws/core": "workspace:^",
+    "@saws/email": "workspace:^",
+    "@saws/file-storage": "workspace:^",
+    "@saws/function": "workspace:^",
+    "@saws/postgres": "workspace:^",
+    "@saws/remix": "workspace:^",
+    "@saws/remix-auth": "workspace:^",
+    "@saws/secrets": "workspace:^",
+    "@saws/utils": "workspace:^",
+    "@saws/website": "workspace:^"
+  }
+}

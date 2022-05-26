@@ -1,0 +1,29 @@
+{
+  "name": "@saws/container",
+  "version": "1.0.0",
+  "description": "",
+  "keywords": [],
+  "exports": {
+    "./container-service": "./dist/src/service/ContainerService.js"
+  },
+  "files": [
+    "./dist"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@aws-sdk/client-lambda": "^3.518.0",
+    "@saws/aws": "workspace:^",
+    "@saws/utils": "workspace:^",
+    "@types/fs-extra": "^11.0.4",
+    "chokidar": "^3.6.0",
+    "get-port": "^5.1.1"
+  },
+  "devDependencies": {
+    "@saws/core": "workspace:^",
+    "@types/js-yaml": "^4.0.9"
+  },
+  "peerDependencies": {
+    "@saws/core": ">=1.0.0"
+  }
+}

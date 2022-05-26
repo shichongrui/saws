@@ -1,0 +1,27 @@
+{
+  "name": "@saws/website",
+  "version": "1.0.0",
+  "description": "",
+  "keywords": [],
+  "exports": {
+    "./website-service": "./dist/src/WebsiteService.js"
+  },
+  "files": [
+    "./dist"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@saws/aws": "workspace:^",
+    "@saws/core": "workspace:^",
+    "@saws/utils": "workspace:^",
+    "get-port": "^5.1.1",
+    "vite": "^5.1.4"
+  },
+  "devDependencies": {
+    "@saws/core": "workspace:^"
+  },
+  "peerDependencies": {
+    "@saws/core": ">=1.0.0"
+  }
+}

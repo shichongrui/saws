@@ -1,0 +1,41 @@
+{
+  "name": "@saws/remix-auth",
+  "version": "1.0.0",
+  "description": "",
+  "keywords": [],
+  "exports": {
+    "./AuthenticateRoute": "./dist/src/route/AuthenticateRoute.js",
+    "./loader": "./dist/src/route/loader.js",
+    "./session": "./dist/src/session.js"
+  },
+  "files": [
+    "./dist"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@saws/utils": "workspace:^",
+    "@saws/cognito": "workspace:^",
+    "jsonwebtoken": "^9.0.2",
+    "jwks-rsa": "^3.1.0"
+  },
+  "devDependencies": {
+    "@chakra-ui/react": "^2.8.2",
+    "@emotion/react": "^11.11.1",
+    "@emotion/server": "^11.11.0",
+    "@emotion/styled": "^11.11.0",
+    "@remix-run/node": "^2.3.0",
+    "@remix-run/react": "^2.3.0",
+    "@types/jsonwebtoken": "^9.0.5",
+    "@types/react": "^18.2.23",
+    "@types/react-dom": "^18.2.17",
+    "framer-motion": "^6.5.1",
+    "typescript": "^5.2.2"
+  },
+  "peerDependencies": {
+    "@chakra-ui/react": ">=2.8.1",
+    "@remix-run/node": ">=2.5.0",
+    "@remix-run/react": ">=2.5.0",
+    "react": ">=18.2.0"
+  }
+}

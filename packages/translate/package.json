@@ -1,0 +1,24 @@
+{
+  "name": "@saws/translate",
+  "version": "1.0.0",
+  "description": "",
+  "keywords": [],
+  "exports": {
+    "./translate-service": "./dist/src/TranslateService.js",
+    "./translate-library": "./dist/src/TranslateLibrary.js"
+  },
+  "files": [
+    "./dist"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@aws-sdk/client-translate": "^3.515.0"
+  },
+  "devDependencies": {
+    "@saws/core": "workspace:^"
+  },
+  "peerDependencies": {
+    "@saws/core": ">=1.0.0"
+  }
+}

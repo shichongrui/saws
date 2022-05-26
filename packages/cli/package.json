@@ -1,0 +1,25 @@
+{
+  "name": "@saws/cli",
+  "version": "1.0.0",
+  "description": "",
+  "bin": {
+    "saws": "./dist/bin/saws.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@saws/secrets": "workspace:^",
+    "@saws/utils": "workspace:^",
+    "commander": "^12.0.0",
+    "esbuild": "^0.20.1",
+    "find-package-json": "^1.2.0"
+  },
+  "devDependencies": {
+    "@saws/core": "workspace:^",
+    "@types/find-package-json": "^1.2.6"
+  },
+  "peerDependencies": {
+    "@saws/core": ">=1.0.0"
+  }
+}
