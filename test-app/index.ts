@@ -17,7 +17,9 @@ export const resolvers = {
   },
 };
 
-export default new SawsAPI({
+const api = new SawsAPI({
     typeDefs,
     resolvers,
 });
+
+export const handler = api.createLambdaHandler();

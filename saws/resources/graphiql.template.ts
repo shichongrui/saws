@@ -1,3 +1,10 @@
+type GraphiqlTemplateParameters = {
+  graphqlServerUrl: string
+}
+
+export const graphiqlTemplate = ({
+  graphqlServerUrl
+}: GraphiqlTemplateParameters) => /* html */`
 <!--
  *  Copyright (c) 2021 GraphQL Contributors
  *  All rights reserved.
@@ -53,18 +60,15 @@
     ></script>
     <script>
       function graphQLFetcher(graphQLParams) {
-        return fetch(
-          'http://localhost:8000',
-          {
-            method: 'post',
-            headers: {
-              Accept: 'application/json',
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(graphQLParams),
-            credentials: 'omit',
+        return fetch("${graphqlServerUrl}", {
+          method: "post",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
           },
-        ).then(function (response) {
+          body: JSON.stringify(graphQLParams),
+          credentials: "omit",
+        }).then(function (response) {
           return response.json().catch(function () {
             return response.text();
           });
@@ -76,8 +80,9 @@
           fetcher: graphQLFetcher,
           defaultVariableEditorOpen: true,
         }),
-        document.getElementById('graphiql'),
+        document.getElementById("graphiql")
       );
     </script>
   </body>
 </html>
+`

@@ -10,7 +10,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@aws-sdk/client-cloudformation": "^3.100.0",
+    "@aws-sdk/client-s3": "^3.100.0",
     "@graphql-tools/schema": "^8.3.13",
+    "adm-zip": "^0.5.9",
     "apollo-server-lambda": "^3.7.0",
     "esbuild": "^0.14.39",
     "graphql": "^16.5.0",
@@ -18,7 +21,9 @@
     "yargs": "^17.5.1"
   },
   "devDependencies": {
+    "@types/adm-zip": "^0.5.0",
     "@types/yargs": "^17.0.10",
+    "prettier": "2.6.2",
     "ts-node": "^10.8.0",
     "typescript": "^4.6.4"
   }
