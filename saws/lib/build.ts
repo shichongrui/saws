@@ -6,18 +6,22 @@ export const buildLambda = async (
   modulePath: string,
   incremental: boolean
 ) => {
-  if (buildResult != null) {
-    await buildResult.rebuild?.();
-    return;
-  }
+  try {
+    if (buildResult != null) {
+      await buildResult.rebuild?.();
+      return;
+    }
 
-  buildResult = await esbuild.build({
-    entryPoints,
-    bundle: true,
-    outfile: modulePath,
-    platform: "node",
-    incremental,
-  });
+    buildResult = await esbuild.build({
+      entryPoints,
+      bundle: true,
+      outfile: modulePath,
+      platform: "node",
+      incremental,
+    });
+  } catch (err) {
+    console.log("There was a build error");
+  }
 };
 
 type BuildParameters = {

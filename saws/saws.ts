@@ -16,7 +16,7 @@ yargs(hideBin(process.argv))
       });
     },
     (argv) => {
-      startDev(argv.entrypoint as string);
+      startDev(argv.entrypoint as string).catch(err => console.error(err));
     }
   )
   .command(
@@ -28,14 +28,14 @@ yargs(hideBin(process.argv))
       });
     },
     (argv) => {
-      deploy(argv.entrypoint as string);
+      deploy(argv.entrypoint as string).catch(err => console.error(err));
     }
   )
   .command(
     "graphiql",
     "start graphiql pointing at prod",
     (argv) => {
-      startGraphiql();
+      startGraphiql().catch (err => console.error(err));
     }
   )
   .parse();
