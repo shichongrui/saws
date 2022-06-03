@@ -1,7 +1,7 @@
-import { startDevServer } from "../lib/dev-server";
-import { createCacheDir } from "../lib/create-directories";
-import { startWatcher } from "../lib/watcher";
-import { startPostgres } from '../lib/postgres';
+import { startDevServer } from "../src/dev-server";
+import { createCacheDir } from "../src/utils/create-directories";
+import { startWatcher } from "../src/watcher";
+import { startPostgres } from '../src/cli-commands/postgres';
 
 export async function startDev(entrypoint: string) {
   await createCacheDir();

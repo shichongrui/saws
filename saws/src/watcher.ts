@@ -1,25 +1,22 @@
-import path from "path";
 import watch from "node-watch";
 import { HandlerRef } from "./dev-server";
-import { CACHE_DIR } from "./constants";
 import { build } from "./build";
-import { getBuildPaths } from "./get-build-paths";
-import { migratePrismaDev } from "./prisma";
+import { getBuildPathsForEntrypoint } from "./utils/get-build-paths";
+import { generatePrismaClient } from "./cli-commands/prisma";
 
 export const startWatcher = async (
   entrypoint: string,
   handlerRef: HandlerRef
 ) => {
-  const { entrypointPath, modulePath } = getBuildPaths(entrypoint);
-  
-  try {
-    await migratePrismaDev();
+  const { entrypointPath, modulePath } = getBuildPathsForEntrypoint(entrypoint);
 
-    await build({
-      entryPoints: [entrypointPath],
-      modulePath,
-    });
-    handlerRef.current = require(modulePath).handler;
+  await generatePrismaClient();
+
+  await build({
+    entryPoints: [entrypointPath],
+    modulePath,
+  });
+  handlerRef.current = require(modulePath).handler;
 
   watch(
     ".",
@@ -36,10 +33,10 @@ export const startWatcher = async (
     },
     async (_, filePath) => {
       console.log("Detected changes, rebuilding");
-      
+
       if (/prisma/.test(filePath)) {
-        console.log('Regenerating prisma client');
-        await migratePrismaDev();
+        console.log("Regenerating prisma client");
+        await generatePrismaClient();
       }
 
       await build({
@@ -51,7 +48,4 @@ export const startWatcher = async (
       console.log("ready");
     }
   );
-} catch (err) {
-  console.log(err);
-}
 };

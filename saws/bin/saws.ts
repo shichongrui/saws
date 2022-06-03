@@ -2,9 +2,9 @@
 
 import yargs from "yargs/yargs";
 import { hideBin } from "yargs/helpers";
-import { startDev } from "./commands/dev";
-import { deploy } from "./commands/deploy";
-import { startGraphiql } from "./commands/graphiql";
+import { startDev } from "../commands/dev";
+import { deploy } from "../commands/deploy";
+import { startGraphiql } from "../commands/graphiql";
 
 yargs(hideBin(process.argv))
   .command(

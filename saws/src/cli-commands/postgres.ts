@@ -1,7 +1,7 @@
 import path from 'path';
 import { dockerCommand } from 'docker-cli-js';
-import { SAWS_DIR } from './constants';
-import { retryUntil } from './retry-until';
+import { SAWS_DIR } from '../utils/constants';
+import { retryUntil } from '../utils/retry-until';
 import { Client } from 'pg';
 
 export const startPostgres = async () => {

@@ -1,5 +1,4 @@
 import { IExecutableSchemaDefinition } from "@graphql-tools/schema";
-import { PrismaClient } from "@prisma/client";
 import { ApolloServer } from "apollo-server-lambda";
 import { Handler } from "aws-lambda";
 
@@ -10,7 +9,6 @@ type SawsAPIConstructor = {
 
 export class SawsAPI {
   apolloServer: ApolloServer;
-  prismaClient: PrismaClient;
 
   constructor({ typeDefs, resolvers }: SawsAPIConstructor) {
     this.apolloServer = new ApolloServer({
@@ -33,3 +31,6 @@ export class SawsAPI {
 process.on("uncaughtException", (err) => {
   console.log("uncaught", err);
 });
+
+export * from '@prisma/client';
+export * from 'apollo-server-lambda';

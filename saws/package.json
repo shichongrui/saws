@@ -6,20 +6,24 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "bin": "./saws.ts",
+  "bin": "./bin/saws.ts",
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@aws-sdk/client-cloudformation": "^3.100.0",
+    "@aws-sdk/client-ec2": "^3.100.0",
     "@aws-sdk/client-s3": "^3.100.0",
+    "@aws-sdk/client-ssm": "^3.100.0",
     "@graphql-tools/schema": "^8.3.13",
+    "@prisma/client": "^3.14.0",
     "adm-zip": "^0.5.9",
-    "apollo-server-lambda": "^3.7.0",
+    "apollo-server-lambda": "^3.8.1",
     "docker-cli-js": "^2.9.0",
     "esbuild": "^0.14.39",
     "graphql": "^16.5.0",
     "node-watch": "^0.7.3",
     "pg": "^8.7.3",
+    "prisma": "^3.14.0",
     "yargs": "^17.5.1"
   },
   "devDependencies": {

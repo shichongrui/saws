@@ -1,8 +1,7 @@
 // graphql.js
 
-import { gql } from 'apollo-server-lambda';
 import { SawsAPI } from 'saws';
-import { PrismaClient } from '@prisma/client';
+import { gql, PrismaClient } from 'saws';
 
 const prisma = new PrismaClient();
 
