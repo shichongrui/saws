@@ -7,7 +7,7 @@ import { getBuildPathsForEntrypoint } from "../src/utils/get-build-paths";
 import { uploadFile } from "../src/aws/s3";
 import sawsResourcesTemplate from "../templates/saws-resources.template";
 import AdmZip from "adm-zip";
-import { CACHE_DIR, SAWS_DIR } from "../src/utils/constants";
+import { CACHE_DIR, DB_PASSWORD_PARAMETER_NAME, SAWS_DIR } from "../src/utils/constants";
 import { sawsApiTemplate } from "../templates/saws-api.template";
 import crypto from "crypto";
 import { deployPrismaMigrate } from "../src/cli-commands/prisma";
@@ -67,7 +67,7 @@ export async function deploy(entrypoint: string) {
       codeS3Key: key,
       dbName: `${projectName}DB`.replace(/[^a-zA-Z\d]/g, ''),
       dbUsername: 'postgres',
-      dbPassword: dbPassword,
+      dbPasswordParameterName: DB_PASSWORD_PARAMETER_NAME,
       vpcId: defaultVpcId,
     })
   );

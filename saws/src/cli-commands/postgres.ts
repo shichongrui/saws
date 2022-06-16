@@ -6,7 +6,7 @@ import { Client } from 'pg';
 
 export const startPostgres = async () => {
     console.log('Starting postgres...');
-    await dockerCommand(`run -it --rm --name saws-postgres -p 5432:5432 -d -v ${path.resolve(SAWS_DIR, 'postgres')}/:/var/lib/postgresql/data postgres:14`, { echo: false });
+    await dockerCommand(`run -it --rm --name saws-postgres -e POSTGRES_PASSWORD=password -p 5432:5432 -d -v ${path.resolve(SAWS_DIR, 'postgres')}/:/var/lib/postgresql/data postgres:14`, { echo: false });
 
     await retryUntil(async () => {
         try {

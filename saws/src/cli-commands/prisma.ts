@@ -24,7 +24,6 @@ export const generatePrismaClient = () => {
       },
       async (err) => {
         if (err != null) {
-
           reject(err);
           return;
         }

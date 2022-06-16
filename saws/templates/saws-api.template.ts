@@ -5,7 +5,7 @@ type SawsApiTemplateProperties = {
   codeS3Key: string;
   dbName: string;
   dbUsername: string;
-  dbPassword: string;
+  dbPasswordParameterName: string;
   vpcId: string;
 };
 
@@ -16,7 +16,7 @@ export const sawsApiTemplate = ({
   codeS3Key,
   dbName,
   dbUsername,
-  dbPassword,
+  dbPasswordParameterName,
   vpcId,
 }: SawsApiTemplateProperties) => /* json */ `{
     "AWSTemplateFormatVersion": "2010-09-09",
@@ -57,7 +57,7 @@ export const sawsApiTemplate = ({
                     "Statement": [{
                         "Effect": "Allow",
                         "Principal": {
-                        "Service": [ "lambda.amazonaws.com" ]
+                            "Service": [ "lambda.amazonaws.com" ]
                         },
                         "Action": [ "sts:AssumeRole" ]
                     }]
@@ -75,6 +75,13 @@ export const sawsApiTemplate = ({
                                 "logs:PutLogEvents"
                             ],
                             "Resource": "*"
+                        }, {
+                            "Effect": "Allow",
+                            "Action": [
+                                "ssm:GetParameter",
+                                "ssm:GetParameters"
+                            ],
+                            "Resource": { "Fn::Sub": "arn:aws:ssm:\${AWS::Region}:\${AWS::AccountId}:parameter/prod/*" }
                         }]
                     }
                 }]
@@ -86,19 +93,15 @@ export const sawsApiTemplate = ({
             "Properties": {
                 "Environment": {
                     "Variables": {
-                        "DATABASE_URL": {
-                            "Fn::Sub": [
-                                "postgres://${dbUsername}:${dbPassword}@\${dbEndpoint}:\${dbPort}/${dbName}",
-                                {
-                                    "dbEndpoint": {
-                                        "Fn::GetAtt": ["SawsPostgresInstance", "Endpoint.Address"]
-                                    },
-                                    "dbPort": {
-                                        "Fn::GetAtt": ["SawsPostgresInstance", "Endpoint.Port"]
-                                    }
-                                }
-                            ]
-                        }
+                        "NODE_ENV": "prod",
+                        "DATABASE_USERNAME": "${dbUsername}",
+                        "DATABASE_HOST": {
+                            "Fn::GetAtt": ["SawsPostgresInstance", "Endpoint.Address"]
+                        },
+                        "DATABASE_PORT": {
+                            "Fn::GetAtt": ["SawsPostgresInstance", "Endpoint.Port"]
+                        },
+                        "DATABASE_NAME": "${dbName}"
                     }
                 },
                 "FunctionName": "${functionName}",
@@ -146,7 +149,7 @@ export const sawsApiTemplate = ({
                 "DBName": "${dbName}",
                 "Engine": "postgres",
                 "MasterUsername": "${dbUsername}",
-                "MasterUserPassword": "${dbPassword}",
+                "MasterUserPassword": "{{resolve:ssm-secure:/prod/${dbPasswordParameterName}}}",
                 "PubliclyAccessible": true,
                 "StorageEncrypted": true,
                 "VPCSecurityGroups": [{ "Ref": "SawsPostgresSecurityGroup" }]

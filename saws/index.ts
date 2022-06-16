@@ -2,6 +2,9 @@ import { IExecutableSchemaDefinition } from "@graphql-tools/schema";
 import { ApolloServer } from "apollo-server-lambda";
 import { Handler } from "aws-lambda";
 import { PrismaClient } from ".prisma/client";
+import { getParameter } from "./src/aws/ssm";
+import { DB_PASSWORD_PARAMETER_NAME } from "./src/utils/constants";
+import Secrets from './src/secrets';
 
 type SawsAPIConstructor = {
   typeDefs: IExecutableSchemaDefinition<{ db: PrismaClient }>["typeDefs"];
@@ -27,9 +30,9 @@ export class SawsAPI {
           NODE_ENV,
         } = process.env;
 
-        const dbPassword = 'password';
+        let dbPassword = 'password';
         if (NODE_ENV === 'prod') {
-
+          dbPassword = await getParameter(DB_PASSWORD_PARAMETER_NAME, true);
         }
 
         if (db == null) {
@@ -64,3 +67,4 @@ process.on("uncaughtException", (err) => {
 });
 
 export * from "apollo-server-lambda";
+export { default as Secrets } from './src/secrets'; 
