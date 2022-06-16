@@ -13,6 +13,55 @@ export const describeStack = async (stackName: string) => {
     return results;
 }
 
+export const checkStackStatus = async (stackName: string) => {
+    let results: DescribeStacksCommandOutput | null = null;
+    console.log("Checking stack status");
+    await retryUntil(async () => {
+        results = await describeStack(stackName);
+        return [
+            StackStatus.CREATE_COMPLETE,
+            StackStatus.CREATE_FAILED,
+            StackStatus.UPDATE_COMPLETE,
+            StackStatus.UPDATE_FAILED,
+            StackStatus.IMPORT_COMPLETE,
+            StackStatus.IMPORT_ROLLBACK_COMPLETE,
+            StackStatus.IMPORT_ROLLBACK_FAILED,
+            StackStatus.ROLLBACK_COMPLETE,
+            StackStatus.ROLLBACK_FAILED,
+            StackStatus.UPDATE_ROLLBACK_COMPLETE,
+            StackStatus.UPDATE_ROLLBACK_FAILED,
+        ].includes(results.Stacks?.[0].StackStatus as StackStatus);
+    }, 2000);
+
+    let action = '';
+    switch (results!.Stacks?.[0].StackStatus) {
+        case StackStatus.CREATE_COMPLETE:
+            action = 'creage';
+            break;
+        case StackStatus.UPDATE_COMPLETE:
+            action = 'update';
+            break;
+        case StackStatus.IMPORT_COMPLETE:
+            action = 'import';
+            break;
+            
+        case StackStatus.ROLLBACK_COMPLETE:
+        case StackStatus.UPDATE_ROLLBACK_COMPLETE:
+        case StackStatus.IMPORT_ROLLBACK_COMPLETE:
+        case StackStatus.CREATE_FAILED:
+        case StackStatus.UPDATE_FAILED:
+        case StackStatus.IMPORT_ROLLBACK_FAILED:
+        case StackStatus.ROLLBACK_FAILED:
+        case StackStatus.UPDATE_ROLLBACK_FAILED:
+            console.log('Stack action failed')
+            return results;
+    }
+
+    console.log(`Stack ${action} succeeded.`);
+
+    return results;
+}
+
 export const createStack = async (stackName: string, templateBody: string): Promise<DescribeStacksCommandOutput | null> => {
     console.log('Creating stack');
     const command = new CreateStackCommand({
@@ -22,13 +71,7 @@ export const createStack = async (stackName: string, templateBody: string): Prom
     });
     await client.send(command);
 
-    let results: DescribeStacksCommandOutput | null = null;
-    await retryUntil(async () => {
-        console.log("Check stack status");
-        results = await describeStack(stackName);
-        return results.Stacks?.[0].StackStatus === StackStatus.CREATE_COMPLETE;
-    }, 2000);
-    
+    const results = await checkStackStatus(stackName);
     return results;
 }
 
@@ -41,13 +84,7 @@ export const updateStack = async (stackName: string, templateBody: string): Prom
     });
     await client.send(command);
 
-    let results: DescribeStacksCommandOutput | null = null;
-    await retryUntil(async () => {
-        console.log("Checking stack status");
-        results = await describeStack(stackName);
-        return results.Stacks?.[0].StackStatus === StackStatus.UPDATE_COMPLETE;
-    }, 2000);
-
+    const results = await checkStackStatus(stackName);
     return results;
 }
 
