@@ -1,9 +1,7 @@
 // graphql.js
 
 import { SawsAPI } from 'saws';
-import { gql, PrismaClient } from 'saws';
-
-const prisma = new PrismaClient();
+import { gql } from 'saws';
 
 // Construct a schema, using GraphQL schema language
 export const typeDefs = gql`
@@ -23,27 +21,24 @@ export const typeDefs = gql`
   }
 `;
 
-// Provide resolver functions for your schema fields
-export const resolvers = {
-  Query: {
-    hello: () => 'Hello world! Changed',
-    allUsers: () => prisma.user.findMany(),
-  },
-  Mutation: {
-    createUser: async (_: unknown, { email, name }: { email: string, name?: string }) => {
-      return prisma.user.create({
-        data: {
-          email,
-          name,
-        }
-      })
-    }
-  }
-};
-
 const api = new SawsAPI({
     typeDefs,
-    resolvers,
+    resolvers: {
+      Query: {
+        hello: () => 'Hello world! Changed',
+        allUsers: (_, __, { db }) => db.user.findMany(),
+      },
+      Mutation: {
+        createUser: async (_: unknown, { email, name }: { email: string, name?: string }, { db }) => {
+          return db.user.create({
+            data: {
+              email,
+              name,
+            }
+          })
+        }
+      }
+    },
 });
 
 export const handler = api.createLambdaHandler();

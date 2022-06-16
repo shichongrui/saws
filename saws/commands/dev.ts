@@ -4,6 +4,8 @@ import { startWatcher } from "../src/watcher";
 import { startPostgres } from '../src/cli-commands/postgres';
 
 export async function startDev(entrypoint: string) {
+  process.env.NODE_ENV = 'dev';
+  
   await createCacheDir();
 
   let handlerRef = { current: undefined };

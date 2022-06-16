@@ -1,4 +1,7 @@
 import { exec } from "child_process";
+import path from 'path';
+import { promises as fs } from 'fs';
+import { CACHE_DIR } from "../utils/constants";
 
 type DBParameters = {
   username: string;
@@ -9,17 +12,23 @@ type DBParameters = {
 }
 
 export const generatePrismaClient = () => {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
+    const pathToSchema = path.resolve('./prisma/schema.prisma');
+    const newPathToSchema = path.join(path.resolve('./node_modules/saws'), 'schema.prisma')
+    await fs.cp(pathToSchema, newPathToSchema);
+
     exec(
-      "node_modules/saws/node_modules/.bin/prisma generate",
-      (err, stdout, stderr) => {
-        console.log(err, stdout, stderr);
+      `./node_modules/.bin/prisma generate --schema=${newPathToSchema}`,
+      {
+        cwd: path.resolve('./node_modules/saws'),
+      },
+      async (err) => {
         if (err != null) {
 
           reject(err);
           return;
         }
-
+        await fs.rm(newPathToSchema);
         resolve(null);
       }
     );

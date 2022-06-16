@@ -2,6 +2,16 @@ import http from "http";
 import { graphiqlTemplate } from "../templates/graphiql.template";
 import { Handler } from 'aws-lambda';
 
+const setDBEnvironment = () => {
+  process.env = {
+    ...process.env,
+    DATABASE_USERNAME: 'postgres',
+    DATABASE_HOST: 'localhost',
+    DATABASE_PORT: '5432',
+    DATABASE_NAME: 'postgres',
+  };
+}
+
 const collectBody = async (req: http.IncomingMessage): Promise<string> => {
   return new Promise((resolve) => {
     if (req.method !== "POST") {
@@ -25,7 +35,7 @@ export type HandlerRef = {
 
 export const startDevServer = (handlerRef: HandlerRef) => {
   return new Promise((resolve) => {
-    process.env.DATABASE_URL = 'postgresql://postgres:password@localhost:5432/postgres'
+    setDBEnvironment();
     const server = http.createServer(async (req, res) => {
       if (req.method === "GET" && req.url === "/graphiql") {
         const html = graphiqlTemplate({
