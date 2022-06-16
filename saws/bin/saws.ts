@@ -6,6 +6,7 @@ import { startDev } from "../commands/dev";
 import { deploy } from "../commands/deploy";
 import { startGraphiql } from "../commands/graphiql";
 import { secret } from "../commands/secret";
+import { startStudio } from "../commands/studio";
 
 yargs(hideBin(process.argv))
   .command(
@@ -37,6 +38,13 @@ yargs(hideBin(process.argv))
     "start graphiql pointing at prod",
     (argv) => {
       startGraphiql().catch (err => console.error(err));
+    }
+  )
+  .command(
+    "studio",
+    "start Prisma studio",
+    () => {
+      startStudio();
     }
   )
   .command(
