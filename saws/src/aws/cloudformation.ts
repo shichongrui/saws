@@ -1,9 +1,7 @@
 import { CloudFormationClient, DescribeStacksCommand, CreateStackCommand, StackStatus, UpdateStackCommand, Capability, DescribeStacksCommandOutput } from "@aws-sdk/client-cloudformation";
 import { retryUntil } from "../utils/retry-until";
 
-const client = new CloudFormationClient({
-    region: 'us-east-1',
-});
+const client = new CloudFormationClient({});
 
 export const describeStack = async (stackName: string) => {
     const command = new DescribeStacksCommand({

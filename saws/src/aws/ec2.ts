@@ -1,8 +1,6 @@
 import { EC2Client, DescribeVpcsCommand, Filter } from '@aws-sdk/client-ec2';
 
-const client = new EC2Client({
-    region: 'us-east-1',
-});
+const client = new EC2Client({});
 
 export const getDefaultVPCId = async () => {
     const command = new DescribeVpcsCommand({

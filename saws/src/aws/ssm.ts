@@ -1,8 +1,6 @@
 import { GetParameterCommand, ParameterType, PutParameterCommand, SSMClient } from '@aws-sdk/client-ssm';
 
-const client = new SSMClient({
-    region: 'us-east-1',
-});
+const client = new SSMClient({});
 
 export const getParameter = async (name: string, decrypt: boolean = false) => {
     const command = new GetParameterCommand({

@@ -1,9 +1,7 @@
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { promises as fs } from 'fs';
 
-const client = new S3Client({
-    region: 'us-east-1',
-});
+const client = new S3Client({});
 
 export const uploadFile = async (bucketName: string, key: string, filePath: string) => {
     const file = await fs.readFile(filePath);

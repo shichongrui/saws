@@ -165,7 +165,7 @@ export const sawsApiTemplate = ({
         "SawsApiEndpoint": {
             "Description": "ApiGateway Url",
             "Value": {
-                "Fn::Sub": "https://\${SawsApiGateway}.execute-api.us-east-1.amazonaws.com/"
+                "Fn::Sub": "https://\${SawsApiGateway}.execute-api.\${AWS::Region}.amazonaws.com/"
             }
         },
         "SawsDBEndpoint": {
