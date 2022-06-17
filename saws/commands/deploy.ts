@@ -23,7 +23,7 @@ import { getDBName } from "../src/utils/get-db-name";
 
 export async function deploy(entrypoint: string, stage: string) {
   process.env.STAGE = stage;
-  process.env.NODE_ENV = 'prod';
+  process.env.NODE_ENV = "prod";
 
   await createSawsDir();
   await createCacheDir();
@@ -76,24 +76,34 @@ export async function deploy(entrypoint: string, stage: string) {
   );
 
   // write outputs
-  const outputs = results?.Stacks?.[0].Outputs?.reduce<Record<string, unknown>>(
-    (acc, output) => {
-      const key = output.OutputKey ?? "key";
-      acc[key] = output.OutputValue;
-      return acc;
-    },
-    {}
-  );
+  const outputs: Record<string, unknown> = {
+    ...results?.Stacks?.[0].Outputs?.reduce<Record<string, unknown>>(
+      (acc, output) => {
+        const key = output.OutputKey ?? "key";
+        acc[key] = output.OutputValue;
+        return acc;
+      },
+      {}
+    ),
+    postgresDBName: getDBName(),
+    postgresUsername: 'postgres',
+  };
   await fs.writeFile(
     path.resolve(SAWS_DIR, `saws-api-${stage}-output.json`),
     JSON.stringify(outputs, null, 2)
   );
 
   await prismaMigrate({
-    username: "postgres",
+    username: outputs.postgresUsername as string,
     password: dbPassword,
-    endpoint: outputs?.SawsDBEndpoint as string,
-    port: outputs?.SawsDBPort as string,
-    dbName: getDBName(),
+    endpoint: outputs.postgresHost as string,
+    port: outputs.postgresPort as string,
+    dbName: outputs.postgresDBName as string,
   });
+
+  console.log("GraphQL Endpoint:", outputs.graphqlEndpoint);
+  console.log("Postgres Host:", outputs.postgresHost);
+  console.log("Postgres Port:", outputs.postgresPort);
+  console.log("Postgres Username:", outputs.postgresUsername);
+  console.log("Postgres DB Name:", outputs.postgresDBName);
 }

@@ -21,4 +21,8 @@ export async function startDev(entrypoint: string) {
   });
   await startWatcher(entrypoint, handlerRef);
   await startDevServer(handlerRef);
+
+  console.log('GraphQL Endpoint:', 'http://localhost:8000');
+  console.log('GraphiQL Endpoint:', 'http://localhost:8000/graphiql');
+  console.log('Prisma Studio:', 'http://localhost:5555');
 }

@@ -162,19 +162,19 @@ export const sawsApiTemplate = ({
         }
     },
     "Outputs": {
-        "SawsApiEndpoint": {
+        "graphqlEndpoint": {
             "Description": "ApiGateway Url",
             "Value": {
                 "Fn::Sub": "https://\${SawsApiGateway}.execute-api.\${AWS::Region}.amazonaws.com/"
             }
         },
-        "SawsDBEndpoint": {
+        "postgresHost": {
             "Description": "Connection URL for the DB",
             "Value": {
                 "Fn::GetAtt": ["SawsPostgresInstance", "Endpoint.Address"]
             }
         },
-        "SawsDBPort": {
+        "postgresPort": {
             "Description": "Connection port for the DB",
             "Value": {
                 "Fn::GetAtt": ["SawsPostgresInstance", "Endpoint.Port"]

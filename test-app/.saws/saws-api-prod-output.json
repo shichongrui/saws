@@ -1,5 +1,7 @@
 {
-  "SawsDBEndpoint": "ts18b3iuozl7oub.c6a58olddfxa.us-east-1.rds.amazonaws.com",
-  "SawsApiEndpoint": "https://rkzqfc6ae3.execute-api.us-east-1.amazonaws.com/",
-  "SawsDBPort": "5432"
+  "postgresHost": "ts18b3iuozl7oub.c6a58olddfxa.us-east-1.rds.amazonaws.com",
+  "graphqlEndpoint": "https://rkzqfc6ae3.execute-api.us-east-1.amazonaws.com/",
+  "postgresPort": "5432",
+  "postgresDBName": "test_app_prod",
+  "postgresUsername": "postgres"
 }
