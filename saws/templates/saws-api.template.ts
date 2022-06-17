@@ -1,23 +1,27 @@
+import { uppercase } from "../src/utils/uppercase";
+
 type SawsApiTemplateProperties = {
-  functionName: string;
   moduleName: string;
+  projectName: string;
   codeBucketName: string;
   codeS3Key: string;
   dbName: string;
   dbUsername: string;
   dbPasswordParameterName: string;
   vpcId: string;
+  stage: string;
 };
 
 export const sawsApiTemplate = ({
-  functionName,
   moduleName,
+  projectName,
   codeBucketName,
   codeS3Key,
   dbName,
   dbUsername,
   dbPasswordParameterName,
   vpcId,
+  stage,
 }: SawsApiTemplateProperties) => /* json */ `{
     "AWSTemplateFormatVersion": "2010-09-09",
     "Description": "AWS Cloudformation for resources required by the SAWS framework",
@@ -26,7 +30,7 @@ export const sawsApiTemplate = ({
             "Type": "AWS::ApiGatewayV2::Api",
             "Properties": {
                 "ProtocolType": "HTTP",
-                "Name": "${moduleName}-saws-api",
+                "Name": "${projectName}-${stage}-saws-api",
                 "CorsConfiguration": {
                     "AllowMethods": ["*"],
                     "AllowOrigins": ["*"],
@@ -51,7 +55,7 @@ export const sawsApiTemplate = ({
         "SawsApiLambdaRole": {
             "Type": "AWS::IAM::Role",
             "Properties": {
-                "RoleName": "SawsApiLambdaRole",
+                "RoleName": "SawsApi${uppercase(stage)}LambdaRole",
                 "AssumeRolePolicyDocument": {
                     "Version": "2012-10-17",
                     "Statement": [{
@@ -64,7 +68,7 @@ export const sawsApiTemplate = ({
                 },
                 "Path": "/",
                 "Policies": [{
-                    "PolicyName": "AWSLambdaBasicExecutionRole",
+                    "PolicyName": "AWSLambda${uppercase(stage)}BasicExecutionRole",
                     "PolicyDocument": {
                         "Version": "2012-10-17",
                         "Statement": [{
@@ -81,7 +85,7 @@ export const sawsApiTemplate = ({
                                 "ssm:GetParameter",
                                 "ssm:GetParameters"
                             ],
-                            "Resource": { "Fn::Sub": "arn:aws:ssm:\${AWS::Region}:\${AWS::AccountId}:parameter/prod/*" }
+                            "Resource": { "Fn::Sub": "arn:aws:ssm:\${AWS::Region}:\${AWS::AccountId}:parameter/${stage}/*" }
                         }]
                     }
                 }]
@@ -101,10 +105,11 @@ export const sawsApiTemplate = ({
                         "DATABASE_PORT": {
                             "Fn::GetAtt": ["SawsPostgresInstance", "Endpoint.Port"]
                         },
-                        "DATABASE_NAME": "${dbName}"
+                        "DATABASE_NAME": "${dbName}",
+                        "STAGE": "${stage}"
                     }
                 },
-                "FunctionName": "${functionName}",
+                "FunctionName": "${projectName}-${stage}-api",
                 "Handler": "${moduleName}.handler",
                 "Runtime": "nodejs16.x",
                 "PackageType": "Zip",
@@ -124,7 +129,7 @@ export const sawsApiTemplate = ({
         "SawsPostgresSecurityGroup": {
             "Type": "AWS::EC2::SecurityGroup",
             "Properties": {
-                "GroupName": "SawsDBSecurityGroup",
+                "GroupName": "Saws${uppercase(stage)}DBSecurityGroup",
                 "GroupDescription": "Security group for the SAWS Postgres instance",
                 "SecurityGroupIngress": [{
                     "CidrIp": "0.0.0.0/0",
@@ -149,7 +154,7 @@ export const sawsApiTemplate = ({
                 "DBName": "${dbName}",
                 "Engine": "postgres",
                 "MasterUsername": "${dbUsername}",
-                "MasterUserPassword": "{{resolve:ssm-secure:/prod/${dbPasswordParameterName}}}",
+                "MasterUserPassword": "{{resolve:ssm-secure:/${stage}/${dbPasswordParameterName}:1}}",
                 "PubliclyAccessible": true,
                 "StorageEncrypted": true,
                 "VPCSecurityGroups": [{ "Ref": "SawsPostgresSecurityGroup" }]
@@ -177,28 +182,3 @@ export const sawsApiTemplate = ({
         }
     }
 }`;
-
-/*                 
-"IntegrationResponses": [{
-                        "StatusCode": 200,
-                        "ResponseParameters": {
-                            "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
-                            "method.response.header.Access-Control-Allow-Methods": "'POST,OPTIONS'",
-                            "method.response.header.Access-Control-Allow-Origin": "'*'"
-                        },
-                        "ResponseTemplates": {
-                            "application/json": ""
-                        }
-                    }]
-"MethodResponses": [{
-                    "StatusCode": 200,
-                    "ResponseModels": {
-                        "application/json": "Empty"
-                    },
-                    "ResponseParameters": {
-                        "method.response.header.Access-Control-Allow-Headers": false,
-                        "method.response.header.Access-Control-Allow-Methods": false,
-                        "method.response.header.Access-Control-Allow-Origin": false              
-                    }
-                }],
-                */

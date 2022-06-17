@@ -36,7 +36,7 @@ export const generatePrismaClient = () => {
   });
 };
 
-export const deployPrismaMigrate = ({
+export const prismaMigrate = ({
   username,
   password,
   endpoint,
@@ -73,6 +73,7 @@ export const startPrismaStudio = ({
   openBrowser = false
 }: DBParameters & { openBrowser?: boolean }) => {
   return new Promise((resolve, reject) => {
+    console.log(`postgres://${username}:${password}@${endpoint}:${port}/${dbName}`)
     exec(
       "npx prisma studio" + (!openBrowser ? " --browser none" : ""),
       {

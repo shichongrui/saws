@@ -1,5 +1,4 @@
 import { Secrets } from "../..";
-import { getParameter, putParameter } from "../aws/ssm";
 import { DB_PASSWORD_PARAMETER_NAME } from "./constants";
 import { generateToken } from "./generate-token";
 

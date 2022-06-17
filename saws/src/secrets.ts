@@ -20,7 +20,7 @@ export default {
         }
         
         if (process.env.NODE_ENV === 'prod') {
-            const value = await getParameter(`/prod/${name}`, true);
+            const value = await getParameter(`/${process.env.STAGE}/${name}`, true);
             cache[name] = value;
             return value;
         } else {
@@ -31,7 +31,7 @@ export default {
 
     async set(name: string, value: string) {
         if (process.env.NODE_ENV === 'prod') {
-            await putParameter(`/prod/${name}`, value, true);
+            await putParameter(`/${process.env.STAGE}/${name}`, value, true);
         } else {
             const localSecrets = await getLocalSecrets();
             localSecrets[name] = value;

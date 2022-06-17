@@ -15,10 +15,10 @@ yargs(hideBin(process.argv))
     (yargs) => {
       return yargs.positional("entrypoint", {
         describe: "entrypoint for your saws api",
-      });
+      })
     },
     (argv) => {
-      startDev(argv.entrypoint as string).catch(err => console.error(err));
+      startDev(argv.entrypoint as string).catch((err) => console.error(err));
     }
   )
   .command(
@@ -27,31 +27,41 @@ yargs(hideBin(process.argv))
     (yargs) => {
       return yargs.positional("entrypoint", {
         describe: "entrypoint for your saws api",
-      });
+      }).options({
+        stage: {
+          requiresArg: true,
+          string: true,
+          demandOption: true,
+        }
+      });;
     },
     (argv) => {
-      deploy(argv.entrypoint as string).catch(err => console.error(err));
+      deploy(argv.entrypoint as string, argv.stage).catch((err) => console.error(err));
     }
   )
-  .command(
-    "graphiql",
-    "start graphiql pointing at prod",
-    (argv) => {
-      startGraphiql().catch (err => console.error(err));
-    }
-  )
-  .command(
-    "studio",
-    "start Prisma studio",
-    () => {
-      startStudio();
-    }
-  )
-  .command(
-    "secret",
-    "set secret",
-    () => {
-      secret().catch(err => console.error(err));
-    }
-  )
+  .command("graphiql", "start graphiql pointing at prod", (yargs) => {
+    return yargs.options({
+      stage: {
+        requiresArg: true,
+        string: true,
+        demandOption: true,
+      }
+    })
+  }, (argv) => {
+    startGraphiql(argv.stage).catch((err) => console.error(err));
+  })
+  .command("studio", "start Prisma studio", (yargs) => {
+    return yargs.options({
+      stage: {
+        requiresArg: true,
+        string: true,
+        demandOption: true,
+      }
+    })
+  }, (argv) => {
+    startStudio(argv.stage);
+  })
+  .command("secret", "set secret", () => {
+    secret().catch((err) => console.error(err));
+  })
   .parse();

@@ -15,7 +15,6 @@ export const describeStack = async (stackName: string) => {
 
 export const checkStackStatus = async (stackName: string) => {
     let results: DescribeStacksCommandOutput | null = null;
-    console.log("Checking stack status");
     await retryUntil(async () => {
         results = await describeStack(stackName);
         return [
@@ -36,7 +35,7 @@ export const checkStackStatus = async (stackName: string) => {
     let action = '';
     switch (results!.Stacks?.[0].StackStatus) {
         case StackStatus.CREATE_COMPLETE:
-            action = 'creage';
+            action = 'create';
             break;
         case StackStatus.UPDATE_COMPLETE:
             action = 'update';

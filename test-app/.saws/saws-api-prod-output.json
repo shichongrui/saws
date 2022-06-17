@@ -1,0 +1,5 @@
+{
+  "SawsDBEndpoint": "ts18b3iuozl7oub.c6a58olddfxa.us-east-1.rds.amazonaws.com",
+  "SawsApiEndpoint": "https://rkzqfc6ae3.execute-api.us-east-1.amazonaws.com/",
+  "SawsDBPort": "5432"
+}
