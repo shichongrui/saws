@@ -4,7 +4,7 @@ import { build } from "../src/build";
 import { deployStack } from "../src/aws/cloudformation";
 import { createCacheDir, createSawsDir } from "../src/utils/create-directories";
 import { getBuildPathsForEntrypoint } from "../src/utils/get-build-paths";
-import { uploadFile } from "../src/aws/s3";
+import { doesFileExist, uploadFile } from "../src/aws/s3";
 import sawsResourcesTemplate from "../templates/saws-resources.template";
 import AdmZip from "adm-zip";
 import {
@@ -20,6 +20,7 @@ import { getDBPassword } from "../src/utils/get-db-password";
 import { getProjectName } from "../src/utils/get-project-name";
 import { buildCodeZip } from "../src/utils/build-code-zip";
 import { getDBName } from "../src/utils/get-db-name";
+import { getStageOutputs } from "../src/utils/get-stage-outputs";
 
 export async function deploy(entrypoint: string, stage: string) {
   process.env.STAGE = stage;
@@ -53,7 +54,10 @@ export async function deploy(entrypoint: string, stage: string) {
   console.log("Uploading api...");
   const zipPath = await buildCodeZip(modulePath, projectName);
   const key = path.parse(zipPath).base;
-  await uploadFile(bucketName, key, zipPath);
+  const fileExists = await doesFileExist(bucketName, key);
+  if (!fileExists) {
+    await uploadFile(bucketName, key, zipPath);
+  }
 
   // Create Lambda and API Gateway
   console.log("Creating api...");
@@ -75,8 +79,11 @@ export async function deploy(entrypoint: string, stage: string) {
     })
   );
 
+  const currentOutputs = await getStageOutputs(stage);
+
   // write outputs
   const outputs: Record<string, unknown> = {
+    ...currentOutputs,
     ...results?.Stacks?.[0].Outputs?.reduce<Record<string, unknown>>(
       (acc, output) => {
         const key = output.OutputKey ?? "key";

@@ -1,4 +1,4 @@
-import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { HeadObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { promises as fs } from 'fs';
 
 const client = new S3Client({});
@@ -13,4 +13,22 @@ export const uploadFile = async (bucketName: string, key: string, filePath: stri
     });
 
     await client.send(command);
+}
+
+export const doesFileExist = async (bucketName: string, key: string) => {
+    const command = new HeadObjectCommand({
+        Bucket: bucketName,
+        Key: key,
+    });
+
+    try {
+        await client.send(command);
+        return true;
+    } catch (err: any) {
+        if (err.name === 'NotFound') {
+            return false;
+        }
+
+        throw err;
+    }
 }
