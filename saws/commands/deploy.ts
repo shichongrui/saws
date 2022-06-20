@@ -6,25 +6,20 @@ import { createCacheDir, createSawsDir } from "../src/utils/create-directories";
 import { getBuildPathsForEntrypoint } from "../src/utils/get-build-paths";
 import { doesFileExist, uploadFile } from "../src/aws/s3";
 import sawsResourcesTemplate from "../templates/saws-resources.template";
-import AdmZip from "adm-zip";
-import {
-  CACHE_DIR,
-  DB_PASSWORD_PARAMETER_NAME,
-  SAWS_DIR,
-} from "../src/utils/constants";
+import { DB_PASSWORD_PARAMETER_NAME } from "../src/utils/constants";
 import { sawsApiTemplate } from "../templates/saws-api.template";
-import crypto from "crypto";
 import { prismaMigrate } from "../src/cli-commands/prisma";
 import { getDefaultVPCId } from "../src/aws/ec2";
-import { getDBPassword } from "../src/utils/get-db-password";
 import { getProjectName } from "../src/utils/get-project-name";
 import { buildCodeZip } from "../src/utils/build-code-zip";
-import { getDBName } from "../src/utils/get-db-name";
-import { getStageOutputs } from "../src/utils/get-stage-outputs";
+import { getDBParameters } from "../src/utils/get-db-parameters";
+import { Outputs, writeStageOutputs } from "../src/utils/stage-outputs";
 
 export async function deploy(entrypoint: string, stage: string) {
-  process.env.STAGE = stage;
-  process.env.NODE_ENV = "prod";
+  if (stage === "local") {
+    console.warn("Can not deploy to local stage");
+    process.exit();
+  }
 
   await createSawsDir();
   await createCacheDir();
@@ -62,7 +57,11 @@ export async function deploy(entrypoint: string, stage: string) {
   // Create Lambda and API Gateway
   console.log("Creating api...");
   const defaultVpcId = await getDefaultVPCId();
-  const dbPassword = await getDBPassword();
+  const {
+    username: dbUsername,
+    name: dbName,
+    password: dbPassword,
+  } = await getDBParameters(stage);
 
   const results = await deployStack(
     `${projectName}-${stage}-saws-api`,
@@ -71,34 +70,26 @@ export async function deploy(entrypoint: string, stage: string) {
       projectName,
       codeBucketName: bucketName,
       codeS3Key: key,
-      dbName: getDBName(),
-      dbUsername: "postgres",
+      dbName: dbName,
+      dbUsername: dbUsername,
       dbPasswordParameterName: DB_PASSWORD_PARAMETER_NAME,
       vpcId: defaultVpcId,
       stage,
     })
   );
 
-  const currentOutputs = await getStageOutputs(stage);
-
   // write outputs
-  const outputs: Record<string, unknown> = {
-    ...currentOutputs,
-    ...results?.Stacks?.[0].Outputs?.reduce<Record<string, unknown>>(
-      (acc, output) => {
-        const key = output.OutputKey ?? "key";
-        acc[key] = output.OutputValue;
-        return acc;
-      },
-      {}
-    ),
-    postgresDBName: getDBName(),
-    postgresUsername: 'postgres',
+  type StackOutputKey = "postgresHost" | "postgresPort" | "graphqlEndpoint";
+  const outputs = {
+    ...results?.Stacks?.[0].Outputs?.reduce<Pick<Outputs, StackOutputKey>>((acc, output) => {
+      const key = output.OutputKey as StackOutputKey;
+      acc[key] = output.OutputValue!;
+      return acc;
+    }, { postgresHost: '', postgresPort: '', graphqlEndpoint: '' }),
+    postgresDBName: dbName,
+    postgresUsername: dbUsername,
   };
-  await fs.writeFile(
-    path.resolve(SAWS_DIR, `saws-api-${stage}-output.json`),
-    JSON.stringify(outputs, null, 2)
-  );
+  await writeStageOutputs(outputs, stage);
 
   await prismaMigrate({
     username: outputs.postgresUsername as string,

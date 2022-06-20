@@ -1,0 +1,7 @@
+{
+  "postgresDBName": "postgres",
+  "postgresHost": "localhost",
+  "postgresPort": "5432",
+  "postgresUsername": "postgres",
+  "graphqlEndpoint": "http://localhost:8000"
+}

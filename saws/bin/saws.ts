@@ -7,27 +7,28 @@ import { deploy } from "../commands/deploy";
 import { startGraphiql } from "../commands/graphiql";
 import { secret } from "../commands/secret";
 import { startStudio } from "../commands/studio";
+import { getEntrypoint } from "../src/utils/get-entrypoint";
 
 yargs(hideBin(process.argv))
   .command(
-    "dev [entrypoint]",
+    "dev",
     "start dev",
-    (yargs) => {
-      return yargs.positional("entrypoint", {
-        describe: "entrypoint for your saws api",
-      })
-    },
+    (yargs) => yargs.option({
+      stage: {
+        string: true,
+        default: 'local',
+      }
+    }),
     (argv) => {
-      startDev(argv.entrypoint as string).catch((err) => console.error(err));
+      const entrypoint = getEntrypoint();
+      startDev(entrypoint, argv.stage).catch((err) => console.error(err));
     }
   )
   .command(
-    "deploy [entrypoint]",
+    "deploy",
     "deploy",
     (yargs) => {
-      return yargs.positional("entrypoint", {
-        describe: "entrypoint for your saws api",
-      }).options({
+      return yargs.options({
         stage: {
           requiresArg: true,
           string: true,
@@ -36,7 +37,7 @@ yargs(hideBin(process.argv))
       });;
     },
     (argv) => {
-      deploy(argv.entrypoint as string, argv.stage).catch((err) => console.error(err));
+      deploy(getEntrypoint(), argv.stage).catch((err) => console.error(err));
     }
   )
   .command("graphiql", "start graphiql pointing at prod", (yargs) => {
@@ -61,7 +62,14 @@ yargs(hideBin(process.argv))
   }, (argv) => {
     startStudio(argv.stage);
   })
-  .command("secret", "set secret", () => {
-    secret().catch((err) => console.error(err));
+  .command("secret", "set secret", (yargs) => {
+    return yargs.options({
+      stage: {
+        string: true,
+      }
+    })
+  },
+  (argv) => {
+    secret(argv.stage).catch((err) => console.error(err));
   })
   .parse();

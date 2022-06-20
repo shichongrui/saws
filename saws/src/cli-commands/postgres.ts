@@ -3,6 +3,7 @@ import { dockerCommand } from 'docker-cli-js';
 import { SAWS_DIR } from '../utils/constants';
 import { retryUntil } from '../utils/retry-until';
 import { Client } from 'pg';
+import { getDBName } from '../utils/get-db-parameters';
 
 export const startPostgres = async () => {
     console.log('Starting postgres...');
@@ -30,4 +31,11 @@ export const startPostgres = async () => {
         dockerCommand('stop saws-postgres', { echo: false });
         process.exit();
     });
+
+    return {
+        postgresHost: 'localhost',
+        postgresPort: '5432',
+        postgresUsername: 'postgres',
+        postgresDBName: 'postgres',
+    }
 }

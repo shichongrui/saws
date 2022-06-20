@@ -3,8 +3,8 @@ import { ApolloServer } from "apollo-server-lambda";
 import { Handler } from "aws-lambda";
 import { PrismaClient } from ".prisma/client";
 import { getParameter } from "./src/aws/ssm";
-import { DB_PASSWORD_PARAMETER_NAME } from "./src/utils/constants";
-import Secrets from './src/secrets';
+import { getSecretsManagerForStage } from './src/secrets';
+import { getDBPassword } from "./src/utils/get-db-parameters";
 
 type SawsAPIConstructor = {
   typeDefs: IExecutableSchemaDefinition<{ db: PrismaClient }>["typeDefs"];
@@ -27,13 +27,9 @@ export class SawsAPI {
           DATABASE_HOST,
           DATABASE_PORT,
           DATABASE_NAME,
-          NODE_ENV,
         } = process.env;
 
-        let dbPassword = 'password';
-        if (NODE_ENV === 'prod') {
-          dbPassword = await getParameter(DB_PASSWORD_PARAMETER_NAME, true);
-        }
+        const dbPassword = await getDBPassword(process.env.STAGE as string);
 
         if (db == null) {
           db = new PrismaClient({
@@ -67,4 +63,4 @@ process.on("uncaughtException", (err) => {
 });
 
 export * from "apollo-server-lambda";
-export { default as Secrets } from './src/secrets'; 
+export const secrets = getSecretsManagerForStage(process.env.STAGE as string);

@@ -1,41 +1,61 @@
 import { getParameter, putParameter } from "./aws/ssm";
-import { Data, parse, stringify } from 'envfile';
-import { promises as fs } from 'fs';
+import { Data, parse, stringify } from "envfile";
+import { promises as fs } from "fs";
 
-const getLocalSecrets = async () => {
-    const secretsFile = await fs.readFile('./.secrets', { encoding: 'utf-8' });
-    return parse(secretsFile);
-}
-
-const writeLocalSecrets = async (secrets: Data) => {
-    const text = stringify(secrets);
-    await fs.writeFile('./.secrets', text);
+export interface SecretsManager {
+  get(name: string): Promise<string>;
+  set(name: string, value: string): Promise<void>;
 }
 
 let cache: Record<string, string> = {};
-export default {
-    async get(name: string) {
-        if (cache[name] != null) {
-            cache[name];
-        }
-        
-        if (process.env.NODE_ENV === 'prod') {
-            const value = await getParameter(`/${process.env.STAGE}/${name}`, true);
-            cache[name] = value;
-            return value;
-        } else {
-            const cache = await getLocalSecrets();
-            return cache[name];
-        }
-    },
 
-    async set(name: string, value: string) {
-        if (process.env.NODE_ENV === 'prod') {
-            await putParameter(`/${process.env.STAGE}/${name}`, value, true);
-        } else {
-            const localSecrets = await getLocalSecrets();
-            localSecrets[name] = value;
-            await writeLocalSecrets(localSecrets);
-        }
+class LocalSecretsManager implements SecretsManager {
+  async fillCache() {
+    if (Object.keys(cache).length === 0) {
+      const secretsFile = await fs.readFile("./.secrets", {
+        encoding: "utf-8",
+      });
+      cache = parse(secretsFile);
     }
+  }
+
+  async get(name: string) {
+    await this.fillCache?.();
+    return cache[name];
+  }
+
+  async set(name: string, value: string) {
+    await this.fillCache?.();
+    cache[name] = value;
+    await fs.writeFile("./.secrets", stringify(cache));
+  }
 }
+
+class ParameterStoreSecretsManager implements SecretsManager {
+  stage: string;
+
+  constructor(stage?: string) {
+    this.stage = stage ?? (process.env.STAGE as string);
+  }
+
+  async get(name: string) {
+    if (cache[name] != null) {
+      return cache[name];
+    }
+
+    const value = await getParameter(`/${this.stage}/${name}`, true);
+    cache[name] = value;
+    return value;
+  }
+
+  async set(name: string, value: string) {
+    cache[name] = value;
+    await putParameter(`/${this.stage}/${name}`, value, true);
+  }
+}
+
+export const getSecretsManagerForStage = (stage: string) => {
+  return stage === "local"
+    ? new LocalSecretsManager()
+    : new ParameterStoreSecretsManager(stage);
+};

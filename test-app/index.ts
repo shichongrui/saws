@@ -1,6 +1,6 @@
 // graphql.js
 
-import { SawsAPI, gql, Secrets } from 'saws';
+import { SawsAPI, gql, secrets } from 'saws';
 
 // Construct a schema, using GraphQL schema language
 export const typeDefs = gql`
@@ -25,7 +25,7 @@ const api = new SawsAPI({
     resolvers: {
       Query: {
         hello: async () => {
-          const secret = await Secrets.get('test');
+          const secret = await secrets.get('test');
           return 'Hello world! ' + secret;
         },
         allUsers: (_, __, { db }) => db.user.findMany(),

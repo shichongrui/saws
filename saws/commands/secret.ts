@@ -1,7 +1,7 @@
 import prompt from 'prompt';
-import { Secrets } from '..';
+import { getSecretsManagerForStage } from '../src/secrets';
 
-export async function secret() {
+export async function secret(stage: string = 'local') {
     prompt.start();
 
     prompt.message = '';
@@ -23,5 +23,6 @@ export async function secret() {
         }
     });
 
-    await Secrets.set(name.toString(), value.toString());
+    const secretsManager = getSecretsManagerForStage(stage);
+    await secretsManager.set(name.toString(), value.toString());
 }
