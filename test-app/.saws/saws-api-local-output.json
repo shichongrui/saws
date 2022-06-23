@@ -3,5 +3,10 @@
   "postgresHost": "localhost",
   "postgresPort": "5432",
   "postgresUsername": "postgres",
-  "graphqlEndpoint": "http://localhost:8000"
+  "graphqlEndpoint": "http://localhost:8000",
+  "userPoolId": "local_2izd0rL4",
+  "userPoolName": "test-app_local_users",
+  "userPoolClientId": "32tue89rv8505x1zltwjzue4g",
+  "userPoolClientName": "test-app_local_users_client",
+  "devUserEmail": "dev@test-app.com"
 }

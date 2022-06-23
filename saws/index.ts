@@ -3,7 +3,7 @@ import { ApolloServer } from "apollo-server-lambda";
 import { Handler } from "aws-lambda";
 import { PrismaClient } from ".prisma/client";
 import { getParameter } from "./src/aws/ssm";
-import { getSecretsManagerForStage } from './src/secrets';
+import { getSecretsManagerForStage } from "./src/secrets";
 import { getDBPassword } from "./src/utils/get-db-parameters";
 
 type SawsAPIConstructor = {
@@ -36,8 +36,8 @@ export class SawsAPI {
             datasources: {
               db: {
                 url: `postgres://${DATABASE_USERNAME}:${dbPassword}@${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_NAME}`,
-              }
-            }
+              },
+            },
           });
         }
 

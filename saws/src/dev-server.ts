@@ -1,16 +1,18 @@
 import http from "http";
+import { Handler } from "aws-lambda";
+import jwksClient from 'jwks-rsa';
+import jwt, { GetPublicKeyOrSecret } from 'jsonwebtoken';
 import { graphiqlTemplate } from "../templates/graphiql.template";
-import { Handler } from 'aws-lambda';
 
 const setDBEnvironment = () => {
   process.env = {
     ...process.env,
-    DATABASE_USERNAME: 'postgres',
-    DATABASE_HOST: 'localhost',
-    DATABASE_PORT: '5432',
-    DATABASE_NAME: 'postgres',
+    DATABASE_USERNAME: "postgres",
+    DATABASE_HOST: "localhost",
+    DATABASE_PORT: "5432",
+    DATABASE_NAME: "postgres",
   };
-}
+};
 
 const collectBody = async (req: http.IncomingMessage): Promise<string> => {
   return new Promise((resolve) => {
@@ -33,46 +35,78 @@ export type HandlerRef = {
   current?: Handler<any, any>;
 };
 
-export const startDevServer = (handlerRef: HandlerRef) => {
+export const startDevServer = async (
+  handlerRef: HandlerRef,
+  userPoolId: string,
+  accessToken: string
+) => {
+  const client = jwksClient({
+    jwksUri: `http://localhost:9229/${userPoolId}/.well-known/jwks.json`
+  });
+  const getJwksKey: GetPublicKeyOrSecret = (header, callback) => {
+    client.getSigningKey(header.kid, (_, key) => {
+      callback(null, key?.getPublicKey());
+    });
+  }
+
   return new Promise((resolve) => {
     setDBEnvironment();
     const server = http.createServer(async (req, res) => {
       if (req.method === "GET" && req.url === "/graphiql") {
         const html = graphiqlTemplate({
-          graphqlServerUrl: 'http://localhost:8000',
+          graphqlServerUrl: "http://localhost:8000",
+          accessToken,
         });
         res.writeHead(200, { "Content-Type": "text/html" });
         res.end(html);
         return;
       }
 
-      const body = await collectBody(req);
+      try {
+        const authToken =
+          req.headers.authorization?.replace("Bearer ", "") ?? "";
 
-      const context = {
-        callbackWaitsForEmptyEventLoop: true,
-        functionName: 'saws-api',
-        functionVersion: '1',
-        invokedFunctionArn: 'aws:local:function',
-        memoryLimitInMB: '128',
-        awsRequestId: '1234',
-        logGroupName: 'asdf',
-        logStreamName: 'asdf',
-        getRemainingTimeInMillis: () => 1234,
-        done: () => {},
-        fail: () => {},
-        succeed: () => {},
+        const payload = await new Promise((resolve, reject) => {
+          jwt.verify(authToken, getJwksKey, {}, (err, decoded) => {
+            if (err) return reject(err);
+            resolve(decoded);
+          });
+        });
+
+        const body = await collectBody(req);
+
+        const context = {
+          callbackWaitsForEmptyEventLoop: true,
+          functionName: "saws-api",
+          functionVersion: "1",
+          invokedFunctionArn: "aws:local:function",
+          memoryLimitInMB: "128",
+          awsRequestId: "1234",
+          logGroupName: "asdf",
+          logStreamName: "asdf",
+          getRemainingTimeInMillis: () => 1234,
+          done: () => {},
+          fail: () => {},
+          succeed: () => {},
+        };
+        const results = await handlerRef.current?.(
+          {
+            httpMethod: req.method,
+            path: req.url,
+            headers: {
+              "content-type": "application/json",
+            },
+            requestContext: {},
+            body,
+          },
+          context,
+          () => {}
+        );
+        res.writeHead(results.statusCode, results.multiValueHeaders);
+        res.end(results.body);
+      } catch (err) {
+        console.log("User is not authenticated", err);
       }
-      const results = await handlerRef.current?.({
-        httpMethod: req.method,
-        path: req.url,
-        headers: {
-          "content-type": "application/json",
-        },
-        requestContext: {},
-        body,
-      }, context, () => {});
-      res.writeHead(results.statusCode, results.multiValueHeaders);
-      res.end(results.body);
     });
 
     server.listen(8000, "0.0.0.0", () => {

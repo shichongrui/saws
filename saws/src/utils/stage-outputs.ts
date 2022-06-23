@@ -1,5 +1,5 @@
 import { promises as fs } from "fs";
-import path from 'path';
+import path from "path";
 import { SAWS_DIR } from "./constants";
 
 export type Outputs = {
@@ -8,26 +8,38 @@ export type Outputs = {
   postgresDBName: string;
   postgresUsername: string;
   graphqlEndpoint: string;
+  userPoolName: string;
+  userPoolId: string;
+  userPoolClientName: string;
+  userPoolClientId: string;
+  devUserEmail?: string;
 };
 
 export const getStageOutputs = async (stage: string): Promise<Outputs> => {
   const outputPath = path.resolve(SAWS_DIR, `saws-api-${stage}-output.json`);
   try {
-    await fs.stat(outputPath)
-    const outputsText = await fs.readFile(outputPath, { encoding: 'utf-8' });
+    await fs.stat(outputPath);
+    const outputsText = await fs.readFile(outputPath, { encoding: "utf-8" });
     return JSON.parse(outputsText);
   } catch (err) {
     return {
-      postgresDBName: '',
-      postgresHost: '',
-      postgresPort: '',
-      postgresUsername: '',
-      graphqlEndpoint: '',
+      postgresDBName: "",
+      postgresHost: "",
+      postgresPort: "",
+      postgresUsername: "",
+      graphqlEndpoint: "",
+      userPoolName: "",
+      userPoolId: "",
+      userPoolClientName: "",
+      userPoolClientId: "",
     };
   }
-}
+};
 
-export const writeStageOutputs = async (newOutputs: Partial<Outputs>, stage: string) => {
+export const writeStageOutputs = async (
+  newOutputs: Partial<Outputs>,
+  stage: string
+) => {
   const currentOutputs = await getStageOutputs(stage);
 
   // write outputs

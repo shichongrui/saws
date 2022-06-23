@@ -1,3 +1,5 @@
 node_modules
 .saws/postgres
+.saws/cognito
+.saws/saws-api-local-output.json
 .secrets

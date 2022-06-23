@@ -11,6 +11,7 @@ export const startGraphiql = async (stage: string) => {
     if (req.method === "GET" && req.url === "/graphiql") {
       const html = graphiqlTemplate({
         graphqlServerUrl: graphqlEndpoint,
+        accessToken: 'TODO',
       });
       res.writeHead(200, { "Content-Type": "text/html" });
       res.end(html);

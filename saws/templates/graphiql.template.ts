@@ -1,10 +1,12 @@
 type GraphiqlTemplateParameters = {
-  graphqlServerUrl: string
-}
+  graphqlServerUrl: string;
+  accessToken: string;
+};
 
 export const graphiqlTemplate = ({
-  graphqlServerUrl
-}: GraphiqlTemplateParameters) => /* html */`
+  graphqlServerUrl,
+  accessToken,
+}: GraphiqlTemplateParameters) => /* html */ `
 <!--
  *  Copyright (c) 2021 GraphQL Contributors
  *  All rights reserved.
@@ -65,6 +67,7 @@ export const graphiqlTemplate = ({
           headers: {
             Accept: "application/json",
             "Content-Type": "application/json",
+            "Authorization": "Bearer ${accessToken}"
           },
           body: JSON.stringify(graphQLParams),
           credentials: "omit",
@@ -85,4 +88,4 @@ export const graphiqlTemplate = ({
     </script>
   </body>
 </html>
-`
+`;

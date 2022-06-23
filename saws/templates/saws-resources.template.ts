@@ -1,10 +1,10 @@
 type SawsResourcesTemplateParameters = {
-  bucketName: string
+  bucketName: string;
 };
 
 export default ({
   bucketName,
-}: SawsResourcesTemplateParameters) => /* json */`{
+}: SawsResourcesTemplateParameters) => /* json */ `{
   "AWSTemplateFormatVersion": "2010-09-09",
   "Description": "AWS Cloudformation for resources required by the SAWS framework",
   "Resources": {

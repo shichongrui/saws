@@ -4,13 +4,14 @@
   "description": "",
   "main": "index.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "prettier:fix": "prettier --write ."
   },
   "bin": "./bin/saws.ts",
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@aws-sdk/client-cloudformation": "^3.100.0",
+    "@aws-sdk/client-cognito-identity-provider": "^3.112.0",
     "@aws-sdk/client-ec2": "^3.100.0",
     "@aws-sdk/client-s3": "^3.100.0",
     "@aws-sdk/client-ssm": "^3.100.0",
@@ -22,6 +23,8 @@
     "envfile": "^6.17.0",
     "esbuild": "^0.14.39",
     "graphql": "^16.5.0",
+    "jsonwebtoken": "^8.5.1",
+    "jwks-rsa": "^2.1.4",
     "node-watch": "^0.7.3",
     "pg": "^8.7.3",
     "prisma": "^3.14.0",

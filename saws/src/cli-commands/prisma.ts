@@ -70,7 +70,7 @@ export const startPrismaStudio = ({
   endpoint,
   port,
   dbName,
-  openBrowser = false
+  openBrowser = false,
 }: DBParameters & { openBrowser?: boolean }) => {
   return new Promise((resolve, reject) => {
     exec(

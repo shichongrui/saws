@@ -1,5 +1,6 @@
 import { getParameter, putParameter } from "./aws/ssm";
-import { Data, parse, stringify } from "envfile";
+import path from 'path';
+import { parse, stringify } from "envfile";
 import { promises as fs } from "fs";
 
 export interface SecretsManager {
@@ -12,7 +13,7 @@ let cache: Record<string, string> = {};
 class LocalSecretsManager implements SecretsManager {
   async fillCache() {
     if (Object.keys(cache).length === 0) {
-      const secretsFile = await fs.readFile("./.secrets", {
+      const secretsFile = await fs.readFile(path.resolve("./.secrets"), {
         encoding: "utf-8",
       });
       cache = parse(secretsFile);
@@ -21,6 +22,11 @@ class LocalSecretsManager implements SecretsManager {
 
   async get(name: string) {
     await this.fillCache?.();
+    if (cache[name] == null) {
+      const error = new Error('Missing');
+      error.name = 'ParameterNotFound';
+      throw error;
+    }
     return cache[name];
   }
 

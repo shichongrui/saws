@@ -81,11 +81,14 @@ export async function deploy(entrypoint: string, stage: string) {
   // write outputs
   type StackOutputKey = "postgresHost" | "postgresPort" | "graphqlEndpoint";
   const outputs = {
-    ...results?.Stacks?.[0].Outputs?.reduce<Pick<Outputs, StackOutputKey>>((acc, output) => {
-      const key = output.OutputKey as StackOutputKey;
-      acc[key] = output.OutputValue!;
-      return acc;
-    }, { postgresHost: '', postgresPort: '', graphqlEndpoint: '' }),
+    ...results?.Stacks?.[0].Outputs?.reduce<Pick<Outputs, StackOutputKey>>(
+      (acc, output) => {
+        const key = output.OutputKey as StackOutputKey;
+        acc[key] = output.OutputValue!;
+        return acc;
+      },
+      { postgresHost: "", postgresPort: "", graphqlEndpoint: "" }
+    ),
     postgresDBName: dbName,
     postgresUsername: dbUsername,
   };

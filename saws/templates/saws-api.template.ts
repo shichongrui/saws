@@ -68,7 +68,9 @@ export const sawsApiTemplate = ({
                 },
                 "Path": "/",
                 "Policies": [{
-                    "PolicyName": "AWSLambda${uppercase(stage)}BasicExecutionRole",
+                    "PolicyName": "AWSLambda${uppercase(
+                      stage
+                    )}BasicExecutionRole",
                     "PolicyDocument": {
                         "Version": "2012-10-17",
                         "Statement": [{
