@@ -12,8 +12,8 @@ export const getCognitoParameters = async (
 
   const projectName = getProjectName();
   return {
-    poolName: `${projectName}_${stage}_users`,
-    clientName: `${projectName}_${stage}_users_client`,
+    poolName: `${projectName}-${stage}-users`,
+    clientName: `${projectName}-${stage}-users-client`,
     devUserEmail: `dev@${projectName}.com`,
     devUserPassword: password,
   };

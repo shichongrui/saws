@@ -13,6 +13,7 @@ export const typeDefs = gql`
   type Query {
     hello: String
     allUsers: [User]!
+    currentUser: String
   }
 
   type Mutation {
@@ -29,6 +30,7 @@ const api = new SawsAPI({
           return 'Hello world! ' + secret;
         },
         allUsers: (_, __, { db }) => db.user.findMany(),
+        currentUser: (_, __, { user }) => user.userId
       },
       Mutation: {
         createUser: async (_: unknown, { email, name }: { email: string, name?: string }, { db }) => {

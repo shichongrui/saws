@@ -15,6 +15,13 @@ export const startCognitoLocal = async () => {
     { echo: false }
   );
 
+  process.on("exit", () => {
+    dockerCommand("stop saws-cognito", { echo: false });
+  });
+  process.on("SIGINT", () => {
+    dockerCommand("stop saws-cognito", { echo: false });
+  });
+
   await retryUntil(async () => {
     try {
       await listUserPools();
@@ -23,13 +30,6 @@ export const startCognitoLocal = async () => {
       return false;
     }
   }, 1000);
-
-  process.on("exit", () => {
-    dockerCommand("stop saws-cognito", { echo: false });
-  });
-  process.on("SIGINT", () => {
-    dockerCommand("stop saws-cognito", { echo: false });
-  });
 
   return {
     cognitoEndpoint: "http://localhost:9229",

@@ -3,5 +3,9 @@
   "graphqlEndpoint": "https://b3zyzep3v5.execute-api.us-east-1.amazonaws.com/",
   "postgresPort": "5432",
   "postgresDBName": "test_app_prod",
-  "postgresUsername": "test_app_prod"
+  "postgresUsername": "test_app_prod",
+  "userPoolId": "us-east-1_N5o90nlJy",
+  "userPoolClientId": "55v9uj8m1k1rksvnpo4d6i5uee",
+  "userPoolName": "test-app-prod-users",
+  "userPoolClientName": "test-app-prod-users-client"
 }

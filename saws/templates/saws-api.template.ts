@@ -39,6 +39,19 @@ export const sawsApiTemplate = ({
                 "Target": { "Fn::GetAtt": ["SawsApiLambda", "Arn"] }
             }
         },
+        "SawsApiAuthorizer": {
+            "Type": "AWS::ApiGatewayV2::Authorizer",
+            "Properties": {
+                "ApiId": { "Ref": "SawsApiGateway" },
+                "AuthorizerType": "JWT",
+                "IdentitySource": ["$request.header.Authorization"],
+                "Name": "${projectName}-${stage}-api-authorizer",
+                "JwtConfiguration": {
+                    "Audience": [{ "Ref": "SawsUserPoolClient" }],
+                    "Issuer": { "Fn::Sub": "https://cognito-idp.\${AWS::Region}.amazonaws.com/\${SawsUserPool}" }
+                }
+            }
+        },
         "SawsApiGatewayLambdaPermission": {
             "Type": "AWS::Lambda::Permission",
             "Properties": {
@@ -161,6 +174,27 @@ export const sawsApiTemplate = ({
                 "StorageEncrypted": true,
                 "VPCSecurityGroups": [{ "Ref": "SawsPostgresSecurityGroup" }]
             }
+        },
+        "SawsUserPool": {
+            "Type": "AWS::Cognito::UserPool",
+            "Properties": {
+                "UserPoolName": "${projectName}-${stage}-users",
+                "UsernameAttributes": ["email"],
+                "AutoVerifiedAttributes": ["email"],
+            }
+        },
+        "SawsUserPoolClient": {
+            "Type": "AWS::Cognito::UserPoolClient",
+            "Properties": {
+                "ClientName": "${projectName}-${stage}-users-client",
+                "UserPoolId": { "Ref": "SawsUserPool" },
+                "ExplicitAuthFlows": [
+                    "ALLOW_ADMIN_USER_PASSWORD_AUTH",
+                    "ALLOW_USER_SRP_AUTH",
+                    "ALLOW_REFRESH_TOKEN_AUTH"
+                ],
+                "GenerateSecret": false,
+            }
         }
     },
     "Outputs": {
@@ -181,6 +215,26 @@ export const sawsApiTemplate = ({
             "Value": {
                 "Fn::GetAtt": ["SawsPostgresInstance", "Endpoint.Port"]
             }
+        },
+        "userPoolId": {
+            "Description": "Cognito user pool id",
+            "Value": {
+                "Ref": "SawsUserPool"
+            }
+        },
+        "userPoolName": {
+            "Description": "Cognito user pool name",
+            "Value": "${projectName}-${stage}-users"
+        },
+        "userPoolClientId": {
+            "Description": "Cognito user pool client id",
+            "Value": {
+                "Ref": "SawsUserPoolClient"
+            }
+        },
+        "userPoolClientName": {
+            "Description": "Cognito user pool client name",
+            "Value": "${projectName}-${stage}-users-client"
         }
     }
 }`;

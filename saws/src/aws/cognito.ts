@@ -12,11 +12,11 @@ import {
 
 // This client will always be used locally
 const client = new CognitoIdentityProviderClient({
-  endpoint: "http://localhost:9229",
+  // endpoint: "http://localhost:9229",
 });
 
 export const listUserPools = async () => {
-  const command = new ListUserPoolsCommand({ MaxResults: 1000 });
+  const command = new ListUserPoolsCommand({ MaxResults: 60 });
 
   const results = await client.send(command);
   return results;

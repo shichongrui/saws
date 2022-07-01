@@ -1,5 +1,4 @@
 import path from "path";
-import { promises as fs } from "fs";
 import { build } from "../src/build";
 import { deployStack } from "../src/aws/cloudformation";
 import { createCacheDir, createSawsDir } from "../src/utils/create-directories";
@@ -79,7 +78,7 @@ export async function deploy(entrypoint: string, stage: string) {
   );
 
   // write outputs
-  type StackOutputKey = "postgresHost" | "postgresPort" | "graphqlEndpoint";
+  type StackOutputKey = "postgresHost" | "postgresPort" | "graphqlEndpoint" | "userPoolId" | "userPoolClientId" | "userPoolName" | "userPoolClientName";
   const outputs = {
     ...results?.Stacks?.[0].Outputs?.reduce<Pick<Outputs, StackOutputKey>>(
       (acc, output) => {
@@ -87,7 +86,7 @@ export async function deploy(entrypoint: string, stage: string) {
         acc[key] = output.OutputValue!;
         return acc;
       },
-      { postgresHost: "", postgresPort: "", graphqlEndpoint: "" }
+      { postgresHost: "", postgresPort: "", graphqlEndpoint: "", userPoolId: "", userPoolClientId: "", userPoolName: "", userPoolClientName: "" }
     ),
     postgresDBName: dbName,
     postgresUsername: dbUsername,

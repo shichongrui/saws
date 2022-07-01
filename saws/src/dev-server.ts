@@ -66,7 +66,7 @@ export const startDevServer = async (
         const authToken =
           req.headers.authorization?.replace("Bearer ", "") ?? "";
 
-        const payload = await new Promise((resolve, reject) => {
+        await new Promise((resolve, reject) => {
           jwt.verify(authToken, getJwksKey, {}, (err, decoded) => {
             if (err) return reject(err);
             resolve(decoded);
@@ -95,6 +95,7 @@ export const startDevServer = async (
             path: req.url,
             headers: {
               "content-type": "application/json",
+              "Authorization": authToken,
             },
             requestContext: {},
             body,

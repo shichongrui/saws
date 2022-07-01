@@ -1,22 +1,29 @@
 import { IExecutableSchemaDefinition } from "@graphql-tools/schema";
 import { ApolloServer } from "apollo-server-lambda";
-import { Handler } from "aws-lambda";
+import { APIGatewayProxyHandler } from "aws-lambda";
+import jwt from 'jsonwebtoken';
 import { PrismaClient } from ".prisma/client";
-import { getParameter } from "./src/aws/ssm";
 import { getSecretsManagerForStage } from "./src/secrets";
 import { getDBPassword } from "./src/utils/get-db-parameters";
 
+type SawsApolloContext = {
+  db: PrismaClient;
+  user: { userId: string };
+}
+
 type SawsAPIConstructor = {
-  typeDefs: IExecutableSchemaDefinition<{ db: PrismaClient }>["typeDefs"];
-  resolvers: IExecutableSchemaDefinition<{ db: PrismaClient }>["resolvers"];
+  typeDefs: IExecutableSchemaDefinition<SawsApolloContext>["typeDefs"];
+  resolvers: IExecutableSchemaDefinition<SawsApolloContext>["resolvers"];
 };
 
 let db: PrismaClient | null = null;
 
 export class SawsAPI {
   apolloServer: ApolloServer;
+  user: { userId: string; };
 
   constructor({ typeDefs, resolvers }: SawsAPIConstructor) {
+    this.user = { userId: '' };
     this.apolloServer = new ApolloServer({
       typeDefs,
       resolvers,
@@ -43,14 +50,18 @@ export class SawsAPI {
 
         return {
           db,
+          user: this.user,
         };
       },
     });
   }
 
-  createLambdaHandler = (): Handler<any, any> => {
+  createLambdaHandler = (): APIGatewayProxyHandler => {
     const handler = this.apolloServer.createHandler();
     return async (event, context, callback) => {
+      const token = event.headers.authorization;
+      const payload = jwt.decode(token?.replace('Bearer ', '') ?? '');
+      this.user.userId = payload?.sub as string;
       context.callbackWaitsForEmptyEventLoop = false;
       const results = await handler(event, context, callback);
       return results;
