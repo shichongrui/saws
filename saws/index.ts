@@ -59,12 +59,21 @@ export class SawsAPI {
   createLambdaHandler = (): APIGatewayProxyHandler => {
     const handler = this.apolloServer.createHandler();
     return async (event, context, callback) => {
+      console.log(event, context);
       const token = event.headers.authorization;
       const payload = jwt.decode(token?.replace('Bearer ', '') ?? '');
       this.user.userId = payload?.sub as string;
       context.callbackWaitsForEmptyEventLoop = false;
-      const results = await handler(event, context, callback);
-      return results;
+      try {
+        const results = await handler(event, context, (...args) => {
+          console.log(...args);
+          callback(...args);
+        });
+        return results;
+      } catch (err) {
+        console.error(err);
+        throw err;
+      }
     };
   };
 }

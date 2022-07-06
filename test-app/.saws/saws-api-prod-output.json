@@ -1,11 +1,11 @@
 {
-  "postgresHost": "tsmtmhj73500b1.c6a58olddfxa.us-east-1.rds.amazonaws.com",
-  "graphqlEndpoint": "https://b3zyzep3v5.execute-api.us-east-1.amazonaws.com/",
+  "postgresHost": "tsmvrtfb5sutui.c6a58olddfxa.us-east-1.rds.amazonaws.com",
+  "graphqlEndpoint": "https://cszf8d6gh9.execute-api.us-east-1.amazonaws.com/prod/",
   "postgresPort": "5432",
   "postgresDBName": "test_app_prod",
   "postgresUsername": "test_app_prod",
-  "userPoolId": "us-east-1_N5o90nlJy",
-  "userPoolClientId": "55v9uj8m1k1rksvnpo4d6i5uee",
+  "userPoolId": "us-east-1_NgTG5u32i",
+  "userPoolClientId": "3ta4a8chn478kmdo2qak169bd2",
   "userPoolName": "test-app-prod-users",
   "userPoolClientName": "test-app-prod-users-client"
 }

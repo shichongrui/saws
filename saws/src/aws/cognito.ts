@@ -11,14 +11,19 @@ import {
 } from "@aws-sdk/client-cognito-identity-provider";
 
 // This client will always be used locally
-const client = new CognitoIdentityProviderClient({
-  // endpoint: "http://localhost:9229",
-});
+let client: CognitoIdentityProviderClient | null;
+const getClient = (stage: string = (process.env.STAGE as string)) => {
+  if (client != null) return client;
+  client = new CognitoIdentityProviderClient({
+    endpoint: stage === 'local' ? "http://localhost:9229" : undefined,
+  });
+  return client;
+}
 
 export const listUserPools = async () => {
   const command = new ListUserPoolsCommand({ MaxResults: 60 });
 
-  const results = await client.send(command);
+  const results = await getClient().send(command);
   return results;
 };
 
@@ -27,7 +32,7 @@ export const listUserPoolClients = async (userPoolId: string) => {
     UserPoolId: userPoolId
   });
 
-  const results = await client.send(command);
+  const results = await getClient().send(command);
   return results;
 };
 
@@ -37,7 +42,7 @@ export const createUserPool = async (name: string) => {
     UsernameAttributes: ["email"],
     AutoVerifiedAttributes: ["email"],
   });
-  const results = await client.send(command);
+  const results = await getClient().send(command);
   return results;
 };
 
@@ -51,7 +56,7 @@ export const createUserPoolClient = async (
     ExplicitAuthFlows: ["ALLOW_USER_SRP_AUTH", "ALLOW_REFRESH_TOKEN_AUTH"],
     GenerateSecret: false,
   });
-  const results = await client.send(command);
+  const results = await getClient().send(command);
   return results;
 };
 
@@ -69,7 +74,7 @@ export const signUpUser = async (
       Value: username
     }],
   });
-  const results = await client.send(command);
+  const results = await getClient().send(command);
   return results;
 }
 
@@ -81,7 +86,7 @@ export const confirmUserSignUp = async (
     UserPoolId: userPoolId,
     Username: username,
   });
-  const results = await client.send(command);
+  const results = await getClient().send(command);
   return results;
 }
 
@@ -93,7 +98,7 @@ export const getUser = async (
     UserPoolId: userPoolId,
     Username: username,
   });
-  const results = await client.send(command);
+  const results = await getClient().send(command);
   return results;
 }
 
@@ -113,6 +118,6 @@ export const initiateAuth = async (
     }
   });
 
-  const results = await client.send(command);
+  const results = await getClient().send(command);
   return results;
 }

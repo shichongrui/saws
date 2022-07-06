@@ -35,8 +35,7 @@ export const sawsApiTemplate = ({
                     "AllowMethods": ["*"],
                     "AllowOrigins": ["*"],
                     "AllowHeaders": ["*"]
-                },
-                "Target": { "Fn::GetAtt": ["SawsApiLambda", "Arn"] }
+                }
             }
         },
         "SawsApiAuthorizer": {
@@ -50,6 +49,66 @@ export const sawsApiTemplate = ({
                     "Audience": [{ "Ref": "SawsUserPoolClient" }],
                     "Issuer": { "Fn::Sub": "https://cognito-idp.\${AWS::Region}.amazonaws.com/\${SawsUserPool}" }
                 }
+            }
+        },
+        "SawsApiLambdaIntegration": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+                "ApiId": { "Ref": "SawsApiGateway" },
+                "IntegrationType": "AWS_PROXY",
+                "IntegrationUri": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "arn:",
+                            {
+                                "Ref": "AWS::Partition"
+                            },
+                            ":apigateway:",
+                            {
+                                "Ref": "AWS::Region"
+                            },
+                            ":lambda:path/2015-03-31/functions/",
+                            {
+                                "Fn::GetAtt": [
+                                    "SawsApiLambda",
+                                    "Arn"
+                                ]
+                            },
+                            "/invocations"
+                        ]
+                    ]
+                },
+                "IntegrationMethod": "POST",
+                "PayloadFormatVersion": "2.0"
+            }
+        },
+        "SawsApiRoute": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+                "ApiId": { "Ref": "SawsApiGateway" },
+                "AuthorizationType": "JWT",
+                "AuthorizerId": { "Ref": "SawsApiAuthorizer" },
+                "RouteKey": "POST /",
+                "Target": {
+                    "Fn::Join": [
+                        "/",
+                        [
+                            "integrations",
+                            {
+                                "Ref": "SawsApiLambdaIntegration"
+                            }
+                        ]
+                    ]
+                }
+            }
+        },
+        "SawsApiGatewayStage": {
+            "Type": "AWS::ApiGatewayV2::Stage",
+            "Properties": {
+                "ApiId": { "Ref": "SawsApiGateway" },
+                "StageName": "${stage}",
+                "AutoDeploy": true
             }
         },
         "SawsApiGatewayLambdaPermission": {
@@ -141,6 +200,26 @@ export const sawsApiTemplate = ({
                 "Timeout": 30
             }
         },
+        "SawsApiGatewayInvokePermissions": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+                "FunctionName": { "Ref": "SawsApiLambda" },
+                "Action": "lambda:InvokeFunction",
+                "Principal": "apigateway.amazonaws.com",
+                "SourceArn": { 
+                    "Fn::Join": [
+                        "", 
+                        [
+                            "arn:aws:execute-api:",
+                            { "Ref": "AWS::Region" }, ":",
+                            { "Ref": "AWS::AccountId" }, ":",
+                            { "Ref": "SawsApiGateway" },
+                            "/*/*/*"
+                        ]
+                    ]
+                }
+            }
+        },
         "SawsPostgresSecurityGroup": {
             "Type": "AWS::EC2::SecurityGroup",
             "Properties": {
@@ -172,6 +251,7 @@ export const sawsApiTemplate = ({
                 "MasterUserPassword": "{{resolve:ssm-secure:/${stage}/${dbPasswordParameterName}:1}}",
                 "PubliclyAccessible": true,
                 "StorageEncrypted": true,
+                "StorageType": "gp2",
                 "VPCSecurityGroups": [{ "Ref": "SawsPostgresSecurityGroup" }]
             }
         },
@@ -201,7 +281,7 @@ export const sawsApiTemplate = ({
         "graphqlEndpoint": {
             "Description": "ApiGateway Url",
             "Value": {
-                "Fn::Sub": "https://\${SawsApiGateway}.execute-api.\${AWS::Region}.amazonaws.com/"
+                "Fn::Sub": "https://\${SawsApiGateway}.execute-api.\${AWS::Region}.amazonaws.com/${stage}/"
             }
         },
         "postgresHost": {

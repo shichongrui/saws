@@ -67,7 +67,7 @@ export const graphiqlTemplate = ({
           headers: {
             Accept: "application/json",
             "Content-Type": "application/json",
-            "Authorization": "Bearer ${accessToken}"
+            "Authorization": "${accessToken}"
           },
           body: JSON.stringify(graphQLParams),
           credentials: "omit",
