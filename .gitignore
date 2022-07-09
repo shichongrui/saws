@@ -1,0 +1,6 @@
+**/node_modules
+test-app/.saws/postgres
+test-app/.saws/cognito
+test-app/.saws/saws-api-local-output.json
+test-app/.saws/cache
+test-app/.secrets
