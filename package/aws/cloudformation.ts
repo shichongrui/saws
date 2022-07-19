@@ -6,10 +6,11 @@ import {
   UpdateStackCommand,
   Capability,
   DescribeStacksCommandOutput,
+  DeleteStackCommand,
 } from "@aws-sdk/client-cloudformation";
 import retryUntil from "../utils/retry-until";
 
-export class Cloudformation {
+export class CloudFormation {
   client: CloudFormationClient
 
   constructor() {
@@ -40,6 +41,8 @@ export class Cloudformation {
         StackStatus.ROLLBACK_FAILED,
         StackStatus.UPDATE_ROLLBACK_COMPLETE,
         StackStatus.UPDATE_ROLLBACK_FAILED,
+        StackStatus.DELETE_COMPLETE,
+        StackStatus.DELETE_FAILED,
       ].includes(results.Stacks?.[0].StackStatus as StackStatus);
     }, 2000);
   
@@ -54,6 +57,9 @@ export class Cloudformation {
       case StackStatus.IMPORT_COMPLETE:
         action = "import";
         break;
+      case StackStatus.DELETE_COMPLETE:
+        action = "delete";
+        break;
   
       case StackStatus.ROLLBACK_COMPLETE:
       case StackStatus.UPDATE_ROLLBACK_COMPLETE:
@@ -63,6 +69,7 @@ export class Cloudformation {
       case StackStatus.IMPORT_ROLLBACK_FAILED:
       case StackStatus.ROLLBACK_FAILED:
       case StackStatus.UPDATE_ROLLBACK_FAILED:
+      case StackStatus.DELETE_FAILED:
         console.log("Stack action failed");
         return results;
     }
@@ -125,12 +132,8 @@ export class Cloudformation {
         err.Code === "ValidationError" &&
         err.message === "No updates are to be performed."
       )
-        return null;
+        return this.describeStack(stackName);
       throw err;
     }
   };
 }
-
-
-
-

@@ -1,3 +1,4 @@
+import { getProjectName } from "../../utils/get-project-name";
 import { uppercase } from "../../utils/uppercase";
 
 type SawsApiTemplateProperties = {
@@ -7,21 +8,19 @@ type SawsApiTemplateProperties = {
   codeS3Key: string;
   dbName: string;
   dbUsername: string;
-  dbPasswordParameterName: string;
-  vpcId: string;
   stage: string;
+  resourcesStackName: string;
 };
 
-export const sawsApiTemplate = ({
+export default ({
   moduleName,
   projectName,
   codeBucketName,
   codeS3Key,
   dbName,
   dbUsername,
-  dbPasswordParameterName,
-  vpcId,
   stage,
+  resourcesStackName,
 }: SawsApiTemplateProperties) => /* json */ `{
     "AWSTemplateFormatVersion": "2010-09-09",
     "Description": "AWS Cloudformation for resources required by the SAWS framework",
@@ -46,8 +45,13 @@ export const sawsApiTemplate = ({
                 "IdentitySource": ["$request.header.Authorization"],
                 "Name": "${projectName}-${stage}-api-authorizer",
                 "JwtConfiguration": {
-                    "Audience": [{ "Ref": "SawsUserPoolClient" }],
-                    "Issuer": { "Fn::Sub": "https://cognito-idp.\${AWS::Region}.amazonaws.com/\${SawsUserPool}" }
+                    "Audience": [{ "Fn::ImportValue": "${resourcesStackName}-userPoolClientId" }],
+                    "Issuer": { "Fn::Sub": [
+                        "https://cognito-idp.\${AWS::Region}.amazonaws.com/\${userPoolId}",
+                        {
+                            "userPoolId": { "Fn::ImportValue": "${resourcesStackName}-userPoolId" }
+                        }
+                    ]}
                 }
             }
         },
@@ -167,18 +171,13 @@ export const sawsApiTemplate = ({
         },
         "SawsApiLambda": {
             "Type": "AWS::Lambda::Function",
-            "DependsOn": ["SawsPostgresInstance"],
             "Properties": {
                 "Environment": {
                     "Variables": {
                         "NODE_ENV": "prod",
                         "DATABASE_USERNAME": "${dbUsername}",
-                        "DATABASE_HOST": {
-                            "Fn::GetAtt": ["SawsPostgresInstance", "Endpoint.Address"]
-                        },
-                        "DATABASE_PORT": {
-                            "Fn::GetAtt": ["SawsPostgresInstance", "Endpoint.Port"]
-                        },
+                        "DATABASE_HOST": { "Fn::ImportValue": "${resourcesStackName}-postgresHost" },
+                        "DATABASE_PORT": { "Fn::ImportValue": "${resourcesStackName}-postgresPort" },
                         "DATABASE_NAME": "${dbName}",
                         "STAGE": "${stage}"
                     }
@@ -219,62 +218,6 @@ export const sawsApiTemplate = ({
                     ]
                 }
             }
-        },
-        "SawsPostgresSecurityGroup": {
-            "Type": "AWS::EC2::SecurityGroup",
-            "Properties": {
-                "GroupName": "Saws${uppercase(stage)}DBSecurityGroup",
-                "GroupDescription": "Security group for the SAWS Postgres instance",
-                "SecurityGroupIngress": [{
-                    "CidrIp": "0.0.0.0/0",
-                    "FromPort": "5432",
-                    "ToPort": "5432",
-                    "IpProtocol": "tcp"
-                }],
-                "SecurityGroupEgress": [{
-                    "CidrIp": "0.0.0.0/0",
-                    "FromPort": "-1",
-                    "ToPort": "-1",
-                    "IpProtocol": "-1"
-                }],
-                "VpcId": "${vpcId}"
-            }
-        },
-        "SawsPostgresInstance": {
-            "Type": "AWS::RDS::DBInstance",
-            "Properties": {
-                "AllocatedStorage": "20",
-                "DBInstanceClass": "db.t3.micro",
-                "DBName": "${dbName}",
-                "Engine": "postgres",
-                "MasterUsername": "${dbUsername}",
-                "MasterUserPassword": "{{resolve:ssm-secure:/${stage}/${dbPasswordParameterName}:1}}",
-                "PubliclyAccessible": true,
-                "StorageEncrypted": true,
-                "StorageType": "gp2",
-                "VPCSecurityGroups": [{ "Ref": "SawsPostgresSecurityGroup" }]
-            }
-        },
-        "SawsUserPool": {
-            "Type": "AWS::Cognito::UserPool",
-            "Properties": {
-                "UserPoolName": "${projectName}-${stage}-users",
-                "UsernameAttributes": ["email"],
-                "AutoVerifiedAttributes": ["email"],
-            }
-        },
-        "SawsUserPoolClient": {
-            "Type": "AWS::Cognito::UserPoolClient",
-            "Properties": {
-                "ClientName": "${projectName}-${stage}-users-client",
-                "UserPoolId": { "Ref": "SawsUserPool" },
-                "ExplicitAuthFlows": [
-                    "ALLOW_ADMIN_USER_PASSWORD_AUTH",
-                    "ALLOW_USER_SRP_AUTH",
-                    "ALLOW_REFRESH_TOKEN_AUTH"
-                ],
-                "GenerateSecret": false,
-            }
         }
     },
     "Outputs": {
@@ -283,38 +226,11 @@ export const sawsApiTemplate = ({
             "Value": {
                 "Fn::Sub": "https://\${SawsApiGateway}.execute-api.\${AWS::Region}.amazonaws.com/${stage}/"
             }
-        },
-        "postgresHost": {
-            "Description": "Connection URL for the DB",
-            "Value": {
-                "Fn::GetAtt": ["SawsPostgresInstance", "Endpoint.Address"]
-            }
-        },
-        "postgresPort": {
-            "Description": "Connection port for the DB",
-            "Value": {
-                "Fn::GetAtt": ["SawsPostgresInstance", "Endpoint.Port"]
-            }
-        },
-        "userPoolId": {
-            "Description": "Cognito user pool id",
-            "Value": {
-                "Ref": "SawsUserPool"
-            }
-        },
-        "userPoolName": {
-            "Description": "Cognito user pool name",
-            "Value": "${projectName}-${stage}-users"
-        },
-        "userPoolClientId": {
-            "Description": "Cognito user pool client id",
-            "Value": {
-                "Ref": "SawsUserPoolClient"
-            }
-        },
-        "userPoolClientName": {
-            "Description": "Cognito user pool client name",
-            "Value": "${projectName}-${stage}-users-client"
         }
     }
 }`;
+
+export const getStackName = (stage: string) => {
+    const projectName = getProjectName();
+    return `${projectName}-${stage}-saws-api`;
+}

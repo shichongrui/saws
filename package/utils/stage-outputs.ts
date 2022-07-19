@@ -51,4 +51,6 @@ export const writeStageOutputs = async (
     path.resolve(SAWS_DIR, `saws-api-${stage}-output.json`),
     JSON.stringify(outputs, null, 2)
   );
+
+  return outputs;
 };

@@ -3,6 +3,7 @@ import { Handler } from "aws-lambda";
 import jwksClient from 'jwks-rsa';
 import jwt, { GetPublicKeyOrSecret } from 'jsonwebtoken';
 import { graphiqlTemplate } from "./templates/graphiql.template";
+import collectHttpBody from "../utils/collect-http-body";
 
 const setDBEnvironment = () => {
   process.env = {
@@ -12,23 +13,6 @@ const setDBEnvironment = () => {
     DATABASE_PORT: "5432",
     DATABASE_NAME: "postgres",
   };
-};
-
-const collectBody = async (req: http.IncomingMessage): Promise<string> => {
-  return new Promise((resolve) => {
-    if (req.method !== "POST") {
-      resolve("");
-      return;
-    }
-    let body = "";
-    req.on("data", function (chunk) {
-      body += chunk;
-    });
-
-    req.on("end", function () {
-      resolve(body);
-    });
-  });
 };
 
 export type HandlerRef = {
@@ -73,7 +57,7 @@ export const startDevServer = async (
           });
         });
 
-        const body = await collectBody(req);
+        const body = await collectHttpBody(req);
 
         const context = {
           callbackWaitsForEmptyEventLoop: true,

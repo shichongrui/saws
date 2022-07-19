@@ -44,9 +44,5 @@ export default class API {
   };
 }
 
-process.on("uncaughtException", (err) => {
-  console.log("uncaught", err);
-});
-
 export * from "apollo-server-lambda";
 export * from "aws-lambda";

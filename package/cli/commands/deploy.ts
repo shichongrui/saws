@@ -1,13 +1,13 @@
 import path from "path";
 import { build } from "../build";
-import { Cloudformation } from "../../aws/cloudformation";
+import { CloudFormation } from "../../aws/cloudformation";
 import { S3 } from '../../aws/s3';
 import { EC2 } from '../../aws/ec2';
 import { createCacheDir, createSawsDir } from "../../utils/create-directories";
 import { getBuildPathsForEntrypoint } from "../../utils/get-build-paths";
-import sawsResourcesTemplate from "../templates/saws-resources.template";
+import sawsResourcesTemplate, { getStackName as getResourcesStackName } from "../templates/saws-resources.template";
+import sawsApiTemplate, { getStackName as getApiStackName } from "../templates/saws-api.template";
 import { DB_PASSWORD_PARAMETER_NAME } from "../../utils/constants";
-import { sawsApiTemplate } from "../templates/saws-api.template";
 import { prismaMigrate } from "../cli-commands/prisma";
 import { getProjectName } from "../../utils/get-project-name";
 import { buildCodeZip } from "../../utils/build-code-zip";
@@ -15,7 +15,7 @@ import { getDBParameters } from "../../utils/get-db-parameters";
 import { Outputs, writeStageOutputs } from "../../utils/stage-outputs";
 
 export async function deploy(entrypoint: string, stage: string) {
-  const cloudformationClient = new Cloudformation();
+  const cloudformationClient = new CloudFormation();
   const s3Client = new S3();
   const ec2Client = new EC2();
 
@@ -32,10 +32,22 @@ export async function deploy(entrypoint: string, stage: string) {
 
   // create S3 bucket if it does not exist
   console.log("Creating resources for SAWS");
-  await cloudformationClient.deployStack(
-    `${projectName}-${stage}-saws-resources`,
+  const defaultVpcId = await ec2Client.getDefaultVPCId();
+  const {
+    username: dbUsername,
+    name: dbName,
+    password: dbPassword,
+  } = await getDBParameters(stage);
+  const resourcesStackResults = await cloudformationClient.deployStack(
+    getResourcesStackName(stage),
     sawsResourcesTemplate({
       bucketName,
+      stage,
+      dbUsername,
+      dbName,
+      dbPasswordParameterName: DB_PASSWORD_PARAMETER_NAME,
+      vpcId: defaultVpcId,
+      projectName,
     })
   );
 
@@ -59,15 +71,9 @@ export async function deploy(entrypoint: string, stage: string) {
 
   // Create Lambda and API Gateway
   console.log("Creating api...");
-  const defaultVpcId = await ec2Client.getDefaultVPCId();
-  const {
-    username: dbUsername,
-    name: dbName,
-    password: dbPassword,
-  } = await getDBParameters(stage);
 
-  const results = await cloudformationClient.deployStack(
-    `${projectName}-${stage}-saws-api`,
+  const apiStackResults = await cloudformationClient.deployStack(
+    getApiStackName(stage),
     sawsApiTemplate({
       moduleName: path.parse(modulePath).name,
       projectName,
@@ -75,16 +81,19 @@ export async function deploy(entrypoint: string, stage: string) {
       codeS3Key: key,
       dbName: dbName,
       dbUsername: dbUsername,
-      dbPasswordParameterName: DB_PASSWORD_PARAMETER_NAME,
-      vpcId: defaultVpcId,
       stage,
+      resourcesStackName: getResourcesStackName(stage),
     })
   );
 
   // write outputs
   type StackOutputKey = "postgresHost" | "postgresPort" | "graphqlEndpoint" | "userPoolId" | "userPoolClientId" | "userPoolName" | "userPoolClientName";
+  const allOutputs = [
+    ...apiStackResults?.Stacks?.[0].Outputs ?? [],
+    ...resourcesStackResults?.Stacks?.[0].Outputs ?? [],
+  ];
   const outputs = {
-    ...results?.Stacks?.[0].Outputs?.reduce<Pick<Outputs, StackOutputKey>>(
+    ...allOutputs.reduce<Pick<Outputs, StackOutputKey>>(
       (acc, output) => {
         const key = output.OutputKey as StackOutputKey;
         acc[key] = output.OutputValue!;

@@ -1,52 +1,28 @@
-import { startDevServer } from "../dev-server";
 import { createCacheDir } from "../../utils/create-directories";
-import { startWatcher } from "../watcher";
 import { startPostgres } from "../cli-commands/postgres";
 import { startPrismaStudio } from "../cli-commands/prisma";
-import { getStageOutputs, writeStageOutputs } from "../../utils/stage-outputs";
+import { writeStageOutputs } from "../../utils/stage-outputs";
 import { startCognitoLocal } from "../cli-commands/cognito";
 import { seedCognito } from "../../utils/seed-cognito";
 import { getDBPassword } from "../../utils/get-db-parameters";
+import { findSawsModules } from "../../utils/find-saws-modules";
+import { startAPIModule, startFunctionModule } from "../start-module";
+import getModuleConfig from "../../utils/get-module-config";
+import { ApiConfig, FunctionConfig, ModuleType } from "../../config";
+import startLambdaServer from "../start-lambda-server";
 
 export async function startDev(entrypoint: string, stage: string = "local") {
-  // because the api is currently run in the same node context
-  // we need to set the environment variables for the handler
-  // to pick them up
-  const outputs = await getStageOutputs(stage);
-  process.env = {
-    ...process.env,
-    NODE_ENV: "dev",
-    STAGE: stage,
-    DATABASE_USERNAME: outputs.postgresUsername,
-    DATABASE_HOST: outputs.postgresHost,
-    DATABASE_PORT: outputs.postgresPort,
-    DATABASE_NAME: outputs.postgresDBName,
-  }
-
   await createCacheDir();
 
-  let handlerRef = { current: undefined };
-
+  // start local infrastructure
   await startCognitoLocal();
   const cognitoInfo = await seedCognito(stage);
 
   const dbInfo = await startPostgres();
   const dbPassword = await getDBPassword();
-  startPrismaStudio({
-    username: outputs.postgresUsername,
-    password: dbPassword,
-    endpoint: outputs.postgresHost,
-    port: outputs.postgresPort,
-    dbName: outputs.postgresDBName,
-  });
-  await startWatcher(entrypoint, handlerRef);
-  await startDevServer(
-    handlerRef,
-    cognitoInfo.userPool?.Id ?? "",
-    cognitoInfo.accessToken ?? ""
-  );
 
-  await writeStageOutputs(
+  // with these started we should be able to write all the stage outputs
+  const outputs = await writeStageOutputs(
     {
       ...dbInfo,
       graphqlEndpoint: "http://localhost:8000",
@@ -57,6 +33,51 @@ export async function startDev(entrypoint: string, stage: string = "local") {
       devUserEmail: cognitoInfo.devUserEmail,
     },
     "local"
+  );
+
+  // because the api is currently run in the same node context
+  // we need to set the environment variables for the handler
+  // to pick them up
+  process.env = {
+    ...process.env,
+    NODE_ENV: "dev",
+    STAGE: stage,
+    DATABASE_USERNAME: outputs.postgresUsername,
+    DATABASE_HOST: outputs.postgresHost,
+    DATABASE_PORT: outputs.postgresPort,
+    DATABASE_NAME: outputs.postgresDBName,
+  };
+
+  startPrismaStudio({
+    username: outputs.postgresUsername,
+    password: dbPassword,
+    endpoint: outputs.postgresHost,
+    port: outputs.postgresPort,
+    dbName: outputs.postgresDBName,
+  });
+
+  const configPaths = await findSawsModules(".");
+  const configs = await Promise.all(configPaths.map(getModuleConfig));
+  const apiModules = configs.filter(
+    (config) => config.type === ModuleType.API
+  ) as ApiConfig[];
+  const functionModules = configs.filter(
+    (config) => config.type === ModuleType.FUNCTION
+  ) as FunctionConfig[];
+
+  // start all the functions
+  await Promise.all(
+    functionModules.map((config) => startFunctionModule(config))
+  );
+
+  // start all of the other modules first
+  await startLambdaServer(functionModules);
+
+  // start the api modules last
+  await Promise.all(
+    apiModules.map((config) =>
+      startAPIModule(config, cognitoInfo.accessToken!, outputs)
+    )
   );
 
   console.log("GraphQL Endpoint:", "http://localhost:8000");

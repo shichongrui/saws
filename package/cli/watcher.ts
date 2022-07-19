@@ -45,7 +45,6 @@ export const startWatcher = async (
       });
       delete require.cache[require.resolve(modulePath)];
       handlerRef.current = require(modulePath).handler;
-      console.log("ready");
     }
   );
 };
