@@ -10,8 +10,9 @@ import { startAPIModule, startFunctionModule } from "../start-module";
 import getModuleConfig from "../../utils/get-module-config";
 import { ApiConfig, FunctionConfig, ModuleType } from "../../config";
 import startLambdaServer from "../start-lambda-server";
+import { getProjectName } from "../../utils/get-project-name";
 
-export async function startDev(entrypoint: string, stage: string = "local") {
+export async function startDev(stage: string = "local") {
   await createCacheDir();
 
   // start local infrastructure
@@ -46,6 +47,7 @@ export async function startDev(entrypoint: string, stage: string = "local") {
     DATABASE_HOST: outputs.postgresHost,
     DATABASE_PORT: outputs.postgresPort,
     DATABASE_NAME: outputs.postgresDBName,
+    PROJECT_NAME: getProjectName(),
   };
 
   startPrismaStudio({

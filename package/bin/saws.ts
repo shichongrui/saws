@@ -7,7 +7,6 @@ import { deploy } from "../cli/commands/deploy";
 import { startGraphiql } from "../cli/commands/graphiql";
 import { secret } from "../cli/commands/secret";
 import { startStudio } from "../cli/commands/studio";
-import { getEntrypoint } from "../utils/get-entrypoint";
 
 yargs(hideBin(process.argv))
   .command(
@@ -21,8 +20,7 @@ yargs(hideBin(process.argv))
         },
       }),
     (argv) => {
-      const entrypoint = getEntrypoint();
-      startDev(entrypoint, argv.stage).catch((err) => console.error(err));
+      startDev(argv.stage).catch((err) => console.error(err));
     }
   )
   .command(
@@ -38,7 +36,7 @@ yargs(hideBin(process.argv))
       });
     },
     (argv) => {
-      deploy(getEntrypoint(), argv.stage).catch((err) => console.error(err));
+      deploy(argv.stage).catch((err) => console.error(err));
     }
   )
   .command(

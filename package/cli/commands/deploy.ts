@@ -1,20 +1,37 @@
 import path from "path";
 import { build } from "../build";
 import { CloudFormation } from "../../aws/cloudformation";
-import { S3 } from '../../aws/s3';
-import { EC2 } from '../../aws/ec2';
+import { S3 } from "../../aws/s3";
+import { EC2 } from "../../aws/ec2";
 import { createCacheDir, createSawsDir } from "../../utils/create-directories";
 import { getBuildPathsForEntrypoint } from "../../utils/get-build-paths";
-import sawsResourcesTemplate, { getStackName as getResourcesStackName } from "../templates/saws-resources.template";
-import sawsApiTemplate, { getStackName as getApiStackName } from "../templates/saws-api.template";
+import sawsResourcesTemplate, {
+  getStackName as getResourcesStackName,
+} from "../templates/saws-resources.template";
+import sawsApiTemplate, {
+  getStackName as getApiStackName,
+} from "../templates/saws-api.template";
 import { DB_PASSWORD_PARAMETER_NAME } from "../../utils/constants";
 import { prismaMigrate } from "../cli-commands/prisma";
 import { getProjectName } from "../../utils/get-project-name";
 import { buildCodeZip } from "../../utils/build-code-zip";
 import { getDBParameters } from "../../utils/get-db-parameters";
 import { Outputs, writeStageOutputs } from "../../utils/stage-outputs";
+import { findSawsModules } from "../../utils/find-saws-modules";
+import getModuleConfig from "../../utils/get-module-config";
+import { ApiConfig, FunctionConfig, ModuleType } from "../../config";
+import getAwsAccountId from "../../utils/get-aws-account-id";
+import {
+  buildImage,
+  loginToAWSDocker,
+  pushImage,
+  tagImage,
+} from "../cli-commands/docker";
+import sawsFunctionTemplate, {
+  getFunctionStackName,
+} from "../templates/saws-function.template";
 
-export async function deploy(entrypoint: string, stage: string) {
+export async function deploy(stage: string) {
   const cloudformationClient = new CloudFormation();
   const s3Client = new S3();
   const ec2Client = new EC2();
@@ -29,6 +46,16 @@ export async function deploy(entrypoint: string, stage: string) {
 
   const projectName = getProjectName();
   const bucketName = `${projectName}-${stage}-saws`;
+
+  const configPaths = await findSawsModules(".");
+  const configs = await Promise.all(configPaths.map(getModuleConfig));
+
+  const functionConfigs = configs.filter(
+    ({ type }) => type === ModuleType.FUNCTION
+  ) as FunctionConfig[];
+  const apiConfigs = configs.filter(
+    ({ type }) => type === ModuleType.API
+  ) as ApiConfig[];
 
   // create S3 bucket if it does not exist
   console.log("Creating resources for SAWS");
@@ -48,11 +75,32 @@ export async function deploy(entrypoint: string, stage: string) {
       dbPasswordParameterName: DB_PASSWORD_PARAMETER_NAME,
       vpcId: defaultVpcId,
       projectName,
+      containerFunctionNames: functionConfigs.map(({ name }) => name),
     })
   );
 
+  const accountId = await getAwsAccountId();
+  if (accountId == null) throw new Error("No account Id found");
+  await loginToAWSDocker(accountId);
+  for (const config of functionConfigs) {
+    await buildImage(config.name, config.rootDir!);
+    await tagImage(config.name, accountId, `${config.name}-${stage}`, "latest");
+    await pushImage(accountId, `${config.name}-${stage}`, "latest");
+    await cloudformationClient.deployStack(
+      getFunctionStackName(config, stage),
+      sawsFunctionTemplate({
+        config,
+        repositoryName: `${config.name}-${stage}`,
+        tag: "latest",
+        projectName,
+        stage,
+      })
+    );
+  }
+
   // first step is to build
   console.log("Building...");
+  const entrypoint = path.join(apiConfigs[0].rootDir!, "index.ts");
   const { entrypointPath, modulePath } = getBuildPathsForEntrypoint(entrypoint);
   await build({
     entryPoints: [entrypointPath],
@@ -83,14 +131,22 @@ export async function deploy(entrypoint: string, stage: string) {
       dbUsername: dbUsername,
       stage,
       resourcesStackName: getResourcesStackName(stage),
+      functionNames: functionConfigs.map(({ name }) => name),
     })
   );
 
   // write outputs
-  type StackOutputKey = "postgresHost" | "postgresPort" | "graphqlEndpoint" | "userPoolId" | "userPoolClientId" | "userPoolName" | "userPoolClientName";
+  type StackOutputKey =
+    | "postgresHost"
+    | "postgresPort"
+    | "graphqlEndpoint"
+    | "userPoolId"
+    | "userPoolClientId"
+    | "userPoolName"
+    | "userPoolClientName";
   const allOutputs = [
-    ...apiStackResults?.Stacks?.[0].Outputs ?? [],
-    ...resourcesStackResults?.Stacks?.[0].Outputs ?? [],
+    ...(apiStackResults?.Stacks?.[0].Outputs ?? []),
+    ...(resourcesStackResults?.Stacks?.[0].Outputs ?? []),
   ];
   const outputs = {
     ...allOutputs.reduce<Pick<Outputs, StackOutputKey>>(
@@ -99,7 +155,15 @@ export async function deploy(entrypoint: string, stage: string) {
         acc[key] = output.OutputValue!;
         return acc;
       },
-      { postgresHost: "", postgresPort: "", graphqlEndpoint: "", userPoolId: "", userPoolClientId: "", userPoolName: "", userPoolClientName: "" }
+      {
+        postgresHost: "",
+        postgresPort: "",
+        graphqlEndpoint: "",
+        userPoolId: "",
+        userPoolClientId: "",
+        userPoolName: "",
+        userPoolClientName: "",
+      }
     ),
     postgresDBName: dbName,
     postgresUsername: dbUsername,

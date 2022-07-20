@@ -5,13 +5,14 @@ import collectHttpBody from "../utils/collect-http-body";
 
 const startLambdaServer = async (configs: FunctionConfig[]) => {
   const server = http.createServer(async (req, res) => {
-    const functionName =
+    const fullFunctionName =
       req.url
         ?.replace("/2015-03-31/functions/", "")
         .replace("/invocations", "") ?? "";
+    const functionName = fullFunctionName.split("-local-")[1];
 
     const config = configs.find(({ name }) => name === functionName);
-    
+
     if (req.method !== "POST" || config == null) {
       res.writeHead(404);
       res.end();

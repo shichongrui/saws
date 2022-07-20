@@ -1,7 +1,5 @@
 import { exec } from "child_process";
 import path from "path";
-import { promises as fs } from "fs";
-import { BUILD_DIR } from "../../utils/constants";
 
 type DBParameters = {
   username: string;
