@@ -85,7 +85,4 @@ export async function startDev(stage: string = "local") {
   console.log("GraphQL Endpoint:", "http://localhost:8000");
   console.log("GraphiQL Endpoint:", "http://localhost:8000/graphiql");
   console.log("Prisma Studio:", "http://localhost:5555");
-
-  process.on("exit", () => process.exit());
-  process.on("SIGINT", () => process.exit());
 }

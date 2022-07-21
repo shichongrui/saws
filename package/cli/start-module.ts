@@ -5,6 +5,7 @@ import { ApiConfig, FunctionConfig } from "../config";
 import { Outputs } from "../utils/stage-outputs";
 import { startDevServer } from "./dev-server";
 import { startWatcher } from "./watcher";
+import { onProcessExit } from "./on-exit";
 
 export async function startAPIModule(
   config: ApiConfig,
@@ -32,10 +33,5 @@ export async function startFunctionModule(config: FunctionConfig) {
     { echo: false }
   );
 
-  process.on("exit", () => {
-    dockerCommand(`stop ${config.name}`, { echo: false });
-  });
-  process.on("SIGINT", () => {
-    dockerCommand(`stop ${config.name}`, { echo: false });
-  });
+  onProcessExit(() => dockerCommand(`stop ${config.name}`, { echo: false }));
 }

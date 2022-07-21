@@ -3,6 +3,7 @@ import { dockerCommand } from "docker-cli-js";
 import { SAWS_DIR } from "../../utils/constants";
 import retryUntil from "../../utils/retry-until";
 import { Client } from "pg";
+import { onProcessExit } from "../on-exit";
 
 export const startPostgres = async () => {
   console.log("Starting postgres...");
@@ -28,10 +29,7 @@ export const startPostgres = async () => {
     }
   }, 1000);
 
-  process.on("exit", () => {
-    dockerCommand("stop saws-postgres", { echo: false });
-  });
-  process.on("SIGINT", () => {
+  onProcessExit(() => {
     dockerCommand("stop saws-postgres", { echo: false });
   });
 

@@ -3,6 +3,7 @@ import { dockerCommand } from "docker-cli-js";
 import { SAWS_DIR } from "../../utils/constants";
 import retryUntil from "../../utils/retry-until";
 import { Cognito } from "../../aws/cognito";
+import { onProcessExit } from "../on-exit";
 
 export const startCognitoLocal = async () => {
   console.log("Starting cognito...");
@@ -15,10 +16,7 @@ export const startCognitoLocal = async () => {
     { echo: false }
   );
 
-  process.on("exit", () => {
-    dockerCommand("stop saws-cognito", { echo: false });
-  });
-  process.on("SIGINT", () => {
+  onProcessExit(() => {
     dockerCommand("stop saws-cognito", { echo: false });
   });
 
