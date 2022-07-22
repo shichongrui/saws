@@ -11,6 +11,8 @@ import getModuleConfig from "../../utils/get-module-config";
 import { ApiConfig, FunctionConfig, ModuleType } from "../../config";
 import startLambdaServer from "../start-lambda-server";
 import { getProjectName } from "../../utils/get-project-name";
+import path from "path";
+import { BUILD_DIR } from "../../utils/constants";
 
 export async function startDev(stage: string = "local") {
   await createCacheDir();

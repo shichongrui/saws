@@ -1,6 +1,7 @@
 // graphql.js
 
 import { API, Secrets, RDS, Functions, gql } from 'saws';
+import { yo } from './another-file';
 
 // Construct a schema, using GraphQL schema language
 export const typeDefs = gql`
@@ -28,6 +29,7 @@ const api = new API({
       Query: {
         hello: async () => {
           const secret = await Secrets.get('test');
+          yo();
           return 'Hello world! ' + secret;
         },
         allUsers: async () => {

@@ -1,9 +1,10 @@
 import http from "http";
 import { Handler } from "aws-lambda";
-import jwksClient from 'jwks-rsa';
-import jwt, { GetPublicKeyOrSecret } from 'jsonwebtoken';
+import jwksClient from "jwks-rsa";
+import jwt, { GetPublicKeyOrSecret } from "jsonwebtoken";
 import { graphiqlTemplate } from "./templates/graphiql.template";
 import collectHttpBody from "../utils/collect-http-body";
+import { graphql, GraphQLError } from "graphql";
 
 const setDBEnvironment = () => {
   process.env = {
@@ -25,13 +26,13 @@ export const startDevServer = async (
   accessToken: string
 ) => {
   const client = jwksClient({
-    jwksUri: `http://localhost:9229/${userPoolId}/.well-known/jwks.json`
+    jwksUri: `http://localhost:9229/${userPoolId}/.well-known/jwks.json`,
   });
   const getJwksKey: GetPublicKeyOrSecret = (header, callback) => {
     client.getSigningKey(header.kid, (_, key) => {
       callback(null, key?.getPublicKey());
     });
-  }
+  };
 
   return new Promise((resolve) => {
     setDBEnvironment();
@@ -79,7 +80,7 @@ export const startDevServer = async (
             path: req.url,
             headers: {
               "content-type": "application/json",
-              "Authorization": authToken,
+              Authorization: authToken,
             },
             requestContext: {},
             body,
@@ -87,6 +88,16 @@ export const startDevServer = async (
           context,
           () => {}
         );
+
+        const responseBody = JSON.parse(results.body);
+        if ("errors" in responseBody) {
+          console.error(
+            responseBody.errors
+              .map((e: any) => e.extensions.exception.stacktrace.join('\n'))
+              .join("\n")
+          );
+        }
+
         res.writeHead(results.statusCode, results.multiValueHeaders);
         res.end(results.body);
       } catch (err) {

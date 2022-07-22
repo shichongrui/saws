@@ -7,6 +7,11 @@ export const buildCodeZip = async (modulePath: string, projectName: string) => {
   const zip = new AdmZip();
 
   zip.addLocalFile(modulePath);
+  
+  const parsedModulePath = path.parse(modulePath);
+  const sourceMapPath = path.join(parsedModulePath.dir, `${parsedModulePath.name}.map`);
+  zip.addLocalFile(sourceMapPath);
+  
   zip.addLocalFile(
     path.resolve(
       "node_modules",

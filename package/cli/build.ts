@@ -15,6 +15,7 @@ export const buildLambda = async (
     entryPoints,
     bundle: true,
     outfile: modulePath,
+    sourcemap: true,
     platform: "node",
     incremental,
   });
