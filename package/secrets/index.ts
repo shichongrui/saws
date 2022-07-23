@@ -2,6 +2,7 @@ import { SSM } from "../aws/ssm";
 import path from 'path';
 import { parse, stringify } from "envfile";
 import { promises as fs } from "fs";
+import { SAWS_DIR } from "../utils/constants";
 
 export interface SecretsManagerInterface {
   get(name: string): Promise<string>;
@@ -11,9 +12,11 @@ export interface SecretsManagerInterface {
 let cache: Record<string, string> = {};
 
 class LocalSecretsManager implements SecretsManagerInterface {
+  secretsFilePath = path.resolve(SAWS_DIR, ".secrets")
+
   async fillCache() {
     if (Object.keys(cache).length === 0) {
-      const secretsFile = await fs.readFile(path.resolve("./.secrets"), {
+      const secretsFile = await fs.readFile(this.secretsFilePath, {
         encoding: "utf-8",
       });
       cache = parse(secretsFile);
@@ -33,7 +36,7 @@ class LocalSecretsManager implements SecretsManagerInterface {
   async set(name: string, value: string) {
     await this.fillCache?.();
     cache[name] = value;
-    await fs.writeFile("./.secrets", stringify(cache));
+    await fs.writeFile(this.secretsFilePath, stringify(cache));
   }
 }
 

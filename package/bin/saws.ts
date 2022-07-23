@@ -5,7 +5,7 @@ import { hideBin } from "yargs/helpers";
 import { startDev } from "../cli/commands/dev";
 import { deploy } from "../cli/commands/deploy";
 import { startGraphiql } from "../cli/commands/graphiql";
-import { secret } from "../cli/commands/secret";
+import { secrets } from "../cli/commands/secret";
 import { startStudio } from "../cli/commands/studio";
 
 yargs(hideBin(process.argv))
@@ -72,17 +72,28 @@ yargs(hideBin(process.argv))
     }
   )
   .command(
-    "secret",
-    "set secret",
+    "secrets <getOrSet> <name>",
+    "manage secrets",
     (yargs) => {
       return yargs.options({
+        getOrSet: {
+          string: true,
+          requiresArg: true,
+          demandOption: true,
+          choices: ['get', 'set'] as const 
+        },
+        name: {
+          string: true,
+          demandOption: true,
+          requiresArg: true,
+        },
         stage: {
           string: true,
         },
       });
     },
     (argv) => {
-      secret(argv.stage).catch((err) => console.error(err));
+      secrets(argv.stage, argv.getOrSet, argv.name).catch((err) => console.error(err));
     }
   )
   .parse();
