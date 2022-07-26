@@ -5,10 +5,15 @@ import retryUntil from "../../utils/retry-until";
 import { Client } from "pg";
 import { onProcessExit } from "../on-exit";
 
-export const startPostgres = async () => {
+export const startPostgres = async (password: string) => {
   console.log("Starting postgres...");
+
+  onProcessExit(() => {
+    dockerCommand("stop saws-postgres", { echo: false });
+  });
+
   await dockerCommand(
-    `run -it --rm --name saws-postgres -e POSTGRES_PASSWORD=password -p 5432:5432 -d -v ${path.resolve(
+    `run --rm --name saws-postgres -e POSTGRES_PASSWORD=${password} -p 5432:5432 -d -v ${path.resolve(
       SAWS_DIR,
       "postgres"
     )}/:/var/lib/postgresql/data postgres:14`,
@@ -19,7 +24,7 @@ export const startPostgres = async () => {
     try {
       const client = new Client({
         user: "postgres",
-        password: "password",
+        password,
       });
       await client.connect();
       await client.end();
@@ -28,10 +33,6 @@ export const startPostgres = async () => {
       return false;
     }
   }, 1000);
-
-  onProcessExit(() => {
-    dockerCommand("stop saws-postgres", { echo: false });
-  });
 
   return {
     postgresHost: "localhost",

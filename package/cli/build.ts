@@ -18,6 +18,7 @@ export const buildLambda = async (
     sourcemap: true,
     platform: "node",
     incremental,
+    external: ['jsdom'],
   });
 };
 

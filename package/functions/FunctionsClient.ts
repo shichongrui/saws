@@ -12,7 +12,7 @@ export default class FunctionsClient {
     this.stage = stage;
   }
 
-  async call(name: string, payload: string, config: { async: boolean } = { async: false }): Promise<string> {
+  async call<T>(name: string, payload: any, config: { async: boolean } = { async: false }): Promise<T> {
     const command = new InvokeCommand({
       FunctionName: `${process.env.PROJECT_NAME}-${this.stage}-${name}`,
       InvocationType: config.async ? 'Event' : 'RequestResponse',

@@ -14,7 +14,16 @@ let cache: Record<string, string> = {};
 class LocalSecretsManager implements SecretsManagerInterface {
   secretsFilePath = path.resolve(SAWS_DIR, ".secrets")
 
+  async ensureSecretsFileExists() {
+    try {
+      await fs.stat(this.secretsFilePath);
+    } catch (err) {
+      await fs.writeFile(this.secretsFilePath, '');
+    }
+  }
+
   async fillCache() {
+    await this.ensureSecretsFileExists();
     if (Object.keys(cache).length === 0) {
       const secretsFile = await fs.readFile(this.secretsFilePath, {
         encoding: "utf-8",

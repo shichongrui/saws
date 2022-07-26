@@ -21,6 +21,10 @@ export async function startAPIModule(
 export async function startFunctionModule(config: FunctionConfig) {
   console.log(`Building ${config.name}`);
   await dockerCommand(`build -t ${config.name} .`, {
+    env: {
+      DOCKER_BUILDKIT: "0",
+      COMPOSE_DOCKER_CLI_BUILD: "0",
+    },
     currentWorkingDirectory: path.resolve(config.rootDir ?? ""),
   });
 
@@ -28,10 +32,10 @@ export async function startFunctionModule(config: FunctionConfig) {
   config.port = port;
 
   console.log(`Starting ${config.name}`);
+  
+  onProcessExit(() => dockerCommand(`stop ${config.name}`, { echo: false }));
   await dockerCommand(
-    `run -it --rm --name ${config.name} -p ${port}:8080 -d ${config.name}`,
+    `run --rm --name ${config.name} -p ${port}:8080 -d ${config.name}`,
     { echo: false }
   );
-
-  onProcessExit(() => dockerCommand(`stop ${config.name}`, { echo: false }));
 }

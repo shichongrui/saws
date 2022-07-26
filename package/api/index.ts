@@ -5,7 +5,7 @@ import { APIGatewayProxyHandler } from "aws-lambda";
 import jwt from "jsonwebtoken";
 import SecretsManager from "../secrets";
 
-type ApolloContext = {
+export type ApolloContext = {
   user: { userId: string };
 };
 

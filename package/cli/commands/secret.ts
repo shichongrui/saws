@@ -1,7 +1,7 @@
 import prompt from "prompt";
 import SecretsManager from "../../secrets";
 
-export async function secrets(stage: string = "local", getOrSet: string, name: string) {
+export async function secret(stage: string = "local", getOrSet: string, name: string) {
   const secretsManager = new SecretsManager(stage);
 
   if (getOrSet === 'set') {

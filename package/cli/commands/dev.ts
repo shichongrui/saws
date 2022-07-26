@@ -21,8 +21,8 @@ export async function startDev(stage: string = "local") {
   await startCognitoLocal();
   const cognitoInfo = await seedCognito(stage);
 
-  const dbInfo = await startPostgres();
   const dbPassword = await getDBPassword();
+  const dbInfo = await startPostgres(dbPassword);
 
   // with these started we should be able to write all the stage outputs
   const outputs = await writeStageOutputs(

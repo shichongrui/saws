@@ -5,15 +5,16 @@ import { hideBin } from "yargs/helpers";
 import { startDev } from "../cli/commands/dev";
 import { deploy } from "../cli/commands/deploy";
 import { startGraphiql } from "../cli/commands/graphiql";
-import { secrets } from "../cli/commands/secret";
+import { secret } from "../cli/commands/secret";
 import { startStudio } from "../cli/commands/studio";
+import { create } from "../cli/commands/create";
 
 yargs(hideBin(process.argv))
   .command(
     "dev",
     "start dev",
     (yargs) =>
-      yargs.option({
+      yargs.options({
         stage: {
           string: true,
           default: "local",
@@ -22,6 +23,22 @@ yargs(hideBin(process.argv))
     (argv) => {
       startDev(argv.stage).catch((err) => console.error(err));
     }
+  )
+  .command(
+    "create <createType>",
+    "Create things",
+    (yargs) => yargs.options({
+      name: {
+        string: true,
+      },
+      createType: {
+        string: true,
+        requiresArg: true,
+        demandOption: true,
+        choices: ['migration']
+      }
+    }),
+    (argv) => create(argv.createType, argv.name).catch(err => console.error(err))
   )
   .command(
     "deploy",
@@ -61,9 +78,7 @@ yargs(hideBin(process.argv))
     (yargs) => {
       return yargs.options({
         stage: {
-          requiresArg: true,
           string: true,
-          demandOption: true,
         },
       });
     },
@@ -80,7 +95,7 @@ yargs(hideBin(process.argv))
           string: true,
           requiresArg: true,
           demandOption: true,
-          choices: ['get', 'set'] as const 
+          choices: ["get", "set"] as const,
         },
         name: {
           string: true,
@@ -93,7 +108,9 @@ yargs(hideBin(process.argv))
       });
     },
     (argv) => {
-      secrets(argv.stage, argv.getOrSet, argv.name).catch((err) => console.error(err));
+      secret(argv.stage, argv.getOrSet, argv.name).catch((err) =>
+        console.error(err)
+      );
     }
   )
   .parse();

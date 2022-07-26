@@ -30,6 +30,30 @@ export const generatePrismaClient = () => {
   });
 };
 
+export const createPrismaMigration = ({
+  name,
+  username,
+  password,
+  endpoint,
+  port,
+  dbName,
+}: DBParameters & { name: string }) => {
+  return new Promise((resolve, reject) => {
+    console.log('Creating migration', name);
+    exec(`npx prisma migrate dev --name ${name}`, {
+      env: {
+        ...process.env,
+        DATABASE_URL: `postgres://${username}:${password}@${endpoint}:${port}/${dbName}`,
+      },
+    }, (err) => {
+      if (err != null) {
+        return reject(err);
+      }
+      resolve(null);
+    })
+  })
+}
+
 export const prismaMigrate = ({
   username,
   password,
