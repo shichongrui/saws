@@ -68,6 +68,7 @@ export default ({
           },
           FunctionName: `${projectName}-${stage}-${config.name}`,
           PackageType: "Image",
+          MemorySize: 512,
           Timeout: 60,
           Role: {
             "Fn::GetAtt": [`Saws${uppercasedName}LambdaRole`, "Arn"],

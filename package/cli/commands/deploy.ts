@@ -11,7 +11,7 @@ import sawsResourcesTemplate, {
 import sawsApiTemplate, {
   getStackName as getApiStackName,
 } from "../templates/saws-api.template";
-import { DB_PASSWORD_PARAMETER_NAME } from "../../utils/constants";
+import { BUILD_DIR, DB_PASSWORD_PARAMETER_NAME } from "../../utils/constants";
 import { prismaMigrate } from "../cli-commands/prisma";
 import { getProjectName } from "../../utils/get-project-name";
 import { buildCodeZip } from "../../utils/build-code-zip";
@@ -30,6 +30,7 @@ import {
 import sawsFunctionTemplate, {
   getFunctionStackName,
 } from "../templates/saws-function.template";
+import { npmInstall } from "../cli-commands/npm";
 
 export async function deploy(stage: string) {
   const cloudformationClient = new CloudFormation();
@@ -107,6 +108,10 @@ export async function deploy(stage: string) {
     modulePath,
     incremental: false,
   });
+
+  // for external node modules, we need to re-install them so that we get
+  // them and all their dependencies
+  await npmInstall('jsdom', path.resolve(BUILD_DIR));
 
   // upload build to S3
   console.log("Uploading api...");

@@ -7,18 +7,20 @@ export enum FunctionRuntime {
   CONTAINER = "container",
 }
 
-export type FunctionConfig = {
-  type: ModuleType.FUNCTION;
+export type BaseConfig = {
   name: string;
-  runtime: FunctionRuntime;
-  port?: number;
   rootDir?: string;
+  // uses: string[];
 };
 
-export type ApiConfig = {
+export type FunctionConfig = BaseConfig & {
+  type: ModuleType.FUNCTION;
+  runtime: FunctionRuntime;
+  port?: number;
+};
+
+export type ApiConfig = BaseConfig & {
   type: ModuleType.API;
-  name: string;
-  rootDir?: string;
 };
 
 export type SawsModuleConfig = FunctionConfig | ApiConfig;

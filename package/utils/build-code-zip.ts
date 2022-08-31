@@ -7,11 +7,17 @@ export const buildCodeZip = async (modulePath: string, projectName: string) => {
   const zip = new AdmZip();
 
   zip.addLocalFile(modulePath);
-  
+
   const parsedModulePath = path.parse(modulePath);
-  const sourceMapPath = path.join(parsedModulePath.dir, `${parsedModulePath.name}.map`);
+  const sourceMapPath = path.join(
+    parsedModulePath.dir,
+    `${parsedModulePath.name}.js.map`
+  );
   zip.addLocalFile(sourceMapPath);
-  
+
+  // add externals
+  zip.addLocalFolder(path.resolve(BUILD_DIR, "node_modules"), "node_modules");
+
   zip.addLocalFile(
     path.resolve(
       "node_modules",
@@ -21,6 +27,7 @@ export const buildCodeZip = async (modulePath: string, projectName: string) => {
     ),
     "node_modules/.prisma/client"
   );
+
   zip.addLocalFile(
     path.resolve("prisma", "schema.prisma"),
     "node_modules/.prisma/client"

@@ -215,6 +215,7 @@ export default ({
             S3Bucket: codeBucketName,
             S3Key: codeS3Key,
           },
+          MemorySize: 1024,
           Timeout: 30,
         },
       },

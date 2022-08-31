@@ -18,6 +18,7 @@ export const buildLambda = async (
     sourcemap: true,
     platform: "node",
     incremental,
+    // TODO: this is hard coded for now until we have some kind of config method
     external: ['jsdom'],
   });
 };

@@ -1,4 +1,3 @@
-import fs from "fs";
 import { IExecutableSchemaDefinition } from "@graphql-tools/schema";
 import { ApolloServer } from "apollo-server-lambda";
 import { APIGatewayProxyHandler } from "aws-lambda";
@@ -36,11 +35,13 @@ export default class API {
   createLambdaHandler = (): APIGatewayProxyHandler => {
     const handler = this.apolloServer.createHandler();
     return async (event, context, callback) => {
-      const token = event.headers.authorization ?? event.headers.Authorization;
+      context.callbackWaitsForEmptyEventLoop = false;
+      const token =
+        event.headers.authorization ?? event.headers.Authorization;
       const payload = jwt.decode(token?.replace("Bearer ", "") ?? "");
       this.user.userId = payload?.sub as string;
-      context.callbackWaitsForEmptyEventLoop = false;
-      const results = await handler(event, context, callback);
+      const results = await handler(event, context, () => {});
+      callback(null, results);
       return results;
     };
   };
