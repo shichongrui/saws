@@ -1,6 +1,6 @@
 import { createCacheDir } from "../../utils/create-directories";
 import { startPostgres } from "../cli-commands/postgres";
-import { startPrismaStudio } from "../cli-commands/prisma";
+import { generatePrismaClient, startPrismaStudio } from "../cli-commands/prisma";
 import { writeStageOutputs } from "../../utils/stage-outputs";
 import { startCognitoLocal } from "../cli-commands/cognito";
 import { seedCognito } from "../../utils/seed-cognito";
@@ -22,6 +22,8 @@ export async function startDev(stage: string = "local") {
   // start local infrastructure
   await startCognitoLocal();
   const cognitoInfo = await seedCognito(stage);
+
+  await generatePrismaClient();
 
   const dbPassword = await getDBPassword();
   const dbInfo = await startPostgres(dbPassword);

@@ -12,12 +12,8 @@ type DBParameters = {
 export const generatePrismaClient = () => {
   return new Promise(async (resolve, reject) => {
     const pathToSchema = path.resolve("./prisma/schema.prisma");
-
     exec(
-      `./node_modules/.bin/prisma generate --schema=${pathToSchema}`,
-      {
-        cwd: path.resolve("./node_modules/saws"),
-      },
+      `npx prisma generate --schema=${pathToSchema}`,
       async (err) => {
         if (err != null) {
           reject(err);

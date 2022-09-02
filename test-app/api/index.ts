@@ -1,7 +1,9 @@
 // graphql.js
 
+import { PrismaClient } from '@prisma/client';
 import { API, Secrets, RDS, Functions, gql } from 'saws';
 import { yo } from './another-file';
+import { getDBClient } from './db';
 
 // Construct a schema, using GraphQL schema language
 export const typeDefs = gql`
@@ -33,7 +35,7 @@ const api = new API({
           return 'Hello world! ' + secret;
         },
         allUsers: async () => {
-          const db = await RDS.getDBClient();
+          const db = await getDBClient();
           return db.user.findMany();
         },
         currentUser: (_, __, { user }) => user.userId,
@@ -44,7 +46,7 @@ const api = new API({
       },
       Mutation: {
         createUser: async (_: unknown, { email, name }: { email: string, name?: string }) => {
-          const db = await RDS.getDBClient();
+          const db = await getDBClient();
           return db.user.create({
             data: {
               email,

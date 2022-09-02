@@ -25,7 +25,7 @@ yargs(hideBin(process.argv))
     }
   )
   .command(
-    "create <createType>",
+    "create <createType> [name]",
     "Create things",
     (yargs) => yargs.options({
       name: {
