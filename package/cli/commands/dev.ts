@@ -23,8 +23,6 @@ export async function startDev(stage: string = "local") {
   await startCognitoLocal();
   const cognitoInfo = await seedCognito(stage);
 
-  await generatePrismaClient();
-
   const dbPassword = await getDBPassword();
   const dbInfo = await startPostgres(dbPassword);
 

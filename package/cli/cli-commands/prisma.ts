@@ -11,15 +11,38 @@ type DBParameters = {
 
 export const generatePrismaClient = () => {
   return new Promise(async (resolve, reject) => {
-    const pathToSchema = path.resolve("./prisma/schema.prisma");
+    exec(`npx prisma generate`, async (err) => {
+      if (err != null) {
+        reject(err);
+        return;
+      }
+
+      resolve(null);
+    });
+  });
+};
+
+export const runMigrationsLocally = ({
+  username,
+  password,
+  endpoint,
+  port,
+  dbName,
+}: DBParameters) => {
+  return new Promise(async (resolve, reject) => {
     exec(
-      `npx prisma generate --schema=${pathToSchema}`,
-      async (err) => {
+      "npx prisma migrate dev",
+      {
+        env: {
+          ...process.env,
+          DATABASE_URL: `postgres://${username}:${password}@${endpoint}:${port}/${dbName}`,
+        },
+      },
+      (err) => {
         if (err != null) {
-          reject(err);
-          return;
+          return reject(err);
         }
-        
+
         resolve(null);
       }
     );
@@ -35,20 +58,24 @@ export const createPrismaMigration = ({
   dbName,
 }: DBParameters & { name: string }) => {
   return new Promise((resolve, reject) => {
-    console.log('Creating migration', name);
-    exec(`npx prisma migrate dev --name ${name}`, {
-      env: {
-        ...process.env,
-        DATABASE_URL: `postgres://${username}:${password}@${endpoint}:${port}/${dbName}`,
+    console.log("Creating migration", name);
+    exec(
+      `npx prisma migrate dev --name ${name}`,
+      {
+        env: {
+          ...process.env,
+          DATABASE_URL: `postgres://${username}:${password}@${endpoint}:${port}/${dbName}`,
+        },
       },
-    }, (err) => {
-      if (err != null) {
-        return reject(err);
+      (err) => {
+        if (err != null) {
+          return reject(err);
+        }
+        resolve(null);
       }
-      resolve(null);
-    })
-  })
-}
+    );
+  });
+};
 
 export const prismaMigrate = ({
   username,

@@ -36,8 +36,7 @@ export default class API {
     const handler = this.apolloServer.createHandler();
     return async (event, context, callback) => {
       context.callbackWaitsForEmptyEventLoop = false;
-      const token =
-        event.headers.authorization ?? event.headers.Authorization;
+      const token = event.headers.authorization ?? event.headers.Authorization;
       const payload = jwt.decode(token?.replace("Bearer ", "") ?? "");
       this.user.userId = payload?.sub as string;
       const results = await handler(event, context, () => {});
@@ -49,3 +48,4 @@ export default class API {
 
 export * from "apollo-server-lambda";
 export * from "aws-lambda";
+export * from "graphql";
