@@ -6,6 +6,10 @@ import { generatePrismaClient, runMigrationsLocally } from "./cli-commands/prism
 import { getStageOutputs } from "../utils/stage-outputs";
 import { getDBPassword } from "../utils/get-db-parameters";
 
+export class Watcher {
+  entrypoints: 
+}
+
 export const startWatcher = async (
   entrypoint: string,
   handlerRef: HandlerRef

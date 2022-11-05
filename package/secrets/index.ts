@@ -33,7 +33,7 @@ class LocalSecretsManager implements SecretsManagerInterface {
   }
 
   async get(name: string) {
-    await this.fillCache?.();
+    await this.fillCache();
     if (cache[name] == null) {
       const error = new Error('Missing');
       error.name = 'ParameterNotFound';
@@ -43,7 +43,7 @@ class LocalSecretsManager implements SecretsManagerInterface {
   }
 
   async set(name: string, value: string) {
-    await this.fillCache?.();
+    await this.fillCache();
     cache[name] = value;
     await fs.writeFile(this.secretsFilePath, stringify(cache));
   }

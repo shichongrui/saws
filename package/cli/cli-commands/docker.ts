@@ -32,18 +32,7 @@ export const loginToAWSDocker = async (awsAccountId: string) => {
   });
 };
 
-type StartContainerParameters = {
-  name: string,
-  image: string,
-  additionalArguments: string[],
-  check: () => Promise<boolean>
-}
-export const startContainer = async ({
-  name,
-  image,
-  additionalArguments,
-  check
-}: StartContainerParameters) => {
+export const waitForContainerToBeStopped = async (name: string) => {
   // the cognito docker container can take some time to spin down
   // so if you rapidaly kill the process and then start it again
   // you can get into a scenario where we can't start the container
@@ -57,13 +46,28 @@ export const startContainer = async ({
       return true;
     }
   }, 500);
+}
+
+type StartContainerParameters = {
+  name: string,
+  image: string,
+  additionalArguments: string[],
+  check: () => Promise<boolean>
+}
+export const startContainer = async ({
+  name,
+  image,
+  additionalArguments,
+  check
+}: StartContainerParameters) => {
+
 
   onProcessExit(() => {
     dockerCommand(`stop ${name}`, { echo: false });
   });
 
   await dockerCommand(
-    `run --rm --name saws-cognito -d ${additionalArguments.join(' ')} ${image}`,
+    `run --rm --name ${name} -d ${additionalArguments.join(' ')} ${image}`,
     { echo: false }
   );
 

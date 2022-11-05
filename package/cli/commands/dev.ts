@@ -1,92 +1,80 @@
 import { createCacheDir } from "../../utils/create-directories";
-import { startPostgres } from "../cli-commands/postgres";
-import { generatePrismaClient, startPrismaStudio } from "../cli-commands/prisma";
 import { writeStageOutputs } from "../../utils/stage-outputs";
-import { startCognitoLocal } from "../cli-commands/cognito";
-import { seedCognito } from "../../utils/seed-cognito";
-import { getDBPassword } from "../../utils/get-db-parameters";
-import { findSawsModules } from "../../utils/find-saws-modules";
-import { startAPIModule, startFunctionModule } from "../start-module";
-import getModuleConfig from "../../utils/get-module-config";
-import { ApiConfig, FunctionConfig, ModuleType } from "../../config";
-import startLambdaServer from "../start-lambda-server";
-import { getProjectName } from "../../utils/get-project-name";
+import { getSawsConfig } from "../../utils/get-saws-config";
+import { ModuleDefinition } from "../modules/ModuleDefinition";
+import { onProcessExit } from "../on-exit";
+import { getModuleFromConfig } from "../utils/get-module-from-config";
 
-export async function startDev(stage: string = "local") {
-  // Build dependency tree of modules
-  // alert on circular dependencies
-  // start with the top level dependencies and start them
+export async function startDev() {
+  process.env.NODE_ENV = 'dev'
+  process.env.STAGE = 'local'
 
   await createCacheDir();
 
-  // start local infrastructure
-  await startCognitoLocal();
-  const cognitoInfo = await seedCognito(stage);
+  const sawsConfig = await getSawsConfig(".");
 
-  const dbPassword = await getDBPassword();
-  const dbInfo = await startPostgres(dbPassword);
+  const services: Record<string, ModuleDefinition> = {};
+  const modules: Record<string, ModuleDefinition> = {};
 
-  // with these started we should be able to write all the stage outputs
-  const outputs = await writeStageOutputs(
-    {
-      ...dbInfo,
-      graphqlEndpoint: "http://localhost:8000",
-      userPoolId: cognitoInfo.userPool?.Id ?? "",
-      userPoolName: cognitoInfo.userPool?.Name ?? "",
-      userPoolClientId: cognitoInfo.userPoolClient?.ClientId ?? "",
-      userPoolClientName: cognitoInfo.userPoolClient?.ClientName ?? "",
-      devUserEmail: cognitoInfo.devUserEmail,
-    },
-    "local"
-  );
-
-  // because the api is currently run in the same node context
-  // we need to set the environment variables for the handler
-  // to pick them up
-  process.env = {
-    ...process.env,
-    NODE_ENV: "dev",
-    STAGE: stage,
-    DATABASE_USERNAME: outputs.postgresUsername,
-    DATABASE_HOST: outputs.postgresHost,
-    DATABASE_PORT: outputs.postgresPort,
-    DATABASE_NAME: outputs.postgresDBName,
-    PROJECT_NAME: getProjectName(),
-  };
-
-  startPrismaStudio({
-    username: outputs.postgresUsername,
-    password: dbPassword,
-    endpoint: outputs.postgresHost,
-    port: outputs.postgresPort,
-    dbName: outputs.postgresDBName,
+  onProcessExit(() => {
+    for (const module of [
+      ...Object.values(services),
+      ...Object.values(modules),
+    ]) {
+      module.exit();
+    }
   });
 
-  const configPaths = await findSawsModules(".");
-  const configs = await Promise.all(configPaths.map(getModuleConfig));
-  const apiModules = configs.filter(
-    (config) => config.type === ModuleType.API
-  ) as ApiConfig[];
-  const functionModules = configs.filter(
-    (config) => config.type === ModuleType.FUNCTION
-  ) as FunctionConfig[];
+  // start up all services
+  const serviceConfigs = Object.entries(sawsConfig.services);
+  for (const [name, config] of serviceConfigs) {
+    const service = getModuleFromConfig(name, config, []);
+    if (service != null) {
+      services[name] = service;
+      await service.dev();
+      await writeStageOutputs({
+        [name]: service.getOutputs(),
+      }, 'local');
+      process.env = {
+        ...process.env,
+        ...service.getEnvironmentVariables()
+      }
+    }
+  }
 
-  // start all the functions
-  await Promise.all(
-    functionModules.map((config) => startFunctionModule(config))
-  );
+  const moduleConfigs = Object.entries(sawsConfig.modules);
 
-  // start all of the other modules first
-  await startLambdaServer(functionModules);
+  const copy = moduleConfigs.slice();
+  while (copy.length > 0) {
+    const [name, config] = copy.shift()!;
+    const numDependencies = config.uses?.length ?? 0;
+    const dependencies =
+      config.uses?.map(
+        (dependency) => services[dependency] ?? modules[dependency]
+      ) ?? [];
+    if (dependencies.length !== numDependencies) {
+      copy.push([name, config]);
+      continue;
+    }
 
-  // start the api modules last
-  await Promise.all(
-    apiModules.map((config) =>
-      startAPIModule(config, cognitoInfo.accessToken!, outputs)
-    )
-  );
+    const module = getModuleFromConfig(name, config, dependencies);
+    if (module != null) {
+      modules[name] = module;
+      await module.dev();
+      await writeStageOutputs({
+        [name]: module.getOutputs(),
+      }, 'local');
+      process.env = {
+        ...process.env,
+        ...module.getEnvironmentVariables()
+      }
+    }
+  }
 
-  console.log("GraphQL Endpoint:", "http://localhost:8000");
-  console.log("GraphiQL Endpoint:", "http://localhost:8000/graphiql");
-  console.log("Prisma Studio:", "http://localhost:5555");
+  for (const [name, module] of [
+    ...Object.entries(services),
+    ...Object.entries(modules),
+  ]) {
+    module.getStdOut()?.pipe(process.stdout)
+  }
 }

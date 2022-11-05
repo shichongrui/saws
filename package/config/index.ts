@@ -3,24 +3,50 @@ export enum ModuleType {
   FUNCTION = "function",
 }
 
+export enum ServiceType {
+  POSTGRES = "postgres",
+  AUTH = "auth",
+}
+
 export enum FunctionRuntime {
   CONTAINER = "container",
 }
 
 export type BaseConfig = {
-  name: string;
-  rootDir?: string;
-  // uses: string[];
+  displayName?: string;
 };
 
-export type FunctionConfig = BaseConfig & {
+export type PostgresConfig = BaseConfig & {
+  type: ServiceType.POSTGRES;
+};
+
+export type AuthConfig = BaseConfig & {
+  type: ServiceType.AUTH;
+};
+
+export type BaseModuleConfig = BaseConfig & {
+  rootDir?: string;
+  uses?: string[];
+}
+
+export type ContainerFunctionConfig = {
+  runtime: FunctionRuntime.CONTAINER
+  port?: number;
+}
+
+export type FunctionConfig = BaseModuleConfig & ContainerFunctionConfig & {
   type: ModuleType.FUNCTION;
-  runtime: FunctionRuntime;
+};
+
+export type ApiConfig = BaseModuleConfig & {
+  type: ModuleType.API;
   port?: number;
 };
 
-export type ApiConfig = BaseConfig & {
-  type: ModuleType.API;
-};
+export type ModuleConfig = FunctionConfig | ApiConfig;
+export type ServiceConfig = PostgresConfig | AuthConfig;
 
-export type SawsModuleConfig = FunctionConfig | ApiConfig;
+export type SawsConfig = {
+  services: Record<string, ServiceConfig>;
+  modules: Record<string, ModuleConfig>;
+};

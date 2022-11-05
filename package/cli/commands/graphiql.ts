@@ -1,6 +1,8 @@
 import http from "http";
 import prompt from "prompt";
 import { Cognito } from "../../aws/cognito";
+import { ModuleType, ServiceType } from "../../config";
+import { getSawsConfig } from "../../utils/get-saws-config";
 import { getStageOutputs } from "../../utils/stage-outputs";
 import { graphiqlTemplate } from "../templates/graphiql.template";
 
@@ -27,16 +29,31 @@ export const startGraphiql = async (stage: string) => {
     },
   });
 
-  const { graphqlEndpoint, userPoolId, userPoolClientId } =
-    await getStageOutputs(stage);
+  const config = await getSawsConfig(".");
+  const auth = Object.entries(config.services).find(
+    ([_, c]) => c.type === ServiceType.AUTH
+  );
+  const api = Object.entries(config.modules).find(
+    ([_, c]) => c.type === ModuleType.API
+  );
 
-  const authResponse = await cognitoClient.initiateAuth(userPoolId, userPoolClientId, username.toString(), password.toString());
+  const {
+    [auth?.[0] ?? ""]: { userPoolId, userPoolClientId },
+    [api?.[0] ?? ""]: { graphqlEndpoint },
+  } = await getStageOutputs(stage);
+
+  const authResponse = await cognitoClient.initiateAuth(
+    String(userPoolId),
+    String(userPoolClientId),
+    username.toString(),
+    password.toString()
+  );
 
   const server = http.createServer(async (req, res) => {
     if (req.method === "GET" && req.url === "/graphiql") {
       const html = graphiqlTemplate({
-        graphqlServerUrl: graphqlEndpoint,
-        accessToken: authResponse.AuthenticationResult?.AccessToken ?? '',
+        graphqlServerUrl: String(graphqlEndpoint),
+        accessToken: authResponse.AuthenticationResult?.AccessToken ?? "",
       });
       res.writeHead(200, { "Content-Type": "text/html" });
       res.end(html);

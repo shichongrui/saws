@@ -1,49 +1,28 @@
 import { promises as fs } from "fs";
 import path from "path";
+import { Outputs } from "../cli/modules/ModuleDefinition";
 import { SAWS_DIR } from "./constants";
 
-export type Outputs = {
-  postgresHost: string;
-  postgresPort: string;
-  postgresDBName: string;
-  postgresUsername: string;
-  graphqlEndpoint: string;
-  userPoolName: string;
-  userPoolId: string;
-  userPoolClientName: string;
-  userPoolClientId: string;
-  devUserEmail?: string;
-};
 
-export const getStageOutputs = async (stage: string): Promise<Outputs> => {
+export const getStageOutputs = async (stage: string): Promise<Record<string, Outputs>> => {
   const outputPath = path.resolve(SAWS_DIR, `saws-api-${stage}-output.json`);
   try {
     await fs.stat(outputPath);
     const outputsText = await fs.readFile(outputPath, { encoding: "utf-8" });
     return JSON.parse(outputsText);
   } catch (err) {
-    return {
-      postgresDBName: "",
-      postgresHost: "",
-      postgresPort: "",
-      postgresUsername: "",
-      graphqlEndpoint: "",
-      userPoolName: "",
-      userPoolId: "",
-      userPoolClientName: "",
-      userPoolClientId: "",
-    };
+    return {};
   }
 };
 
 export const writeStageOutputs = async (
-  newOutputs: Partial<Outputs>,
+  newOutputs: Record<string, Outputs>,
   stage: string
 ) => {
   const currentOutputs = await getStageOutputs(stage);
 
   // write outputs
-  const outputs: Outputs = {
+  const outputs: Record<string, Outputs> = {
     ...currentOutputs,
     ...newOutputs,
   };
