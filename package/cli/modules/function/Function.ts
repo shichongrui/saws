@@ -24,6 +24,7 @@ export class Function implements ModuleDefinition, FunctionConfig {
   type: ModuleType.FUNCTION = ModuleType.FUNCTION;
   displayName: string;
   runtime: FunctionRuntime;
+  configPort?: number;
   port?: number;
   rootDir: string;
   name: string;
@@ -34,7 +35,7 @@ export class Function implements ModuleDefinition, FunctionConfig {
     this.name = name;
     this.displayName = config.displayName ?? name;
     this.runtime = config.runtime;
-    this.port = config.port;
+    this.configPort = config.port;
     this.rootDir = path.resolve(".", config.rootDir ?? this.name);
     this.dependencies = dependencies;
 
@@ -139,7 +140,8 @@ export class Function implements ModuleDefinition, FunctionConfig {
   }
 
   async getPort() {
-    this.port = await getPort({ port: this.port });
+    if (this.port != null) return this.port
+    this.port = await getPort({ port: this.configPort });
     return this.port;
   }
 

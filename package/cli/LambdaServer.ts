@@ -15,11 +15,11 @@ export class LambdaServer {
 
   handler = async (req: http.IncomingMessage, res: http.ServerResponse) => {
     const fullFunctionName =
-      req.url
-        ?.replace("/2015-03-31/functions/", "")
-        .replace("/invocations", "") ?? "";
+    req.url
+    ?.replace("/2015-03-31/functions/", "")
+    .replace("/invocations", "") ?? "";
     const functionName = fullFunctionName.split("-local-")[1];
-
+    
     const func = this.functions.find(({ name }) => functionName === name)
 
     if (req.method !== "POST" || func == null) {
@@ -29,9 +29,9 @@ export class LambdaServer {
     }
 
     const requestBody = await collectHttpBody(req);
-
     if (func.runtime === FunctionRuntime.CONTAINER) {
       const port = await func.getPort()
+      console.log(port)
       const response = await fetch(
         `http://localhost:${port}/2015-03-31/functions/function/invocations`,
         {
@@ -40,6 +40,7 @@ export class LambdaServer {
         }
       );
       const responseText = await response.text();
+      console.log(responseText)
       res.writeHead(response.status, undefined);
       res.end(responseText);
     }

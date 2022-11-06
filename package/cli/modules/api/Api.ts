@@ -27,6 +27,7 @@ export class Api implements ModuleDefinition, ApiConfig {
   type: ModuleType.API = ModuleType.API;
   displayName: string;
   port?: number;
+  configPort?: number;
   rootDir: string;
   name: string;
   process?: ChildProcess
@@ -44,6 +45,7 @@ export class Api implements ModuleDefinition, ApiConfig {
     this.entryPointPath = path.resolve(this.rootDir, "index.ts")
     this.buildFilePath = path.resolve(BUILD_DIR, `${this.name}.js`);
     this.dependencies = dependencies;
+    this.configPort = config.port;
   }
 
   async build(incremental: boolean = true) {
@@ -292,7 +294,8 @@ export class Api implements ModuleDefinition, ApiConfig {
   }
 
   async getPort() {
-    this.port = await getPort({ port: this.port });
+    if (this.port != null) return this.port;
+    this.port = await getPort({ port: this.configPort });
     return this.port;
   }
 
