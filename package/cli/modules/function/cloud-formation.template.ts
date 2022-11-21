@@ -7,6 +7,7 @@ type SawsFunctionTemplateProperties = {
   tag: string;
   projectName: string;
   stage: string;
+  memory?: number;
 };
 
 export const getTemplate = ({
@@ -15,6 +16,7 @@ export const getTemplate = ({
   tag,
   projectName,
   stage,
+  memory = 128,
 }: SawsFunctionTemplateProperties) => {
   const uppercasedName = name.split("-").map(uppercase).join("");
   return JSON.stringify({
@@ -67,7 +69,7 @@ export const getTemplate = ({
           },
           FunctionName: `${projectName}-${stage}-${name}`,
           PackageType: "Image",
-          MemorySize: 1024,
+          MemorySize: memory,
           Timeout: 60,
           Role: {
             "Fn::GetAtt": [`Saws${uppercasedName}LambdaRole`, "Arn"],

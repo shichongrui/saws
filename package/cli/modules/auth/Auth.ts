@@ -188,7 +188,6 @@ export class Auth implements ModuleDefinition, AuthConfig {
       userPoolClientId: userPoolClient?.ClientId,
       userPoolClientName: userPoolClient?.ClientName,
       devUserEmail: cognitoParams.devUserEmail,
-      devUserPassword: cognitoParams.devUserPassword,
       accessToken: authResults.AuthenticationResult?.AccessToken,
       idToken: authResults.AuthenticationResult?.IdToken,
       refreshToken: authResults.AuthenticationResult?.RefreshToken,

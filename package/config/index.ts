@@ -32,6 +32,7 @@ export type BaseModuleConfig = BaseConfig & {
 export type ContainerFunctionConfig = {
   runtime: FunctionRuntime.CONTAINER
   port?: number;
+  memory?: number;
 }
 
 export type FunctionConfig = BaseModuleConfig & ContainerFunctionConfig & {

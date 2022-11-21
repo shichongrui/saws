@@ -31,7 +31,6 @@ export class LambdaServer {
     const requestBody = await collectHttpBody(req);
     if (func.runtime === FunctionRuntime.CONTAINER) {
       const port = await func.getPort()
-      console.log(port)
       const response = await fetch(
         `http://localhost:${port}/2015-03-31/functions/function/invocations`,
         {
@@ -40,7 +39,6 @@ export class LambdaServer {
         }
       );
       const responseText = await response.text();
-      console.log(responseText)
       res.writeHead(response.status, undefined);
       res.end(responseText);
     }

@@ -5,6 +5,7 @@ export interface ModuleDefinition {
   type: ServiceType | ModuleType;
   dev: () => Promise<void>;
   deploy: (stage: string) => Promise<void>;
+  setOutputs: (outputs: Outputs) => void; 
   getOutputs: () => Outputs;
   getEnvironmentVariables: () => Record<string, string>;
   getStdOut: () => Readable | null | undefined;
