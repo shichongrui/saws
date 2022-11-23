@@ -4,6 +4,7 @@ import { Auth } from "../modules/auth/Auth";
 import { Postgres } from "../modules/postgres/Postgres";
 import { Function } from "../modules/function/Function";
 import { Api } from "../modules/api/Api";
+import { Website } from "../modules/website/Website";
 
 export function getModuleFromConfig(
   name: string,
@@ -19,5 +20,7 @@ export function getModuleFromConfig(
       return new Function(name, config, dependencies);
     case ModuleType.API:
       return new Api(name, config, dependencies);
+    case ModuleType.WEBSITE:
+      return new Website(name, config, dependencies);
   }
 }

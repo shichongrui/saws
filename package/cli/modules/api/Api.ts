@@ -12,7 +12,7 @@ import { BUILD_DIR } from "../../../utils/constants";
 import { watch } from 'chokidar'
 import jwt, { GetPublicKeyOrSecret } from "jsonwebtoken";
 import jwksClient from "jwks-rsa";
-import http from 'http';
+import http, { IncomingMessage, ServerResponse } from 'http';
 import { graphiqlTemplate } from "../../templates/graphiql.template";
 import collectHttpBody from "../../../utils/collect-http-body";
 import { CloudFormation } from "../../../aws/cloudformation";
@@ -109,8 +109,8 @@ export class Api implements ModuleDefinition, ApiConfig {
       });
     };
   
-    return new Promise((resolve) => {
-      const server = http.createServer(async (req, res) => {
+    return new Promise(async (resolve) => {
+      const server = http.createServer(async (req: IncomingMessage, res: ServerResponse) => {
         if (req.method === "GET" && req.url === "/graphiql") {
           const html = graphiqlTemplate({
             graphqlServerUrl: "http://localhost:8000",
@@ -178,14 +178,16 @@ export class Api implements ModuleDefinition, ApiConfig {
           console.log("Error:", err);
         }
       });
-  
-      server.listen(8000, "0.0.0.0", () => {
+      
+      const port = await this.getPort();
+
+      server.listen(port, "0.0.0.0", () => {
         this.setOutputs({
-          graphqlEndpoint: 'http://localhost:8000',
-          graphiqlEndpoint: 'http://localhost:8000/graphiql'
+          graphqlEndpoint: `http://localhost:${port}`,
+          graphiqlEndpoint: `http://localhost:${port}/graphiql`
         })
-        console.log("GraphQL Endpoint:", "http://localhost:8000");
-        console.log("GraphiQL Endpoint:", "http://localhost:8000/graphiql");
+        console.log("GraphQL Endpoint:", `http://localhost:${port}`);
+        console.log("GraphiQL Endpoint:", `http://localhost:${port}/graphiql`);
         resolve(null);
       });
     });

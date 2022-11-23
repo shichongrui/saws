@@ -1,6 +1,7 @@
 export enum ModuleType {
   API = "api",
   FUNCTION = "function",
+  WEBSITE = "website",
 }
 
 export enum ServiceType {
@@ -44,7 +45,14 @@ export type ApiConfig = BaseModuleConfig & {
   port?: number;
 };
 
-export type ModuleConfig = FunctionConfig | ApiConfig;
+export type WebsiteConfig = BaseModuleConfig & {
+  type: ModuleType.WEBSITE;
+  port?: number;
+  domain?: string;
+  certificateArn?: string;
+}
+
+export type ModuleConfig = FunctionConfig | ApiConfig | WebsiteConfig;
 export type ServiceConfig = PostgresConfig | AuthConfig;
 
 export type SawsConfig = {
