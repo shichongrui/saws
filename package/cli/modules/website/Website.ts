@@ -1,15 +1,16 @@
 import { ModuleType, WebsiteConfig } from "../../../config";
 import { ModuleDefinition, Outputs } from "../ModuleDefinition";
-import http, { IncomingMessage, OutgoingMessage, ServerResponse } from "http";
 import getPort from "get-port";
 import path from "path";
-import { Server as FileServer } from "node-static";
-import { getStackName, getTemplate } from "./cloud-formation.template";
+import { getStackName, getTemplate } from "./cloudfront.template";
 import { getProjectName } from "../../../utils/get-project-name";
 import { CloudFormation } from "../../../aws/cloudformation";
 import { S3 } from "../../../aws/s3";
-import fs from "fs";
+import { createServer, build } from "vite";
 import { recursivelyReadDir } from "../../utils/recursively-read-dir";
+import { promises as fs } from "fs";
+import { BUILD_DIR } from "../../../utils/constants";
+import { getStackName as getS3StackName, getTemplate as getS3Template } from './s3-cloud-formation.template'
 
 export class Website implements ModuleDefinition, WebsiteConfig {
   type: ModuleType.WEBSITE = ModuleType.WEBSITE;
@@ -20,6 +21,7 @@ export class Website implements ModuleDefinition, WebsiteConfig {
   rootDir: string;
   domain: string;
   config: WebsiteConfig;
+  dependencies: ModuleDefinition[];
 
   constructor(
     name: string,
@@ -31,51 +33,70 @@ export class Website implements ModuleDefinition, WebsiteConfig {
     this.rootDir = path.resolve(".", config.rootDir ?? name);
     this.domain = config.domain ?? `${name}.saws`;
     this.config = config;
+    this.dependencies = dependencies;
+  }
+
+  async writeEnvVarFile(stage: string, nodeEnv: "development" | "production") {
+    const environmentVariables = this.dependencies.reduce((acc, d) => {
+      return {
+        ...acc,
+        ...d.getEnvironmentVariables(),
+      };
+    }, {});
+    const envFileContents =
+      Object.entries(environmentVariables)
+        .map(([key, value]) => `VITE_${key}=${value}\n`)
+        .join("") + `NODE_ENV=${nodeEnv}\n`;
+    await fs.writeFile(
+      path.resolve(this.rootDir, `.env.${stage}`),
+      envFileContents,
+      "utf-8"
+    );
   }
 
   async dev() {
-    await new Promise(async (resolve) => {
-      console.log("Starting", this.displayName);
-      this.port = await getPort({ port: this.config.port });
+    console.log("Starting", this.displayName);
 
-      const fileServer = new FileServer(this.rootDir, { cache: 0 });
+    await this.writeEnvVarFile("dev", "development");
 
-      const server = http.createServer(
-        (req: IncomingMessage, res: ServerResponse) => {
-          fileServer.serve(req, res);
-        }
-      );
+    this.port = await getPort({ port: this.config.port });
 
-      server.listen(this.port, "0.0.0.0", () => {
-        this.setOutputs({
-          websiteUrl: `http://localhost:${this.port}`,
-        });
-        console.log(
-          `${this.displayName} website is at http://localhost:${this.port}`
-        );
-        resolve(null);
-      });
+    const server = await createServer({
+      root: this.rootDir,
+      clearScreen: false,
+      mode: "dev",
+      envDir: this.rootDir,
+      server: {
+        port: this.port,
+      },
     });
+
+    await server.listen();
+
+    this.setOutputs({
+      websiteUrl: server.resolvedUrls?.local[0],
+    });
+    console.log(
+      `${this.displayName} website is at ${server.resolvedUrls?.local[0]}`
+    );
   }
 
   async deploy(stage: string) {
     console.log("Deploying", this.displayName);
-    const bucketName = `${getProjectName()}-${stage}-${this.name}`;
 
-    const template = getTemplate({
-      name: this.name,
-      stage,
-      domain: this.domain,
-      certificateArn: this.config.certificateArn,
-      isCustomDomain: this.config.domain != null,
-    });
-    const stackName = getStackName(stage, this.name);
+    await this.writeEnvVarFile(stage, "production");
 
     const cloudformationClient = new CloudFormation();
     const s3Client = new S3();
 
-    const results = await cloudformationClient.deployStack(stackName, template);
+    const s3StackName = getS3StackName(stage, this.name);
+    const s3Template = getS3Template({
+      name: this.name,
+      stage,
+      domain: this.domain,
+    });
 
+    const results = await cloudformationClient.deployStack(s3StackName, s3Template)
     const outputs = results?.Stacks?.[0].Outputs;
 
     this.setOutputs({
@@ -87,24 +108,36 @@ export class Website implements ModuleDefinition, WebsiteConfig {
       ),
     });
 
+    const buildDir = path.resolve(BUILD_DIR, this.name);
+    await build({
+      root: this.rootDir,
+      mode: stage,
+      envDir: this.rootDir,
+      build: {
+        outDir: buildDir,
+        emptyOutDir: true,
+      },
+    });
+
     console.log("Uploading", this.displayName);
-    const files = await recursivelyReadDir(this.rootDir);
+    const files = await recursivelyReadDir(buildDir);
+
     await Promise.all(
-      files.map((file) => {
-        [
-          s3Client.uploadFile(
-            this.domain,
-            file.replace(this.rootDir + "/", ""),
-            file
-          ),
-          s3Client.uploadFile(
-            `www.${this.domain}`,
-            file.replace(this.rootDir + "/", ""),
-            file
-          ),
-        ];
-      }).flat()
+      files.map((file) =>
+        s3Client.uploadFile(this.domain, file.replace(buildDir + "/", ""), file)
+      )
     );
+
+    if (this.domain != null && this.config.certificateArn != null) {
+      const template = getTemplate({
+        domain: this.domain,
+        certificateArn: this.config.certificateArn,
+        s3WebsiteUrl: String(this.outputs.websiteS3Url),
+      });
+      const stackName = getStackName(stage, this.name);
+  
+      await cloudformationClient.deployStack(stackName, template);
+    }
   }
 
   setOutputs(outputs: Outputs) {

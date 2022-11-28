@@ -13,8 +13,8 @@ type ApiTemplateProperties = {
   dbPort: string;
   stage: string;
   lambdaPermissions: string[];
-  userPoolClientId: string;
-  userPoolId: string;
+  userPoolClientId?: string;
+  userPoolId?: string;
 };
 
 export const getTemplate = ({
@@ -31,11 +31,10 @@ export const getTemplate = ({
   lambdaPermissions: extraPermissions,
   userPoolClientId,
   userPoolId,
-}: ApiTemplateProperties) =>
-  JSON.stringify({
+}: ApiTemplateProperties) => {
+  const config: Record<string, any> = {
     AWSTemplateFormatVersion: "2010-09-09",
-    Description:
-      "AWS Cloudformation for API module",
+    Description: "AWS Cloudformation for API module",
     Resources: {
       SawsApiGateway: {
         Type: "AWS::ApiGatewayV2::Api",
@@ -46,21 +45,6 @@ export const getTemplate = ({
             AllowMethods: ["*"],
             AllowOrigins: ["*"],
             AllowHeaders: ["*"],
-          },
-        },
-      },
-      SawsApiAuthorizer: {
-        Type: "AWS::ApiGatewayV2::Authorizer",
-        Properties: {
-          ApiId: { Ref: "SawsApiGateway" },
-          AuthorizerType: "JWT",
-          IdentitySource: ["$request.header.Authorization"],
-          Name: `${projectName}-${stage}-api-authorizer`,
-          JwtConfiguration: {
-            Audience: [userPoolClientId],
-            Issuer: {
-              "Fn::Sub": `https://cognito-idp.\${AWS::Region}.amazonaws.com/${userPoolId}`,
-            }
           },
         },
       },
@@ -97,8 +81,6 @@ export const getTemplate = ({
         Type: "AWS::ApiGatewayV2::Route",
         Properties: {
           ApiId: { Ref: "SawsApiGateway" },
-          AuthorizationType: "JWT",
-          AuthorizerId: { Ref: "SawsApiAuthorizer" },
           RouteKey: "POST /",
           Target: {
             "Fn::Join": [
@@ -154,7 +136,9 @@ export const getTemplate = ({
           Path: "/",
           Policies: [
             {
-              PolicyName: `AWSLambda${uppercase(name)}${uppercase(stage)}BasicExecutionRole`,
+              PolicyName: `AWSLambda${uppercase(name)}${uppercase(
+                stage
+              )}BasicExecutionRole`,
               PolicyDocument: {
                 Version: "2012-10-17",
                 Statement: [
@@ -174,7 +158,7 @@ export const getTemplate = ({
                       "Fn::Sub": `arn:aws:ssm:\${AWS::Region}:\${AWS::AccountId}:parameter/${stage}/*`,
                     },
                   },
-                  ...extraPermissions.map((s) => JSON.parse(s))
+                  ...extraPermissions.map((s) => JSON.parse(s)),
                 ],
               },
             },
@@ -237,12 +221,35 @@ export const getTemplate = ({
       graphqlEndpoint: {
         Description: "ApiGateway Url",
         Value: {
-          "Fn::Sub":
-            `https://\${SawsApiGateway}.execute-api.\${AWS::Region}.amazonaws.com/${stage}/`,
+          "Fn::Sub": `https://\${SawsApiGateway}.execute-api.\${AWS::Region}.amazonaws.com/${stage}/`,
         },
       },
     },
-  });
+  };
+
+  if (userPoolId != null && userPoolClientId != null) {
+    config.Resources.SawsApiAuthorizer = {
+      Type: "AWS::ApiGatewayV2::Authorizer",
+      Properties: {
+        ApiId: { Ref: "SawsApiGateway" },
+        AuthorizerType: "JWT",
+        IdentitySource: ["$request.header.Authorization"],
+        Name: `${projectName}-${stage}-api-authorizer`,
+        JwtConfiguration: {
+          Audience: [userPoolClientId],
+          Issuer: {
+            "Fn::Sub": `https://cognito-idp.\${AWS::Region}.amazonaws.com/${userPoolId}`,
+          },
+        }
+      },
+    };
+
+    config.Resources.SawsApiRoute.Properties.AuthorizationType = "JWT";
+    config.Resources.SawsApiRoute.Properties.AuthorizerId = { Ref: "SawsApiAuthorizer" };
+  }
+
+  return JSON.stringify(config);
+};
 
 export const getStackName = (stage: string, name: string) => {
   const projectName = getProjectName();

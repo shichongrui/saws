@@ -37,8 +37,12 @@ export default class API {
     return async (event, context, callback) => {
       context.callbackWaitsForEmptyEventLoop = false;
       const token = event.headers.authorization ?? event.headers.Authorization;
-      const payload = jwt.decode(token?.replace("Bearer ", "") ?? "");
-      this.user.userId = payload?.sub as string;
+
+      if (token != null) {
+        const payload = jwt.decode(token?.replace("Bearer ", "") ?? "");
+        this.user.userId = payload?.sub as string;
+      }
+
       const results = await handler(event, context, () => {});
       callback(null, results);
       return results;

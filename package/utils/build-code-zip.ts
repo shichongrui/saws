@@ -3,7 +3,7 @@ import crypto from "crypto";
 import AdmZip from "adm-zip";
 import { BUILD_DIR } from "./constants";
 
-export const buildCodeZip = async (modulePath: string, projectName: string) => {
+export const buildCodeZip = async (modulePath: string, name: string) => {
   const zip = new AdmZip();
 
   zip.addLocalFile(modulePath);
@@ -16,7 +16,7 @@ export const buildCodeZip = async (modulePath: string, projectName: string) => {
   zip.addLocalFile(sourceMapPath);
 
   // add externals
-  zip.addLocalFolder(path.resolve(BUILD_DIR, "node_modules"), "node_modules");
+  zip.addLocalFolder(path.resolve(parsedModulePath.dir, "node_modules"), "node_modules");
 
   zip.addLocalFile(
     path.resolve(
@@ -38,7 +38,7 @@ export const buildCodeZip = async (modulePath: string, projectName: string) => {
   zip.getEntries().forEach((e) => (e.header.time = new Date("2022-06-17")));
 
   const hash = crypto.createHash("md5").update(zip.toBuffer()).digest("hex");
-  const key = `${projectName}-${hash}.zip`;
+  const key = `${name}-${hash}.zip`;
   const zipPath = path.resolve(BUILD_DIR, key);
   await zip.writeZipPromise(zipPath);
 
