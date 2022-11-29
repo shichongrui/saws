@@ -36,6 +36,7 @@ export class Api implements ModuleDefinition, ApiConfig {
   buildFilePath: string;
   dependencies: ModuleDefinition[];
   outputs: Outputs = {};
+  externalPackages: string[];
 
   constructor(
     name: string,
@@ -49,6 +50,7 @@ export class Api implements ModuleDefinition, ApiConfig {
     this.buildFilePath = path.resolve(BUILD_DIR, this.name, "index.js");
     this.dependencies = dependencies;
     this.configPort = config.port;
+    this.externalPackages = config.externalPackages ?? [];
   }
 
   async build(incremental: boolean = true) {
@@ -66,7 +68,7 @@ export class Api implements ModuleDefinition, ApiConfig {
         platform: "node",
         incremental: incremental,
         // TODO: this is hard coded for now until we have some kind of config method
-        external: ["jsdom"],
+        external: this.externalPackages,
       });
     } catch (err) {
       console.error(err);
@@ -235,7 +237,7 @@ export class Api implements ModuleDefinition, ApiConfig {
 
     // for external node modules, we need to re-install them so that we get
     // them and all their dependencies
-    await npmInstall("jsdom", path.parse(this.buildFilePath).dir);
+    await npmInstall(this.externalPackages.join(" "), path.parse(this.buildFilePath).dir);
 
     // upload build to S3
     console.log("Uploading", this.displayName);

@@ -43,6 +43,7 @@ export type FunctionConfig = BaseModuleConfig & ContainerFunctionConfig & {
 export type ApiConfig = BaseModuleConfig & {
   type: ModuleType.API;
   port?: number;
+  externalPackages?: string[];
 };
 
 export type WebsiteConfig = BaseModuleConfig & {
