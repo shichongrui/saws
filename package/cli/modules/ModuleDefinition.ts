@@ -2,6 +2,7 @@ import { Readable } from "stream";
 import { ModuleType, ServiceType } from "../../config";
 
 export interface ModuleDefinition {
+  name: string;
   type: ServiceType | ModuleType;
   dev: () => Promise<void>;
   deploy: (stage: string) => Promise<void>;
@@ -9,7 +10,6 @@ export interface ModuleDefinition {
   getOutputs: () => Outputs;
   getEnvironmentVariables: () => Record<string, string>;
   getStdOut: () => Readable | null | undefined;
-  getPermissionsTemplate?: (stage: string) => string;
   exit: () => void;
 }
 

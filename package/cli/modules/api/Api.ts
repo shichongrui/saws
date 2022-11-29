@@ -269,7 +269,7 @@ export class Api implements ModuleDefinition, ApiConfig {
       name: this.name,
       stage,
       moduleName: path.parse(this.buildFilePath).name,
-      projectName: getProjectName(),
+      projectName,
       codeBucketName: bucketName,
       codeS3Key: key,
       dbName: String(postgresDBName),
@@ -279,7 +279,15 @@ export class Api implements ModuleDefinition, ApiConfig {
       userPoolId: userPoolId != null ? String(userPoolId) : undefined,
       userPoolClientId: userPoolClientId != null ? String(userPoolClientId) : undefined,
       lambdaPermissions: functionModules.map(
-        (m) => m.getPermissionsTemplate?.(stage) ?? ""
+        (m) => {
+          return JSON.stringify({
+            Effect: "Allow",
+            Action: ["lambda:InvokeFunction"],
+            Resource: {
+              "Fn::Sub": `arn:aws:lambda:\${AWS::Region}:\${AWS::AccountId}:function:${projectName}-${stage}-${m.name}`,
+            },
+          });
+        }
       ),
     });
     const stackName = getStackName(stage, this.name);

@@ -184,15 +184,4 @@ export class Function implements ModuleDefinition, FunctionConfig {
   exit() {
     this.process?.kill();
   }
-
-  getPermissionsTemplate(stage: string) {
-    const projectName = getProjectName();
-    return JSON.stringify({
-      Effect: "Allow",
-      Action: ["lambda:InvokeFunction"],
-      Resource: {
-        "Fn::Sub": `arn:aws:lambda:\${AWS::Region}:\${AWS::AccountId}:function:${projectName}-${stage}-${this.name}`,
-      },
-    });
-  }
 }
