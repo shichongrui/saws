@@ -84,6 +84,12 @@ export const getTemplate = ({
         },
       },
     },
+    Outputs: {
+      distributionId: {
+        Description: "Cloudfront distribution id",
+        Value: { Ref: "WebsiteCloudfrontDistribution" }
+      }
+    }
   });
 
 export const getStackName = (stage: string, name: string) => {

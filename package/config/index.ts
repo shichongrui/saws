@@ -50,6 +50,7 @@ export type WebsiteConfig = BaseModuleConfig & {
   port?: number;
   domain?: string;
   certificateArn?: string;
+  env?: Record<string, string>;
 }
 
 export type ModuleConfig = FunctionConfig | ApiConfig | WebsiteConfig;

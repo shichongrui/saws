@@ -1,8 +1,6 @@
 import {
   HeadObjectCommand,
   PutObjectCommand,
-  DeleteObjectsCommand,
-  ListObjectsCommand,
   S3Client,
 } from "@aws-sdk/client-s3";
 import { promises as fs } from "fs";
@@ -21,14 +19,14 @@ export class S3 {
     filePath: string
   ) {
     const file = await fs.readFile(filePath);
-    
-    const contentType = mime.lookup(filePath)
+
+    const contentType = mime.getType(filePath);
 
     const command = new PutObjectCommand({
       Bucket: bucketName,
       Body: file,
       Key: key,
-      ContentType: contentType,
+      ContentType: contentType ?? undefined,
     });
   
     await this.client.send(command);

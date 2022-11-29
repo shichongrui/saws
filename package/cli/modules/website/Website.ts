@@ -10,7 +10,12 @@ import { createServer, build } from "vite";
 import { recursivelyReadDir } from "../../utils/recursively-read-dir";
 import { promises as fs } from "fs";
 import { BUILD_DIR } from "../../../utils/constants";
-import { getStackName as getS3StackName, getTemplate as getS3Template } from './s3-cloud-formation.template'
+import {
+  getStackName as getS3StackName,
+  getTemplate as getS3Template,
+} from "./s3-cloud-formation.template";
+import { CloudFrontClient } from "@aws-sdk/client-cloudfront";
+import { Cloudfront } from "../../../aws/cloudfront";
 
 export class Website implements ModuleDefinition, WebsiteConfig {
   type: ModuleType.WEBSITE = ModuleType.WEBSITE;
@@ -42,7 +47,8 @@ export class Website implements ModuleDefinition, WebsiteConfig {
         ...acc,
         ...d.getEnvironmentVariables(),
       };
-    }, {});
+    }, {...(this.config.env ?? {})});
+
     const envFileContents =
       Object.entries(environmentVariables)
         .map(([key, value]) => `VITE_${key}=${value}\n`)
@@ -96,7 +102,10 @@ export class Website implements ModuleDefinition, WebsiteConfig {
       domain: this.domain,
     });
 
-    const results = await cloudformationClient.deployStack(s3StackName, s3Template)
+    const results = await cloudformationClient.deployStack(
+      s3StackName,
+      s3Template
+    );
     const outputs = results?.Stacks?.[0].Outputs;
 
     this.setOutputs({
@@ -135,8 +144,24 @@ export class Website implements ModuleDefinition, WebsiteConfig {
         s3WebsiteUrl: String(this.outputs.websiteS3Url),
       });
       const stackName = getStackName(stage, this.name);
-  
-      await cloudformationClient.deployStack(stackName, template);
+
+      const results = await cloudformationClient.deployStack(
+        stackName,
+        template
+      );
+
+      const cloudfrontOutputs = results?.Stacks?.[0].Outputs;
+      this.setOutputs({
+        ...Object.fromEntries(
+          cloudfrontOutputs?.map(({ OutputKey, OutputValue }) => [
+            OutputKey,
+            OutputValue,
+          ]) ?? []
+        ),
+      });
+
+      const cloudfrontClient = new Cloudfront();
+      await cloudfrontClient.createInvalidation(String(this.outputs.distributionId), "/index.html")
     }
   }
 
