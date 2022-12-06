@@ -67,7 +67,6 @@ export class Api implements ModuleDefinition, ApiConfig {
         sourcemap: true,
         platform: "node",
         incremental: incremental,
-        // TODO: this is hard coded for now until we have some kind of config method
         external: this.externalPackages,
       });
     } catch (err) {
