@@ -2,6 +2,7 @@ export enum ModuleType {
   API = "api",
   FUNCTION = "function",
   WEBSITE = "website",
+  CONTAINER = "container",
 }
 
 export enum ServiceType {
@@ -23,22 +24,27 @@ export type PostgresConfig = BaseConfig & {
 
 export type AuthConfig = BaseConfig & {
   type: ServiceType.AUTH;
+  devUser?: {
+    username: string;
+    password: string;
+  }
 };
 
 export type BaseModuleConfig = BaseConfig & {
   rootDir?: string;
   uses?: string[];
-}
+};
 
 export type ContainerFunctionConfig = {
-  runtime: FunctionRuntime.CONTAINER
+  runtime: FunctionRuntime.CONTAINER;
   port?: number;
   memory?: number;
-}
-
-export type FunctionConfig = BaseModuleConfig & ContainerFunctionConfig & {
-  type: ModuleType.FUNCTION;
 };
+
+export type FunctionConfig = BaseModuleConfig &
+  ContainerFunctionConfig & {
+    type: ModuleType.FUNCTION;
+  };
 
 export type ApiConfig = BaseModuleConfig & {
   type: ModuleType.API;
@@ -52,9 +58,15 @@ export type WebsiteConfig = BaseModuleConfig & {
   domain?: string;
   certificateArn?: string;
   env?: Record<string, string>;
+};
+
+export type ContainerConfig = BaseModuleConfig & {
+  type: ModuleType.CONTAINER,
+  port?: number;
+  healthCheckUrl?: string;
 }
 
-export type ModuleConfig = FunctionConfig | ApiConfig | WebsiteConfig;
+export type ModuleConfig = FunctionConfig | ApiConfig | WebsiteConfig | ContainerConfig;
 export type ServiceConfig = PostgresConfig | AuthConfig;
 
 export type SawsConfig = {

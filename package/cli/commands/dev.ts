@@ -43,7 +43,6 @@ export async function startDev() {
   }
 
   const moduleConfigs = Object.entries(sawsConfig.modules);
-
   const copy = moduleConfigs.slice();
   while (copy.length > 0) {
     const [name, config] = copy.shift()!;

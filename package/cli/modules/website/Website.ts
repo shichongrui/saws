@@ -16,6 +16,7 @@ import {
 } from "./s3-cloud-formation.template";
 import { CloudFrontClient } from "@aws-sdk/client-cloudfront";
 import { Cloudfront } from "../../../aws/cloudfront";
+import { string } from "yargs";
 
 export class Website implements ModuleDefinition, WebsiteConfig {
   type: ModuleType.WEBSITE = ModuleType.WEBSITE;
@@ -42,12 +43,15 @@ export class Website implements ModuleDefinition, WebsiteConfig {
   }
 
   async writeEnvVarFile(stage: string, nodeEnv: "development" | "production") {
-    const environmentVariables = this.dependencies.reduce((acc, d) => {
-      return {
-        ...acc,
-        ...d.getEnvironmentVariables(),
-      };
-    }, {...(this.config.env ?? {})});
+    const environmentVariables = this.dependencies.reduce(
+      (acc, d) => {
+        return {
+          ...acc,
+          ...d.getEnvironmentVariables(),
+        };
+      },
+      { ...(this.config.env ?? {}) }
+    );
 
     const envFileContents =
       Object.entries(environmentVariables)
@@ -117,6 +121,9 @@ export class Website implements ModuleDefinition, WebsiteConfig {
       ),
     });
 
+    const allFiles = await recursivelyReadDir(this.rootDir);
+    const allHtmlFiles = allFiles.filter((f) => f.endsWith(".html"));
+
     const buildDir = path.resolve(BUILD_DIR, this.name);
     await build({
       root: this.rootDir,
@@ -125,6 +132,15 @@ export class Website implements ModuleDefinition, WebsiteConfig {
       build: {
         outDir: buildDir,
         emptyOutDir: true,
+        rollupOptions: {
+          input: allHtmlFiles.reduce((acc, f) => {
+            const relativePath = f.replace(this.rootDir + "/", "");
+            const parsedPath = path.parse(relativePath);
+            const key = [parsedPath.dir, parsedPath.name].filter(Boolean).join('-')
+            acc[key] = f;
+            return acc;
+          }, {} as Record<string, string>),
+        },
       },
     });
 
@@ -161,7 +177,10 @@ export class Website implements ModuleDefinition, WebsiteConfig {
       });
 
       const cloudfrontClient = new Cloudfront();
-      await cloudfrontClient.createInvalidation(String(this.outputs.distributionId), "/index.html")
+      await cloudfrontClient.createInvalidation(
+        String(this.outputs.distributionId),
+        "/index.html"
+      );
     }
   }
 

@@ -84,7 +84,7 @@ export class Auth implements ModuleDefinition, AuthConfig {
     ]);
 
     // await new Promise(r => setTimeout(r, 1000))
-
+    
     await retryUntil(async () => {
       try {
         await new Cognito("local").listUserPools();
@@ -93,7 +93,7 @@ export class Auth implements ModuleDefinition, AuthConfig {
         return false;
       }
     }, 1000);
-
+    
     this.setOutputs({
       cognitoEndpoint: "http://localhost:9229",
     });
@@ -195,13 +195,13 @@ export class Auth implements ModuleDefinition, AuthConfig {
   }
 
   async getCognitoParameters() {
-    const password = await this.getDevUserPassword();
+    const password = this.config.devUser?.password ?? await this.getDevUserPassword();
 
     const projectName = getProjectName();
     return {
       poolName: `${projectName}-local-${this.name}-users`,
       clientName: `${projectName}-local-${this.name}-users-client`,
-      devUserEmail: `dev@${projectName}.com`,
+      devUserEmail: this.config.devUser?.username ?? `dev@${projectName}.com`,
       devUserPassword: password,
     };
   }

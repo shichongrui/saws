@@ -7,14 +7,11 @@ type ApiTemplateProperties = {
   projectName: string;
   codeBucketName: string;
   codeS3Key: string;
-  dbName: string;
-  dbUsername: string;
-  dbHost: string;
-  dbPort: string;
   stage: string;
   lambdaPermissions: string[];
   userPoolClientId?: string;
   userPoolId?: string;
+  environment: Record<string, string>;
 };
 
 export const getTemplate = ({
@@ -23,14 +20,11 @@ export const getTemplate = ({
   projectName,
   codeBucketName,
   codeS3Key,
-  dbName,
-  dbUsername,
-  dbHost,
-  dbPort,
   stage,
   lambdaPermissions: extraPermissions,
   userPoolClientId,
   userPoolId,
+  environment,
 }: ApiTemplateProperties) => {
   const config: Record<string, any> = {
     AWSTemplateFormatVersion: "2010-09-09",
@@ -40,7 +34,7 @@ export const getTemplate = ({
         Type: "AWS::ApiGatewayV2::Api",
         Properties: {
           ProtocolType: "HTTP",
-          Name: `${projectName}-${stage}-saws-api`,
+          Name: `${projectName}-${stage}-${name}`,
           CorsConfiguration: {
             AllowMethods: ["*"],
             AllowOrigins: ["*"],
@@ -170,13 +164,10 @@ export const getTemplate = ({
         Properties: {
           Environment: {
             Variables: {
-              NODE_ENV: "prod",
-              DATABASE_USERNAME: dbUsername,
-              DATABASE_HOST: dbHost,
-              DATABASE_PORT: dbPort,
-              DATABASE_NAME: dbName,
+              NODE_ENV: "production",
               STAGE: stage,
               PROJECT_NAME: projectName,
+              ...environment,
             },
           },
           FunctionName: `${projectName}-${stage}-${name}`,

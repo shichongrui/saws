@@ -5,6 +5,7 @@ import { Postgres } from "../modules/postgres/Postgres";
 import { Function } from "../modules/function/Function";
 import { Api } from "../modules/api/Api";
 import { Website } from "../modules/website/Website";
+import { Container } from "../modules/container/Container";
 
 export function getModuleFromConfig(
   name: string,
@@ -22,5 +23,7 @@ export function getModuleFromConfig(
       return new Api(name, config, dependencies);
     case ModuleType.WEBSITE:
       return new Website(name, config, dependencies);
+    case ModuleType.CONTAINER:
+      return new Container(name, config, dependencies);
   }
 }

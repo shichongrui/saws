@@ -133,7 +133,6 @@ export class Api implements ModuleDefinition, ApiConfig {
           try {
             const authToken =
               req.headers.authorization?.replace("Bearer ", "") ?? "";
-
             if (authDependency != null) {
               await new Promise((resolve, reject) => {
                 jwt.verify(authToken, getJwksKey, {}, (err, decoded) => {
@@ -175,26 +174,11 @@ export class Api implements ModuleDefinition, ApiConfig {
               () => {}
             );
 
-            try {
-              const responseBody = JSON.parse(results.body);
-
-              if ("errors" in responseBody) {
-                console.error(
-                  responseBody.errors
-                    .map((e: any) =>
-                      e.extensions.exception.stacktrace.join("\n")
-                    )
-                    .join("\n")
-                );
-              }
-            } catch (_err) {
-              // do nothing
-            }
-
             res.writeHead(results.statusCode, results.multiValueHeaders);
             res.end(results.body);
           } catch (err) {
-            console.log("Error:", err);
+            res.writeHead(500);
+            res.end();
           }
         }
       );
@@ -252,8 +236,6 @@ export class Api implements ModuleDefinition, ApiConfig {
     const dbModule = this.dependencies.find(
       ({ type }) => type === ServiceType.POSTGRES
     );
-    const { postgresHost, postgresPort, postgresUsername, postgresDBName } =
-      dbModule?.getOutputs() ?? {};
 
     const authModule = this.dependencies.find(
       ({ type }) => type === ServiceType.AUTH
@@ -264,6 +246,13 @@ export class Api implements ModuleDefinition, ApiConfig {
       ({ type }) => type === ModuleType.FUNCTION
     );
 
+    const environment = this.dependencies.reduce((acc, dependency) => {
+      return {
+        ...acc,
+        ...dependency.getEnvironmentVariables(),
+      }
+    }, {});
+
     const template = getTemplate({
       name: this.name,
       stage,
@@ -271,10 +260,6 @@ export class Api implements ModuleDefinition, ApiConfig {
       projectName,
       codeBucketName: bucketName,
       codeS3Key: key,
-      dbName: String(postgresDBName),
-      dbPort: String(postgresPort),
-      dbHost: String(postgresHost),
-      dbUsername: String(postgresUsername),
       userPoolId: userPoolId != null ? String(userPoolId) : undefined,
       userPoolClientId: userPoolClientId != null ? String(userPoolClientId) : undefined,
       lambdaPermissions: functionModules.map(
@@ -288,6 +273,7 @@ export class Api implements ModuleDefinition, ApiConfig {
           });
         }
       ),
+      environment,
     });
     const stackName = getStackName(stage, this.name);
     const results = await cloudformationClient.deployStack(stackName, template);

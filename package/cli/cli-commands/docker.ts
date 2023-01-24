@@ -60,8 +60,6 @@ export const startContainer = async ({
   additionalArguments,
   check
 }: StartContainerParameters) => {
-
-
   onProcessExit(() => {
     dockerCommand(`stop ${name}`, { echo: false });
   });

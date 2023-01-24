@@ -33,7 +33,7 @@ export default ({
         Type: "AWS::ApiGatewayV2::Api",
         Properties: {
           ProtocolType: "HTTP",
-          Name: `${projectName}-${stage}-saws-api`,
+          Name: `${projectName}-${stage}-${moduleName}`,
           CorsConfiguration: {
             AllowMethods: ["*"],
             AllowOrigins: ["*"],
@@ -191,7 +191,7 @@ export default ({
         Properties: {
           Environment: {
             Variables: {
-              NODE_ENV: "prod",
+              NODE_ENV: "production",
               DATABASE_USERNAME: dbUsername,
               DATABASE_HOST: {
                 "Fn::ImportValue": `${resourcesStackName}-postgresHost`,
