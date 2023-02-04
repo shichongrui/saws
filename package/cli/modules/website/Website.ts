@@ -179,7 +179,7 @@ export class Website implements ModuleDefinition, WebsiteConfig {
       const cloudfrontClient = new Cloudfront();
       await cloudfrontClient.createInvalidation(
         String(this.outputs.distributionId),
-        "/index.html"
+        "/*"
       );
     }
   }

@@ -1,7 +1,7 @@
 import { IExecutableSchemaDefinition } from "@graphql-tools/schema";
 import { ApolloServer } from "apollo-server-lambda";
 import { APIGatewayProxyHandler } from "aws-lambda";
-import { PluginDefinition } from 'apollo-server-core';
+import { GraphQLError } from "graphql";
 import jwt from "jsonwebtoken";
 import SecretsManager from "../secrets";
 
@@ -60,10 +60,6 @@ export default class API {
         requestContext: _requestContext,
         ...loggableEvent
       } = event;
-      console.log("Received request", {
-        ...loggableEvent,
-        body: JSON.parse(event.body ?? ""),
-      });
 
       context.callbackWaitsForEmptyEventLoop = false;
       const token = event.headers.authorization ?? event.headers.Authorization;
@@ -73,12 +69,18 @@ export default class API {
         this.user.userId = payload?.sub as string;
       }
 
+      console.log("Received request", JSON.stringify({
+        ...loggableEvent,
+        body: JSON.parse(event.body ?? ""),
+        userId: this.user.userId,
+      }, null, 2));
+
       try {
         const results = await handler(event, context, () => {});
         callback(null, results);
         return results;
       } catch (error) {
-        console.error("Error while processing request", error);
+        console.error("Error while processing request", JSON.stringify(error, null, 2));
         callback(error as Error);
       }
     };

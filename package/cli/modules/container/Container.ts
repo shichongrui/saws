@@ -34,7 +34,7 @@ export class Container implements ModuleDefinition {
 
   async build() {
     return new Promise((resolve, reject) => {
-      console.log("Building container function", this.name);
+      console.log("Building container", this.name);
       exec(
         `docker build -t ${this.name} .`,
         {
@@ -71,6 +71,8 @@ export class Container implements ModuleDefinition {
       `${port}:${port}`,
       this.name,
     ]);
+
+    console.log('Starting container', this.name)
 
     watch(this.rootDir, { ignoreInitial: true }).on("all", async () => {
       console.log("Detected changes in", this.displayName);
