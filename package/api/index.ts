@@ -1,7 +1,6 @@
 import { IExecutableSchemaDefinition } from "@graphql-tools/schema";
 import { ApolloServer } from "apollo-server-lambda";
 import { APIGatewayProxyHandler } from "aws-lambda";
-import { GraphQLError } from "graphql";
 import jwt from "jsonwebtoken";
 import SecretsManager from "../secrets";
 

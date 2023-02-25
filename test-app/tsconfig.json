@@ -1,9 +1,0 @@
-{
-  "extends": "../tsconfig.json",
-  "include": ["**/*.ts", "*.ts"],
-  "compilerOptions": {
-    "composite": true,
-    "declaration": true,
-    "declarationMap": true
-  },
-}

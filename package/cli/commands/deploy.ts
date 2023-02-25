@@ -1,36 +1,6 @@
-import path from "path";
-import { build } from "../build";
-import { CloudFormation } from "../../aws/cloudformation";
-import { S3 } from "../../aws/s3";
-import { EC2 } from "../../aws/ec2";
-import { createCacheDir, createSawsDir } from "../../utils/create-directories";
-import { getBuildPathsForEntrypoint } from "../../utils/get-build-paths";
-import sawsResourcesTemplate, {
-  getStackName as getResourcesStackName,
-} from "../templates/saws-resources.template";
-import sawsApiTemplate, {
-  getStackName as getApiStackName,
-} from "../templates/saws-api.template";
-import { BUILD_DIR, DB_PASSWORD_PARAMETER_NAME } from "../../utils/constants";
-import { prismaMigrate } from "../cli-commands/prisma";
-import { getProjectName } from "../../utils/get-project-name";
-import { buildCodeZip } from "../../utils/build-code-zip";
-import { getDBParameters } from "../../utils/get-db-parameters";
+import { createCacheDir } from "../../utils/create-directories";
 import { writeStageOutputs } from "../../utils/stage-outputs";
 import { getSawsConfig } from "../../utils/get-saws-config";
-// import getModuleConfig from "../../utils/get-module-config";
-// import { ApiConfig, FunctionConfig, ModuleType } from "../../config";
-// import getAwsAccountId from "../../utils/get-aws-account-id";
-// import {
-//   buildImage,
-//   loginToAWSDocker,
-//   pushImage,
-//   tagImage,
-// } from "../cli-commands/docker";
-// import sawsFunctionTemplate, {
-//   getFunctionStackName,
-// } from "../templates/saws-function.template";
-// import { npmInstall } from "../cli-commands/npm";
 import { ModuleDefinition } from "../modules/ModuleDefinition";
 import { getModuleFromConfig } from "../utils/get-module-from-config";
 
