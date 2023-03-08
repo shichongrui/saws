@@ -3,7 +3,16 @@ import crypto from "crypto";
 import AdmZip from "adm-zip";
 import { BUILD_DIR } from "./constants";
 
-export const buildCodeZip = async (modulePath: string, name: string) => {
+export const buildCodeZip = async (
+  modulePath: string,
+  {
+    name,
+    hasExternalModules = false,
+  }: {
+    name: string;
+    hasExternalModules: boolean;
+  }
+) => {
   const zip = new AdmZip();
 
   zip.addLocalFile(modulePath);
@@ -16,7 +25,12 @@ export const buildCodeZip = async (modulePath: string, name: string) => {
   zip.addLocalFile(sourceMapPath);
 
   // add externals
-  zip.addLocalFolder(path.resolve(parsedModulePath.dir, "node_modules"), "node_modules");
+  if (hasExternalModules) {
+    zip.addLocalFolder(
+      path.resolve(parsedModulePath.dir, "node_modules"),
+      "node_modules"
+    );
+  }
 
   zip.addLocalFile(
     path.resolve(

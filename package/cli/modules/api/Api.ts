@@ -173,10 +173,10 @@ export class Api implements ModuleDefinition, ApiConfig {
               context,
               () => {}
             );
-
             res.writeHead(results.statusCode, results.multiValueHeaders);
             res.end(results.body);
           } catch (err) {
+            console.log(err)
             res.writeHead(500);
             res.end();
           }
@@ -220,11 +220,16 @@ export class Api implements ModuleDefinition, ApiConfig {
 
     // for external node modules, we need to re-install them so that we get
     // them and all their dependencies
-    await npmInstall(this.externalPackages.join(" "), path.parse(this.buildFilePath).dir);
+    if (this.externalPackages.length > 0) {
+      await npmInstall(this.externalPackages.join(" "), path.parse(this.buildFilePath).dir);
+    }
 
     // upload build to S3
     console.log("Uploading", this.displayName);
-    const zipPath = await buildCodeZip(this.buildFilePath, this.name);
+    const zipPath = await buildCodeZip(this.buildFilePath, {
+      name: this.name,
+      hasExternalModules: this.externalPackages.length > 0,
+    });
     const key = path.parse(zipPath).base;
     const fileExists = await s3Client.doesFileExist(bucketName, key);
     if (!fileExists) {

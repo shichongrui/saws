@@ -75,7 +75,7 @@ export const getTemplate = ({
         Type: "AWS::ApiGatewayV2::Route",
         Properties: {
           ApiId: { Ref: "SawsApiGateway" },
-          RouteKey: "POST /",
+          RouteKey: "ANY /{proxy+}",
           Target: {
             "Fn::Join": [
               "/",
@@ -151,6 +151,11 @@ export const getTemplate = ({
                     Resource: {
                       "Fn::Sub": `arn:aws:ssm:\${AWS::Region}:\${AWS::AccountId}:parameter/${stage}/*`,
                     },
+                  },
+                  {
+                    Effect: "Allow",
+                    Action: ["ses:SendEmail"],
+                    Resource: "*",
                   },
                   ...extraPermissions.map((s) => JSON.parse(s)),
                 ],

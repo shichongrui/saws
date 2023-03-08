@@ -1,10 +1,12 @@
+import { SESEmail } from "./email";
 import FunctionsClient from "./functions/FunctionsClient";
 import SecretsManager from "./secrets";
 
 export const Secrets = new SecretsManager(process.env.STAGE!);
 
+export const Email = new SESEmail();
+
 export { default as RDS } from "./rds";
-export { default as API } from "./api";
 export * from "./api";
 
 export * from './config';
