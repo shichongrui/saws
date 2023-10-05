@@ -1,11 +1,13 @@
 {
-  "name": "@shichongrui/saws-auth",
+  "name": "@shichongrui/saws-secrets",
   "version": "0.0.5",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@shichongrui/saws-aws": "^0.0.5"
+    "@shichongrui/saws-aws": "^0.0.5",
+    "@shichongrui/saws-core": "^0.0.5",
+    "envfile": "^6.17.0"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

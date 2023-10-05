@@ -1,10 +1,14 @@
 # 🪚 SAWS 🪚
 
 - Requires @prisma/client to be installed as a peer dep
+- Requires .npmrc in root of project
+```
+@shichongrui:registry=https://npm.pkg.github.com
+```
 
 ## Starting a new project
 - npm init
-- npm i -D typescript ts-node @types/node
+- npm i -D typescript
 - tsconfig.json
   ```
   {

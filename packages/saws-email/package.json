@@ -1,11 +1,11 @@
 {
-  "name": "@shichongrui/saws-auth",
+  "name": "@shichongrui/saws-email",
   "version": "0.0.5",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@shichongrui/saws-aws": "^0.0.5"
+    "@shichongrui/saws-aws": "0.0.2"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

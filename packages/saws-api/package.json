@@ -1,15 +1,8 @@
 {
-  "name": "@shichongrui/saws-auth",
+  "name": "@shichongrui/saws-api",
   "version": "0.0.5",
-  "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "dependencies": {
-    "@shichongrui/saws-aws": "^0.0.5"
-  },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/shichongrui/saws.git"
@@ -20,6 +13,17 @@
     "url": "https://github.com/shichongrui/saws/issues"
   },
   "homepage": "https://github.com/shichongrui/saws#readme",
+  "description": "",
+  "devDependencies": {
+    "@graphql-tools/schema": "^10.0.0",
+    "aws-lambda": "^1.0.7"
+  },
+  "dependencies": {
+    "apollo-server-lambda": "^3.12.1",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
+    "serverless-http": "^3.1.1"
+  },
   "files": [
     "./dist"
   ]
