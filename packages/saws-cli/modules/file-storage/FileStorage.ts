@@ -4,6 +4,7 @@ import {
   RemixConfig,
   SAWS_DIR,
   ServiceType,
+  getProjectName,
   retryUntil,
 } from "@shichongrui/saws-core";
 import { AWSPermission, ModuleDefinition, Outputs } from "../ModuleDefinition";
@@ -32,20 +33,35 @@ export class FileStorage implements ModuleDefinition, FileStorageConfig {
     this.config = config;
     this.dependencies = dependencies;
   }
+  
+  getBucketName() {
+    return `${getProjectName()}-dev-${this.name}-file-storage`
+  }
 
   async dev() {
-
+    await this.startS3Docker();
   }
 
   async startS3Docker() {
+    console.log("Starting file storage");
     await waitForContainerToBeStopped(`${this.name}-s3`);
+
+    this.setOutputs({
+      s3Endpoint: 'http://127.0.0.1:9000',
+      s3AccessKey: 'minioadmin',
+      s3SecretKey: 'minioadmin'
+    })
+
+    process.env = {
+      ...process.env,
+      ...(await this.getEnvironmentVariables())
+    }
 
     const childProcess = spawn("docker", [
       "run",
       "--rm",
       "--name",
       `${this.name}-s3`,
-      
       "-p",
       "9000:9000",
       "-p",
@@ -56,22 +72,23 @@ export class FileStorage implements ModuleDefinition, FileStorageConfig {
       "server",
       "/data",
       "--console-address",
-      "\":9001\""
-    ]);
+      ":9001",
+    ])
 
+    const client = new S3();
     await retryUntil(async () => {
-      const client = new S3()
       try {
-        await client.listBuckets()
-        return true
+        await client.listBuckets();
+        return true;
       } catch (_) {
-        return false
+        return false;
       }
     }, 1000);
 
-    this.setOutputs({
-      s3Endpoint: 'localhost:9001'
-    });
+    const buckets = await client.listBuckets()
+    if (buckets.Buckets?.find(bucket => bucket.Name === this.getBucketName()) == null) {
+      await client.createBucket(this.getBucketName())
+    }
 
     this.process = childProcess;
   }
@@ -90,11 +107,15 @@ export class FileStorage implements ModuleDefinition, FileStorageConfig {
   }
 
   async getEnvironmentVariables() {
-    return {};
+    return {
+      S3_ENDPOINT: String(this.outputs.s3Endpoint),
+      S3_ACCESS_KEY: String(this.outputs.s3AccessKey),
+      S3_SECRET_KEY: String(this.outputs.s3SecretKey),
+    };
   }
 
   getStdOut() {
-    return null;
+    return this.process?.stdout;
   }
 
   getPermissions(dependantType: ModuleType, stage: string) {

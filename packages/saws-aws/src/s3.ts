@@ -1,9 +1,11 @@
 import {
+  CreateBucketCommand,
   GetObjectCommand,
   HeadObjectCommand,
   ListBucketsCommand,
   PutObjectCommand,
   S3Client,
+  S3ClientConfig,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { promises as fs } from "fs";
@@ -13,7 +15,18 @@ export class S3 {
   client: S3Client
   
   constructor() {
-    this.client = new S3Client({});
+    const config: S3ClientConfig = {}
+    if (process.env.S3_ENDPOINT != null) {
+      config.endpoint = process.env.S3_ENDPOINT
+    }
+
+    if (process.env.S3_ACCESS_KEY != null || process.env.S3_SECRET_KEY != null) {
+      config.credentials = {
+        accessKeyId: String(process.env.S3_ACCESS_KEY),
+        secretAccessKey: String(process.env.S3_SECRET_KEY)
+      }
+    }
+    this.client = new S3Client(config);
   }
   
   async uploadFileFromPath(
@@ -62,6 +75,14 @@ export class S3 {
     return this.client.send(command)
   }
 
+  getPresignedFileUrl(bucketName: string, key: string) {
+    const command = new GetObjectCommand({
+      Bucket: bucketName,
+      Key: key,
+    })
+    return getSignedUrl(this.client, command, { expiresIn: 3600 })
+  }
+
   getPresignedUploadUrl(bucketName: string, key: string) {
     const command = new PutObjectCommand({
       Bucket: bucketName,
@@ -72,6 +93,13 @@ export class S3 {
 
   listBuckets() {
     const command = new ListBucketsCommand({})
+    return this.client.send(command)
+  }
+
+  createBucket(bucketName: string) {
+    const command = new CreateBucketCommand({
+      Bucket: bucketName,
+    })
     return this.client.send(command)
   }
 }

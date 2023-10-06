@@ -71,9 +71,7 @@ export class Remix implements ModuleDefinition, RemixConfig {
     //   return;
     // }
 
-    console.log('Building remix compiler')
     let config = await readConfig(path.resolve("."));
-    console.log('getting port')
     const port = await this.getPort();
     let options = {
       mode,
@@ -84,42 +82,34 @@ export class Remix implements ModuleDefinition, RemixConfig {
           : undefined,
     };
 
-    console.log('creating file watch cache')
     let fileWatchCache = createFileWatchCache();
     
-    console.log('Clearing build dir')
     fse.emptyDirSync(config.assetsBuildDirectory);
     
-    console.log('Building compiler')
     this.remixCompiler = await compiler.create({
       config,
       options,
       fileWatchCache,
       logger,
     });
-    console.log('compiling')
     await this.remixCompiler.compile();
     await this.remixCompiler.dispose();
   }
 
   async build(mode: "development" | "production" = "development") {
     try {
-      console.log('Rebuilding remix')
       await this.buildRemix(mode);
       
-      console.log('Copying public dir')
       await copyDirectory(
         path.join(this.rootDir, "public"),
         path.resolve(BUILD_DIR, this.name, "public")
       );
         
-      console.log('Rebuilding app')
       if (this.buildContext != null) {
         await this.buildContext.rebuild?.();
         return;
       }
       
-      console.log('With a new build context')
       this.buildContext = await esbuild.context({
         minify: mode === "production",
         entryPoints: [this.entryPointPath],

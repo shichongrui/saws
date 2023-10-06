@@ -15,6 +15,7 @@ import { ContainerFunction } from "../modules/function/container/ContainerFuncti
 import { TypescriptFunction } from "../modules/function/typescript/TypescriptFunction";
 import { Translate } from "../modules/translate/Translate";
 import { Remix } from "../modules/remix/Remix";
+import { FileStorage } from "../modules/file-storage/FileStorage";
 
 export function getModuleFromConfig(
   name: string,
@@ -28,6 +29,9 @@ export function getModuleFromConfig(
       return new Auth(name, config);
     case ServiceType.TRANSLATE:
       return new Translate(name, config);
+    case ServiceType.FILE_STORAGE:
+      return new FileStorage(name, config, dependencies);
+    
     case ModuleType.FUNCTION:
       switch (config.runtime) {
         case FunctionRuntime.CONTAINER:
