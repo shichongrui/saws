@@ -1,6 +1,6 @@
 {
-  "name": "saws-file-storage",
-  "version": "0.0.5",
+  "name": "@shichongrui/saws-file-storage",
+  "version": "0.0.10",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -18,7 +18,7 @@
     "./dist"
   ],
   "dependencies": {
-    "@shichongrui/saws-aws": "^0.0.5",
-    "@shichongrui/saws-core": "^0.0.5"
+    "@shichongrui/saws-aws": "^0.0.10",
+    "@shichongrui/saws-core": "^0.0.10"
   }
 }

@@ -142,7 +142,7 @@ export const pushPrisma = ({
 }: DBParameters) => {
   return new Promise((resolve, reject) => {
     exec(
-      "npx prisma db push",
+      "npx prisma migrate reset",
       {
         env: {
           ...process.env,

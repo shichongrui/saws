@@ -26,6 +26,6 @@ export const transformRequestToLambdaEvent = async (req: IncomingMessage) => {
       (acc, [key, value]) => ({ ...acc, [key]: value }),
       {}
     ), // You'd need to parse req.url for query parameters
-    isBase64Encoded: false,
+    isBase64Encoded: true,
   };
 };

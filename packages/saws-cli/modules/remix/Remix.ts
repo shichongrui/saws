@@ -120,11 +120,11 @@ export class Remix implements ModuleDefinition, RemixConfig {
       });
       await this.buildContext.rebuild();
     } catch (err) {
+      console.error('Remix build error', err);
       this.buildContext?.dispose()
       this.buildContext = undefined
-      this.remixCompiler.dispose()
+      this.remixCompiler?.dispose()
       this.remixCompiler = null
-      console.error('Remix build error', err);
     }
   }
 
@@ -158,11 +158,9 @@ export class Remix implements ModuleDefinition, RemixConfig {
       ignored: [path.join(this.rootDir, "build")],
     }).on("all", async (...args) => {
       console.log(`Detected changes in ${this.displayName}. Rebuilding...`);
-      debugger
       await this.build();
       this.captureHandlerRef();
       broadcast({ type: "RELOAD" });
-      console.log('Built')
     });
 
     await this.startDevServer();
@@ -242,7 +240,9 @@ export class Remix implements ModuleDefinition, RemixConfig {
             }
 
             res.writeHead(results.statusCode, headers);
-            res.end(results.body);
+            res.end(results.isBase64Encoded
+              ? Buffer.from(results.body, 'base64')
+              : results.body);
           } catch (err) {
             console.log(err);
             res.writeHead(500);

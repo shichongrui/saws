@@ -35,18 +35,25 @@ export class S3 {
     filePath: string
   ) {
     const file = await fs.readFile(filePath);
+    return this.uploadFile(bucketName, key, file)
+  };
 
-    const contentType = mime.getType(filePath);
+  uploadFile(
+    bucketName: string,
+    key: string,
+    file: Uint8Array,
+  ) {
+    const contentType = mime.getType(key)
 
     const command = new PutObjectCommand({
       Bucket: bucketName,
       Body: file,
       Key: key,
-      ContentType: contentType ?? undefined,
-    });
-  
-    await this.client.send(command);
-  };
+      ContentType: contentType ?? undefined
+    })
+
+    return this.client.send(command)
+  }
   
   async doesFileExist(bucketName: string, key: string) {
     const command = new HeadObjectCommand({

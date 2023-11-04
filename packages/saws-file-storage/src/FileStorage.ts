@@ -1,5 +1,4 @@
 import { S3 } from '@shichongrui/saws-aws'
-import { getProjectName } from '@shichongrui/saws-core'
 
 export class FileStorage {
   name: string
@@ -16,11 +15,21 @@ export class FileStorage {
 
   async getFile(path: string) {
     const response = await this.client.getFile(this.getBucketName(), path)
-    return response.Body
+    return response
+  }
+
+  async getFileUrl(path: string) {
+    const response = await this.client.getPresignedFileUrl(this.getBucketName(), path)
+    return response
   }
 
   async getFileUploadUrl(path: string) {
     const response = await this.client.getPresignedUploadUrl(this.getBucketName(), path)
+    return response
+  }
+
+  async writeFile(path: string, file: Uint8Array) {
+    const response = await this.client.uploadFile(this.getBucketName(), path, file)
     return response
   }
 }

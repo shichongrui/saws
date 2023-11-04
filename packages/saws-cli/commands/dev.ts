@@ -6,8 +6,8 @@ import { onProcessExit } from "../utils/on-exit";
 import { getModuleFromConfig } from "../utils/get-module-from-config";
 
 export async function startDev() {
-  process.env.NODE_ENV = 'development'
-  process.env.STAGE = 'local'
+  process.env.NODE_ENV = "development";
+  process.env.STAGE = "local";
 
   await createCacheDir();
 
@@ -27,18 +27,32 @@ export async function startDev() {
 
   // start up all services
   const serviceConfigs = Object.entries(sawsConfig.services);
-  for (const [name, config] of serviceConfigs) {
+  const serviceConfigsCopy = serviceConfigs.slice();
+  for (const [name, config] of serviceConfigsCopy) {
+    const numDependencies = config.uses?.length ?? 0;
+    const dependencies =
+      config.uses?.map(
+        (dependency) => services[dependency] ?? modules[dependency]
+      ).filter(Boolean) ?? [];
+    if (dependencies.length !== numDependencies) {
+      serviceConfigsCopy.push([name, config]);
+      continue;
+    }
+
     const service = getModuleFromConfig(name, config, []);
     if (service != null) {
       services[name] = service;
       await service.dev();
-      await writeStageOutputs({
-        [name]: service.getOutputs(),
-      }, 'local');
+      await writeStageOutputs(
+        {
+          [name]: service.getOutputs(),
+        },
+        "local"
+      );
       process.env = {
         ...process.env,
-        ...(await service.getEnvironmentVariables())
-      }
+        ...(await service.getEnvironmentVariables()),
+      };
     }
   }
 
@@ -50,7 +64,7 @@ export async function startDev() {
     const dependencies =
       config.uses?.map(
         (dependency) => services[dependency] ?? modules[dependency]
-      ) ?? [];
+      ).filter(Boolean) ?? [];
     if (dependencies.length !== numDependencies) {
       copy.push([name, config]);
       continue;
@@ -60,13 +74,16 @@ export async function startDev() {
     if (module != null) {
       modules[name] = module;
       await module.dev();
-      await writeStageOutputs({
-        [name]: module.getOutputs(),
-      }, 'local');
+      await writeStageOutputs(
+        {
+          [name]: module.getOutputs(),
+        },
+        "local"
+      );
       process.env = {
         ...process.env,
-        ...(await module.getEnvironmentVariables())
-      }
+        ...(await module.getEnvironmentVariables()),
+      };
     }
   }
 
@@ -74,6 +91,6 @@ export async function startDev() {
     ...Object.entries(services),
     ...Object.entries(modules),
   ]) {
-    module.getStdOut()?.pipe(process.stdout)
+    module.getStdOut()?.pipe(process.stdout);
   }
 }

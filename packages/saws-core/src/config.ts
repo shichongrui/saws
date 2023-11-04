@@ -20,6 +20,7 @@ export enum FunctionRuntime {
 
 export type BaseConfig = {
   displayName?: string;
+  uses?: string[];
 };
 
 export type PostgresConfig = BaseConfig & {

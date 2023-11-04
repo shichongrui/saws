@@ -1,6 +1,6 @@
 {
   "name": "@shichongrui/saws-cli",
-  "version": "0.0.5",
+  "version": "0.0.10",
   "description": "",
   "bin": {
     "saws": "dist/bin/saws.js"
@@ -19,9 +19,9 @@
   },
   "homepage": "https://github.com/shichongrui/saws#readme",
   "dependencies": {
-    "@shichongrui/saws-aws": "^0.0.5",
-    "@shichongrui/saws-core": "^0.0.5",
-    "@shichongrui/saws-secrets": "^0.0.5",
+    "@shichongrui/saws-aws": "^0.0.10",
+    "@shichongrui/saws-core": "^0.0.10",
+    "@shichongrui/saws-secrets": "^0.0.10",
     "adm-zip": "^0.5.9",
     "aws-lambda": "^1.0.7",
     "docker-cli-js": "^2.9.0",

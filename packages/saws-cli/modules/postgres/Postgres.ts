@@ -41,18 +41,26 @@ export class Postgres implements ModuleDefinition, PostgresConfig {
   async dev() {
     console.log("Starting Postgres...");
     await this.startPostgresDocker();
-    
+
     await generatePrismaClient();
     const password = await getDBPassword();
     this.password = password;
-    await pushPrisma({
-      username: String(this.outputs.postgresUsername),
-      password,
-      endpoint: String(this.outputs.postgresHost),
-      port: String(this.outputs.postgresPort),
-      dbName: String(this.outputs.postgresDBName),
-    });
-    
+    // await pushPrisma({
+    //   username: String(this.outputs.postgresUsername),
+    //   password,
+    //   endpoint: String(this.outputs.postgresHost),
+    //   port: String(this.outputs.postgresPort),
+    //   dbName: String(this.outputs.postgresDBName),
+    // });
+
+    // await seedPrisma({
+    //   username: String(this.outputs.postgresUsername),
+    //   password,
+    //   endpoint: String(this.outputs.postgresHost),
+    //   port: String(this.outputs.postgresPort),
+    //   dbName: String(this.outputs.postgresDBName),
+    // });
+
     watch("./prisma", { ignoreInitial: true }).on("all", async (_, path) => {
       if (path.includes("schema.prisma")) {
         console.log(
@@ -60,20 +68,20 @@ export class Postgres implements ModuleDefinition, PostgresConfig {
         );
         await generatePrismaClient();
 
-        await pushPrisma({
-          username: String(this.outputs.postgresUsername),
-          password,
-          endpoint: String(this.outputs.postgresHost),
-          port: String(this.outputs.postgresPort),
-          dbName: String(this.outputs.postgresDBName),
-        });
-        await seedPrisma({
-          username: String(this.outputs.postgresUsername),
-          password,
-          endpoint: String(this.outputs.postgresHost),
-          port: String(this.outputs.postgresPort),
-          dbName: String(this.outputs.postgresDBName),
-        });
+        // await pushPrisma({
+        //   username: String(this.outputs.postgresUsername),
+        //   password,
+        //   endpoint: String(this.outputs.postgresHost),
+        //   port: String(this.outputs.postgresPort),
+        //   dbName: String(this.outputs.postgresDBName),
+        // });
+        // await seedPrisma({
+        //   username: String(this.outputs.postgresUsername),
+        //   password,
+        //   endpoint: String(this.outputs.postgresHost),
+        //   port: String(this.outputs.postgresPort),
+        //   dbName: String(this.outputs.postgresDBName),
+        // });
       }
 
       // if (path.includes("migrations")) {
@@ -126,7 +134,7 @@ export class Postgres implements ModuleDefinition, PostgresConfig {
       endpoint: String(this.outputs.postgresHost),
       port: String(this.outputs.postgresPort),
       dbName: name,
-    })
+    });
 
     console.log("Running db migrations...");
     await prismaMigrate({

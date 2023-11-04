@@ -1,12 +1,12 @@
 {
   "name": "@shichongrui/saws-secrets",
-  "version": "0.0.5",
+  "version": "0.0.10",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@shichongrui/saws-aws": "^0.0.5",
-    "@shichongrui/saws-core": "^0.0.5",
+    "@shichongrui/saws-aws": "^0.0.10",
+    "@shichongrui/saws-core": "^0.0.10",
     "envfile": "^6.17.0"
   },
   "scripts": {

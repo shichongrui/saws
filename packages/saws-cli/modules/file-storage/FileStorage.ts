@@ -34,8 +34,8 @@ export class FileStorage implements ModuleDefinition, FileStorageConfig {
     this.dependencies = dependencies;
   }
   
-  getBucketName() {
-    return `${getProjectName()}-dev-${this.name}-file-storage`
+  getBucketName(stage: string) {
+    return `${stage}-${this.name}-file-storage`
   }
 
   async dev() {
@@ -86,8 +86,8 @@ export class FileStorage implements ModuleDefinition, FileStorageConfig {
     }, 1000);
 
     const buckets = await client.listBuckets()
-    if (buckets.Buckets?.find(bucket => bucket.Name === this.getBucketName()) == null) {
-      await client.createBucket(this.getBucketName())
+    if (buckets.Buckets?.find(bucket => bucket.Name === this.getBucketName('local')) == null) {
+      await client.createBucket(this.getBucketName('local'))
     }
 
     this.process = childProcess;

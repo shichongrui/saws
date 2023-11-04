@@ -6,13 +6,15 @@ export const collectHttpBody = async (req: http.IncomingMessage): Promise<string
       resolve(undefined);
       return;
     }
-    let body = "";
+    const dataChunks: Uint8Array[] = [];
     req.on("data", function (chunk) {
-      body += chunk;
+      dataChunks.push(chunk);
     });
 
     req.on("end", function () {
-      resolve(body);
+      let buffer = Buffer.concat(dataChunks);
+      let base64EncodedData = buffer.toString('base64');
+      resolve(base64EncodedData);
     });
   });
 };
