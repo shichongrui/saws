@@ -33,8 +33,5 @@
     "packages/saws-remix",
     "packages/saws-secrets",
     "packages/saws-translate"
-  ],
-  "dependencies": {
-    "fs-extra": "^11.1.1"
-  }
+  ]
 }

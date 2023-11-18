@@ -24,19 +24,19 @@ export class AuthClient {
     return this.client.deleteUser(token);
   }
 
-  async createUser(email: string, emailVerified: boolean, userPoolId: string) {
+  async createUser(email: string, emailVerified: boolean) {
     const user = await this.client.createUser(
       {
         email,
         emailVerified,
       },
-      userPoolId
+      this.userPoolId
     );
     return user;
   }
 
-  getUser(email: string, userPoolId: string) {
-    return this.client.getUser(userPoolId, email);
+  getUser(email: string) {
+    return this.client.getUser(this.userPoolId, email);
   }
 
   async refreshAccessToken(refreshToken: string) {

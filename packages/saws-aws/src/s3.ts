@@ -3,6 +3,7 @@ import {
   GetObjectCommand,
   HeadObjectCommand,
   ListBucketsCommand,
+  ListObjectsV2Command,
   PutObjectCommand,
   S3Client,
   S3ClientConfig,
@@ -106,6 +107,15 @@ export class S3 {
   createBucket(bucketName: string) {
     const command = new CreateBucketCommand({
       Bucket: bucketName,
+    })
+    return this.client.send(command)
+  }
+
+  listObjects(bucketName: string, prefix?: string, delimiter?: string,) {
+    const command = new ListObjectsV2Command({
+      Bucket: bucketName,
+      Prefix: prefix,
+      Delimiter: delimiter,
     })
     return this.client.send(command)
   }
