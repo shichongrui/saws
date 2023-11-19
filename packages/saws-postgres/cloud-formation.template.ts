@@ -1,5 +1,4 @@
-import { getProjectName } from "@shichongrui/saws-core";
-import { uppercase } from "../../utils/uppercase";
+import { getProjectName, uppercase } from "@shichongrui/saws-core";
 
 type PostgresTemplateParameters = {
   stage: string;

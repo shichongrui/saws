@@ -25,6 +25,7 @@
     "adm-zip": "^0.5.9",
     "aws-lambda": "^1.0.7",
     "chokidar": "^3.5.3",
+    "commander": "^11.1.0",
     "docker-cli-js": "^2.9.0",
     "envfile": "^6.17.0",
     "esbuild": "^0.19.3",

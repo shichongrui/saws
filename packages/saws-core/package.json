@@ -16,5 +16,8 @@
   "homepage": "https://github.com/shichongrui/saws#readme",
   "files": [
     "./dist"
-  ]
+  ],
+  "dependencies": {
+    "docker-cli-js": "^2.10.0"
+  }
 }

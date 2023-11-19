@@ -1,9 +1,9 @@
 {
   "extends": "../../tsconfig.base.json",
-  "include": ["*.ts", "**/*.ts", "package.json", "commands/graphiql.ts.old"],
+  "include": ["*.ts", "**/*.ts", "package.json"],
   "exclude": ["dist", "node_modules"],
   "compilerOptions": {
     "rootDir": ".",
-    "outDir": "./dist"
+    "noEmit": true
   }
 }

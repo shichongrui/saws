@@ -1,0 +1,27 @@
+{
+  "name": "@shichongrui/saws-example",
+  "private": true,
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shichongrui/saws.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/shichongrui/saws/issues"
+  },
+  "homepage": "https://github.com/shichongrui/saws#readme",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.6.0",
+    "@shichongrui/saws-postgres": "^0.0.12"
+  },
+  "devDependencies": {
+    "@shichongrui/saws-cli": "^0.0.12"
+  }
+}

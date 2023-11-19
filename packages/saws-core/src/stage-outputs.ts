@@ -1,8 +1,7 @@
 import { promises as fs } from "fs";
 import path from "path";
-import { Outputs } from "../modules/ModuleDefinition";
-import { SAWS_DIR } from "@shichongrui/saws-core";
-
+import { SAWS_DIR } from "./constants";
+import type { Outputs } from "./ServiceDefinition";
 
 export const getStageOutputs = async (stage: string): Promise<Record<string, Outputs>> => {
   const outputPath = path.resolve(SAWS_DIR, `saws-api-${stage}-output.json`);

@@ -27,9 +27,10 @@
     "packages/saws-cli",
     "packages/saws-core",
     "packages/saws-email",
+    "packages/saws-example",
     "packages/saws-file-storage",
     "packages/saws-functions",
-    "packages/saws-rds",
+    "packages/saws-postgres",
     "packages/saws-remix",
     "packages/saws-secrets",
     "packages/saws-translate"

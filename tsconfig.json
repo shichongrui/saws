@@ -9,9 +9,10 @@
     { "path": "./packages/saws-email" },
     { "path": "./packages/saws-file-storage" },
     { "path": "./packages/saws-functions" },
-    { "path": "./packages/saws-rds" },
+    { "path": "./packages/saws-postgres" },
     { "path": "./packages/saws-remix" },
     { "path": "./packages/saws-secrets" },
-    { "path": "./packages/saws-translate" }
+    { "path": "./packages/saws-translate" },
+    { "path": "./packages/saws-example" }
   ]
 }

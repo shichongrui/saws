@@ -11,6 +11,7 @@
     "moduleResolution": "Node",
     "declaration": true,
     "strict": true,
-    "jsx": "react"
+    "jsx": "react",
+    "resolveJsonModule": true
   }
 }
