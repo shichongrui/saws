@@ -12,26 +12,52 @@
     "version:bump:patch": "npm version patch --workspaces"
   },
   "devDependencies": {
+    "@prisma/client": "^5.6.0",
+    "@remix-run/node": "^2.3.0",
+    "@types/adm-zip": "^0.5.4",
+    "@types/aws-lambda": "^8.10.126",
     "@types/fs-extra": "^11.0.2",
+    "@types/mime": "^3.0.0",
+    "@types/mime-types": "^2.1.4",
     "@types/node": "^20.6.3",
+    "@types/pg": "^8.10.9",
+    "@types/prompt": "^1.1.8",
     "@types/react": "^18.2.22",
+    "@types/ws": "^8.5.9",
     "typescript": "^5.2.2"
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/"
   },
-  "workspaces": [
-    "packages/saws-api",
-    "packages/saws-auth",
-    "packages/saws-aws",
-    "packages/saws-cli",
-    "packages/saws-core",
-    "packages/saws-email",
-    "packages/saws-file-storage",
-    "packages/saws-functions",
-    "packages/saws-rds",
-    "packages/saws-remix",
-    "packages/saws-secrets",
-    "packages/saws-translate"
-  ]
+  "dependencies": {
+    "@aws-sdk/client-cloudformation": "^3.454.0",
+    "@aws-sdk/client-cloudfront": "^3.454.0",
+    "@aws-sdk/client-cognito-identity-provider": "^3.454.0",
+    "@aws-sdk/client-ec2": "^3.454.0",
+    "@aws-sdk/client-lambda": "^3.454.0",
+    "@aws-sdk/client-s3": "^3.454.0",
+    "@aws-sdk/client-ses": "^3.454.0",
+    "@aws-sdk/client-ssm": "^3.454.0",
+    "@aws-sdk/client-translate": "^3.454.0",
+    "@aws-sdk/s3-request-presigner": "^3.454.0",
+    "@graphql-tools/schema": "^10.0.0",
+    "@remix-run/dev": "^2.3.0",
+    "adm-zip": "^0.5.10",
+    "apollo-server-lambda": "^3.13.0",
+    "aws-lambda": "^1.0.7",
+    "chokidar": "^3.5.3",
+    "commander": "^11.1.0",
+    "docker-cli-js": "^2.10.0",
+    "envfile": "^6.20.0",
+    "esbuild": "^0.19.6",
+    "get-port": "^5.1.1",
+    "jsonwebtoken": "^9.0.2",
+    "jwks-rsa": "^3.1.0",
+    "mime": "^3.0.0",
+    "mime-types": "^2.1.35",
+    "pg": "^8.11.3",
+    "prompt": "^1.3.0",
+    "serverless-http": "^3.2.0",
+    "ws": "^8.14.2"
+  }
 }
