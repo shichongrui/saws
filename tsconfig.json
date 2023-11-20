@@ -1,6 +1,6 @@
 {
-  "include": ["*.ts", "**/*.ts", "package.json"],
-  "exclude": ["dist", "node_modules"],
+  "include": ["*.ts", "**/*.ts"],
+  "exclude": ["dist", "node_modules", "package.json"],
   "compilerOptions": {
     "rootDir": ".",
     "outDir": "./dist",

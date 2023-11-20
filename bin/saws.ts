@@ -4,17 +4,19 @@ process.on("uncaughtException", (e) => {
   console.log(e);
 });
 
+import finder from 'find-package-json';
 import { program } from "commander";
-import pkg from "../package.json";
 
 import { createCommand as createDevCommand } from "../commands/dev";
 import { createCommand as createDeployCommand } from "../commands/deploy";
 import { createCommand as createSecretCommand } from "../commands/secret";
 
+const pkg = finder(__dirname).next().value
+
 program
   .name("saws")
   .description("A tool for building apps quickly")
-  .version(pkg.version);
+  .version(pkg?.version!);
 
 program.addCommand(createDevCommand());
 program.addCommand(createDeployCommand());

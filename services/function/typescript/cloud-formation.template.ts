@@ -1,7 +1,7 @@
 import { AWSPermission } from "../../../utils/aws-permission";
 import { getProjectName } from "../../../utils/get-project-name";
 import { uppercase } from "../../../utils/uppercase";
-import { TypescriptFunctionServiceConfig } from "./TypescriptFunction";
+import { TypescriptFunctionServiceConfig } from "./TypescriptFunctionService";
 
 type SawsFunctionTemplateProperties = {
   name: string;

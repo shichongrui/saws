@@ -5,7 +5,7 @@ import { startContainer } from "../../helpers/docker";
 import { S3 } from "../../helpers/aws/s3";
 import { SAWS_DIR } from "../../utils/constants";
 
-export class FileStorage extends ServiceDefinition {
+export class FileStorageService extends ServiceDefinition {
   process?: ChildProcess;
 
   getBucketName(stage: string) {

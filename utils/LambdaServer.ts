@@ -3,8 +3,8 @@
 import http from "http";
 import { collectHttpBody } from "./collect-http-body";
 import { FunctionService } from "../services/function/FunctionService";
-import { ContainerFunctionService } from "../services/function/container/ContainerFunction";
-import { TypescriptFunctionService } from "../services/function/typescript/TypescriptFunction";
+import { ContainerFunctionService } from "../services/function/container/ContainerFunctionService";
+import { TypescriptFunctionService } from "../services/function/typescript/TypescriptFunctionService";
 
 export class LambdaServer {
   server?: http.Server;
