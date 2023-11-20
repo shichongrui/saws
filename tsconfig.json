@@ -1,18 +1,21 @@
 {
-  "files": [],
-  "references": [
-    { "path": "./packages/saws-api" },
-    { "path": "./packages/saws-auth" },
-    { "path": "./packages/saws-aws" },
-    { "path": "./packages/saws-cli" },
-    { "path": "./packages/saws-core" },
-    { "path": "./packages/saws-email" },
-    { "path": "./packages/saws-file-storage" },
-    { "path": "./packages/saws-functions" },
-    { "path": "./packages/saws-postgres" },
-    { "path": "./packages/saws-remix" },
-    { "path": "./packages/saws-secrets" },
-    { "path": "./packages/saws-translate" },
-    { "path": "./packages/saws-example" }
-  ]
+  "include": ["*.ts", "**/*.ts", "package.json"],
+  "exclude": ["dist", "node_modules"],
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "./dist",
+    "lib": ["DOM", "ES2022"],
+    "target": "ES2022",
+    "module": "CommonJS",
+    "composite": true,
+    "esModuleInterop": true,
+    "inlineSourceMap": true,
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true,
+    "moduleResolution": "Node",
+    "declaration": true,
+    "strict": true,
+    "jsx": "react",
+    "resolveJsonModule": true
+  }
 }
