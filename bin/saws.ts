@@ -9,6 +9,7 @@ import pkg from "../package.json";
 
 import { createCommand as createDevCommand } from "../commands/dev";
 import { createCommand as createDeployCommand } from "../commands/deploy";
+import { createCommand as createSecretCommand } from "../commands/secret";
 
 program
   .name("saws")
@@ -17,6 +18,7 @@ program
 
 program.addCommand(createDevCommand());
 program.addCommand(createDeployCommand());
+program.addCommand(createSecretCommand());
 
 program.parse(process.argv);
 

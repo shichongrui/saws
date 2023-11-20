@@ -1,9 +1,10 @@
 {
   "name": "@shichongrui/saws",
-  "version": "0.0.1",
+  "version": "0.0.13",
   "repository": {
     "url": "git@github.com:shichongrui/saws.git"
   },
+  "files": ["dist"],
   "scripts": {
     "build:watch": "tsc -w",
     "prettier:fix": "prettier --write .",
