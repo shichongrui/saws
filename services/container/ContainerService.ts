@@ -12,7 +12,6 @@ import { ServiceDefinition, ServiceDefinitionConfig } from "../ServiceDefinition
 import { CloudFormation } from "../../helpers/aws/cloudformation";
 import { pushImage, tagImage, loginToAWSDocker, waitForContainerToBeStopped } from "../../helpers/docker";
 import { EC2 } from "../../helpers/aws/ec2";
-import { getProjectName } from "../../utils/get-project-name";
 
 interface ContainerServiceConfig extends ServiceDefinitionConfig {
   port?: number;
@@ -58,6 +57,9 @@ export class ContainerService extends ServiceDefinition {
   }
 
   async dev() {
+    await super.dev()
+    
+
     await waitForContainerToBeStopped(this.name);
 
     await this.build();
@@ -101,9 +103,16 @@ export class ContainerService extends ServiceDefinition {
     await this.setOutputs({
       url: `http://localhost:${port}`,
     }, 'local');
+
+    process.env = {
+      ...process.env,
+      ...(await this.getEnvironmentVariables())
+    }
   }
 
   async deploy(stage: string) {
+    await super.deploy(stage)
+    
     const cloudformationClient = new CloudFormation();
     const repositoryTemplate = getRepositoryTemplate({
       name: this.name,
@@ -143,7 +152,6 @@ export class ContainerService extends ServiceDefinition {
 
     const template = getTemplate({
       stage,
-      projectName: getProjectName(),
       name: this.name,
       repositoryName,
       environment,

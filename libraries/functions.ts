@@ -1,6 +1,6 @@
 import { LambdaClient, InvokeCommand } from "@aws-sdk/client-lambda";
 
-export default class FunctionsClient {
+export class FunctionsClient {
   client: LambdaClient;
   stage: string;
 

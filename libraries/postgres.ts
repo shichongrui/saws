@@ -6,7 +6,7 @@ export const getPrismaClient = (name: string) => {
     [parameterizedEnvVarName(name, "POSTGRES_USERNAME")]: username,
     [parameterizedEnvVarName(name, "POSTGRES_HOST")]: host,
     [parameterizedEnvVarName(name, "POSTGRES_PORT")]: port,
-    [parameterizedEnvVarName(name, "POSTGRES_NAME")]: dbName,
+    [parameterizedEnvVarName(name, "POSTGRES_DB_NAME")]: dbName,
     [parameterizedEnvVarName(name, "POSTGRES_PASSWORD")]: password,
   } = process.env;
 

@@ -1,5 +1,3 @@
-import { getProjectName } from "../../utils/get-project-name";
-
 type S3TemplateParameters = {
   bucketName: string;
 };
@@ -21,6 +19,5 @@ export const getTemplate = ({
   });
 
 export const getStackName = (stage: string, name: string) => {
-  const projectName = getProjectName();
-  return `${projectName}-${stage}-${name}-s3`;
+  return `${stage}-${name}-s3`;
 };

@@ -1,11 +1,9 @@
-import { getProjectName } from "../../utils/get-project-name";
 import { uppercase } from "../../utils/uppercase";
 import { AWSPermission } from "../../utils/aws-permission";
 
 type ApiTemplateProperties = {
   name: string;
   moduleName: string;
-  projectName: string;
   codeBucketName: string;
   codeS3Key: string;
   stage: string;
@@ -18,7 +16,6 @@ type ApiTemplateProperties = {
 export const getTemplate = ({
   name,
   moduleName,
-  projectName,
   codeBucketName,
   codeS3Key,
   stage,
@@ -35,7 +32,7 @@ export const getTemplate = ({
         Type: "AWS::ApiGatewayV2::Api",
         Properties: {
           ProtocolType: "HTTP",
-          Name: `${projectName}-${stage}-${name}`,
+          Name: `${stage}-${name}-api`,
           CorsConfiguration: {
             AllowMethods: ["*"],
             AllowOrigins: ["*"],
@@ -172,11 +169,10 @@ export const getTemplate = ({
             Variables: {
               NODE_ENV: "production",
               STAGE: stage,
-              PROJECT_NAME: projectName,
               ...environment,
             },
           },
-          FunctionName: `${projectName}-${stage}-${name}`,
+          FunctionName: `${stage}-${name}`,
           Handler: `${moduleName}.handler`,
           Runtime: "nodejs16.x",
           PackageType: "Zip",
@@ -231,7 +227,7 @@ export const getTemplate = ({
         ApiId: { Ref: "SawsApiGateway" },
         AuthorizerType: "JWT",
         IdentitySource: ["$request.header.Authorization"],
-        Name: `${projectName}-${stage}-api-authorizer`,
+        Name: `${stage}-api-authorizer`,
         JwtConfiguration: {
           Audience: [userPoolClientId],
           Issuer: {
@@ -249,6 +245,5 @@ export const getTemplate = ({
 };
 
 export const getStackName = (stage: string, name: string) => {
-  const projectName = getProjectName();
-  return `${projectName}-${stage}-${name}`;
+  return `${stage}-${name}`;
 };

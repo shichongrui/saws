@@ -1,12 +1,10 @@
-import { getProjectName } from "../../utils/get-project-name";
-
 type AuthTemplateParameters = {
-  projectName: string;
   stage: string;
+  name: string;
 };
 
 export const getTemplate = ({
-  projectName,
+  name,
   stage,
 }: AuthTemplateParameters) => JSON.stringify({
   "AWSTemplateFormatVersion": "2010-09-09",
@@ -15,7 +13,7 @@ export const getTemplate = ({
     SawsUserPool: {
       Type: "AWS::Cognito::UserPool",
       Properties: {
-        UserPoolName: `${projectName}-${stage}-users`,
+        UserPoolName: `${stage}-${name}-user-pool`,
         UsernameAttributes: ["email"],
         AutoVerifiedAttributes: ["email"],
       }
@@ -23,7 +21,7 @@ export const getTemplate = ({
     SawsUserPoolClient: {
       Type: "AWS::Cognito::UserPoolClient",
       Properties: {
-        ClientName: `${projectName}-${stage}-users-client`,
+        ClientName: `${stage}-${name}-user-pool-client`,
         UserPoolId: { "Ref": "SawsUserPool" },
         ExplicitAuthFlows: [
           "ALLOW_ADMIN_USER_PASSWORD_AUTH",
@@ -47,7 +45,7 @@ export const getTemplate = ({
     },
     userPoolName: {
       Description: "Cognito user pool name",
-      Value: `${projectName}-${stage}-users`
+      Value: `${stage}-${name}-user-pool`
     },
     userPoolClientId: {
       Description: "Cognito user pool client id",
@@ -60,7 +58,7 @@ export const getTemplate = ({
     },
     userPoolClientName: {
       Description: "Cognito user pool client name",
-      Value: `${projectName}-${stage}-users-client`
+      Value: `${stage}-${name}-user-pool-client`
     },
     userPoolJwksUri: {
       Description: 'JWKs uri to use for token verification',
@@ -69,7 +67,6 @@ export const getTemplate = ({
   }
 });
 
-export const getStackName = (stage: string) => {
-  const projectName = getProjectName();
-  return `${projectName}-${stage}-auth`;
+export const getStackName = (stage: string, name: string) => {
+  return `${stage}-${name}-auth`;
 };

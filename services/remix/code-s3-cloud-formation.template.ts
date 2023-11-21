@@ -1,4 +1,3 @@
-import { getProjectName } from "../../utils/get-project-name";
 import { uppercase } from "../../utils/uppercase";
 
 type CodeS3TemplateParameters = {
@@ -31,6 +30,5 @@ export const getTemplate = ({ name, bucketName }: CodeS3TemplateParameters) => {
 };
 
 export const getStackName = (stage: string, name: string) => {
-  const projectName = getProjectName();
-  return `${projectName}-${stage}-${name}-code`;
+  return `${stage}-${name}-code`;
 };

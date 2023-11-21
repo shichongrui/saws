@@ -13,7 +13,6 @@ import { BUILD_DIR } from "../../../utils/constants";
 import { lambdaServer } from "../../../utils/LambdaServer";
 import { CloudFormation } from "../../../helpers/aws/cloudformation";
 import { S3 } from "../../../helpers/aws/s3";
-import { getProjectName } from "../../../utils/get-project-name";
 import { npmInstall } from "../../../helpers/npm";
 
 export interface TypescriptFunctionServiceConfig extends FunctionServiceConfig {
@@ -24,7 +23,6 @@ export interface TypescriptFunctionServiceConfig extends FunctionServiceConfig {
 }
 
 export class TypescriptFunctionService extends FunctionService {
-  process?: ChildProcess;
   triggers?: TypescriptFunctionServiceConfig["triggers"];
 
   // buildResults?: esbuild.BuildResult;
@@ -35,7 +33,10 @@ export class TypescriptFunctionService extends FunctionService {
   externalPackages: string[];
 
   constructor(config: TypescriptFunctionServiceConfig) {
-    super(config);
+    super({
+      ...config,
+      runtime: 'typescript'
+    });
 
     this.triggers = config.triggers;
 
@@ -66,6 +67,9 @@ export class TypescriptFunctionService extends FunctionService {
   }
 
   async dev() {
+    await super.dev()
+    
+
     console.log("Building function", this.name);
     await this.build();
     this.captureHandlerRef();
@@ -75,6 +79,11 @@ export class TypescriptFunctionService extends FunctionService {
       this.captureHandlerRef();
     });
     await lambdaServer.start();
+
+    process.env = {
+      ...process.env,
+      ...(await this.getEnvironmentVariables())
+    }
   }
 
   captureHandlerRef() {
@@ -83,13 +92,15 @@ export class TypescriptFunctionService extends FunctionService {
   }
 
   async deploy(stage: string) {
+    await super.deploy(stage)
+    
+
     console.log(`Creating bucket to store ${this.name} code in`);
     // create s3 bucket
     const cloudformationClient = new CloudFormation();
     const s3Client = new S3();
 
-    const projectName = getProjectName();
-    const bucketName = `${projectName}-${stage}-${this.name}`;
+    const bucketName = `${stage}-${this.name}-code`;
 
     const s3Template = getS3Template({ bucketName });
     const s3StackName = getS3StackName(stage, this.name);
@@ -140,7 +151,6 @@ export class TypescriptFunctionService extends FunctionService {
       name: this.name,
       stage,
       moduleName: path.parse(this.buildFilePath).name,
-      projectName,
       codeBucketName: bucketName,
       codeS3Key: key,
       permissions: [...permissions, ...this.getPermissions(stage)],
@@ -167,20 +177,15 @@ export class TypescriptFunctionService extends FunctionService {
   }
 
   async getEnvironmentVariables() {
-    return {
-      [this.parameterizedEnvVarName("PROJECT_NAME")]: getProjectName(),
-    };
+    return {};
   }
 
   getStdOut() {
-    return this.process?.stdout;
+    return null
   }
 
   exit() {
     this.buildContext?.dispose();
     this.buildContext = undefined;
-
-    this.process?.kill();
-    this.process = undefined;
   }
 }

@@ -4,47 +4,45 @@ import { ServiceDefinition } from "../ServiceDefinition";
 import { startContainer } from "../../helpers/docker";
 import { S3 } from "../../helpers/aws/s3";
 import { SAWS_DIR } from "../../utils/constants";
+import { CloudFormation } from "../../helpers/aws/cloudformation";
+import { getStackName, getTemplate } from "./cloud-formation.template";
 
 export class FileStorageService extends ServiceDefinition {
-  process?: ChildProcess;
+  static process?: ChildProcess;
 
   getBucketName(stage: string) {
-    return `${stage}-${this.name}-file-storage`;
+    return `${stage}-${this.name}`;
   }
 
   async dev() {
+    await super.dev();
+
     await this.startS3Docker();
+
+    await this.createBucket();
+  }
+
+  async createBucket() {
+    const client = new S3();
+
+    const buckets = await client.listBuckets();
+    if (
+      buckets.Buckets?.find(
+        (bucket) => bucket.Name === this.getBucketName("local")
+      ) == null
+    ) {
+      await client.createBucket(this.getBucketName("local"));
+    }
   }
 
   async startS3Docker() {
     console.log("Starting file storage");
 
-    const client = new S3();
-    const childProcess = await startContainer({
-      name: this.name,
-      image: "minio/minio",
-      command: ["server", "/data", "--console-address", ":9001"],
-      additionalArguments: [
-        "-p",
-        "9000:9000",
-        "-p",
-        "9001:9001",
-        "-v",
-        `${path.resolve(SAWS_DIR, "s3")}/:/data`,
-      ],
-      check: async () => {
-        try {
-          await client.listBuckets();
-          return true;
-        } catch (_) {
-          return false;
-        }
-      },
-    });
+    if (FileStorageService.process != null) return;
 
     await this.setOutputs(
       {
-        s3Endpoint: "http://127.0.0.1:9000",
+        s3Endpoint: "http://127.0.0.1:9001",
         s3AccessKey: "minioadmin",
         s3SecretKey: "minioadmin",
       },
@@ -55,47 +53,89 @@ export class FileStorageService extends ServiceDefinition {
       ...process.env,
       ...(await this.getEnvironmentVariables()),
     };
+    
+    const childProcess = await startContainer({
+      name: this.name,
+      image: "minio/minio",
+      command: ["server", "/data", "--console-address", ":9002"],
+      additionalArguments: [
+        "-p",
+        "9001:9000",
+        "-p",
+        "9002:9002",
+        "-v",
+        `${path.resolve(SAWS_DIR, "s3")}/:/data`,
+      ],
+      check: async () => {
+        try {
+          const client = new S3();
+          await client.listBuckets();
+          return true;
+        } catch (err) {
+          // console.log(err)
+          return false;
+        }
+      },
+    });
 
-    const buckets = await client.listBuckets();
-    if (
-      buckets.Buckets?.find(
-        (bucket) => bucket.Name === this.getBucketName("local")
-      ) == null
-    ) {
-      await client.createBucket(this.getBucketName("local"));
-    }
-
-    this.process = childProcess;
+    FileStorageService.process = childProcess;
   }
 
   async deploy(stage: string) {
-    // TODO
+    await super.deploy(stage)
+  
+    const cloudformationClient = new CloudFormation();
+
+    const template = getTemplate({
+      bucketName: this.getBucketName(stage),
+      name: this.name,
+    });
+    const stackName = getStackName(stage, this.name);
+
+    const results = await cloudformationClient.deployStack(stackName, template);
+
+    const outputs = results?.Stacks?.[0].Outputs;
+    await this.setOutputs(
+      {
+        ...Object.fromEntries(
+          outputs?.map(({ OutputKey, OutputValue }) => [
+            OutputKey,
+            OutputValue,
+          ]) ?? []
+        ),
+      },
+      stage
+    );
+
+    return;
   }
 
   async getEnvironmentVariables() {
     return {
-      [this.parameterizedEnvVarName("S3_ENDPOINT")]: String(
-        this.outputs.s3Endpoint
-      ),
-      [this.parameterizedEnvVarName("S3_ACCESS_KEY")]: String(
-        this.outputs.s3AccessKey
-      ),
-      [this.parameterizedEnvVarName("S3_SECRET_KEY")]: String(
-        this.outputs.s3SecretKey
-      ),
+      S3_ENDPOINT: String(this.outputs.s3Endpoint),
+      S3_ACCESS_KEY: String(this.outputs.s3AccessKey),
+      S3_SECRET_KEY: String(this.outputs.s3SecretKey),
     };
   }
 
   getStdOut() {
-    return this.process?.stdout;
+    return FileStorageService.process?.stdout;
   }
 
-  getPermissions() {
-    return [];
+  getPermissions(stage: string) {
+    return [
+      {
+        Effect: "Allow" as const,
+        Action: ["s3:*"],
+        Resource: {
+          "Fn::Sub": `arn:aws:s3:::${this.getBucketName(stage)}`,
+        },
+      },
+    ];
   }
 
   exit() {
-    this.process?.kill();
-    this.process = undefined;
+    FileStorageService.process?.kill();
+    FileStorageService.process = undefined;
   }
 }

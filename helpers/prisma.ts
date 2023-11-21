@@ -29,6 +29,7 @@ export const runMigrationsLocally = ({
   dbName,
 }: DBParameters) => {
   return new Promise(async (resolve, reject) => {
+    console.log(`postgres://${username}:${password}@${endpoint}:${port}/${dbName}`)
     exec(
       `npx prisma migrate dev`,
       {

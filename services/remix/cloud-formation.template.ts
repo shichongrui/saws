@@ -1,11 +1,9 @@
 import { AWSPermission } from "../../utils/aws-permission";
-import { getProjectName } from "../../utils/get-project-name";
 import { uppercase } from "../../utils/uppercase";
 
 type RemixTemplateParameters = {
   stage: string;
   name: string;
-  projectName: string;
   environment: Record<string, string>;
   moduleName: string;
   permissions: AWSPermission[];
@@ -16,7 +14,6 @@ type RemixTemplateParameters = {
 export const getTemplate = ({
   stage,
   name,
-  projectName,
   environment,
   moduleName,
   codeBucketName,
@@ -167,11 +164,10 @@ export const getTemplate = ({
             Variables: {
               NODE_ENV: "production",
               STAGE: stage,
-              PROJECT_NAME: projectName,
               ...environment,
             },
           },
-          FunctionName: `${projectName}-${stage}-${name}`,
+          FunctionName: `${stage}-${name}`,
           Handler: `${moduleName}.handler`,
           Runtime: "nodejs18.x",
           PackageType: "Zip",
@@ -306,6 +302,5 @@ export const getTemplate = ({
 };
 
 export const getStackName = (stage: string, name: string) => {
-  const projectName = getProjectName();
-  return `${projectName}-${stage}-${name}`;
+  return `${stage}-${name}-remix`;
 };

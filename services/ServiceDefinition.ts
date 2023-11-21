@@ -17,6 +17,8 @@ export class ServiceDefinition {
   name: string;
   dependencies: ServiceDefinition[];
   outputs: Outputs = {};
+  deved: boolean = false
+  deployed: boolean = false
 
   constructor(config: ServiceDefinitionConfig) {
     this.name = config.name;
@@ -25,15 +27,19 @@ export class ServiceDefinition {
 
   async dev() {
     console.log("Start dev", this.name);
-    await this.forEachDependencyAsync((dependency) => {
-      return dependency.dev();
+    await this.forEachDependencyAsync(async (dependency) => {
+      if (dependency.deved) return
+      await dependency.dev();
+      dependency.deved = true
     });
   }
 
   async deploy(stage: string) {
     console.log("Start deploy", this.name);
-    await this.forEachDependencyAsync((dependency) => {
-      return dependency.deploy(stage);
+    await this.forEachDependencyAsync(async (dependency) => {
+      if (dependency.deployed) return
+      await dependency.deploy(stage);
+      dependency.deployed = true;
     });
   }
 

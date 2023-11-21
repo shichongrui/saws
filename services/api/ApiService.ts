@@ -15,7 +15,6 @@ import http, { IncomingMessage, ServerResponse } from "node:http";
 import { graphiqlTemplate } from "./graphiql.template";
 import { CloudFormation } from "../../helpers/aws/cloudformation";
 import { S3 } from "../../helpers/aws/s3";
-import { getProjectName } from "../../utils/get-project-name";
 import {
   getTemplate as getS3Template,
   getStackName as getS3StackName,
@@ -72,6 +71,8 @@ export class ApiService extends ServiceDefinition {
   async dev() {
     await super.dev();
 
+    
+
     await this.build();
     this.captureHandlerRef();
     watch(this.rootDir, { ignoreInitial: true }).on("all", async (...args) => {
@@ -81,6 +82,11 @@ export class ApiService extends ServiceDefinition {
     });
 
     await this.startDevServer();
+
+    process.env = {
+      ...process.env,
+      ...(await this.getEnvironmentVariables())
+    }
   }
 
   captureHandlerRef() {
@@ -207,13 +213,13 @@ export class ApiService extends ServiceDefinition {
 
   async deploy(stage: string) {
     await super.deploy(stage);
+    
     console.log(`Creating bucket to store ${this.name} code in`);
     // create s3 bucket
     const cloudformationClient = new CloudFormation();
     const s3Client = new S3();
 
-    const projectName = getProjectName();
-    const bucketName = `${projectName}-${stage}-${this.name}`;
+    const bucketName = `${stage}-${this.name}`;
 
     const s3Template = getS3Template({ bucketName });
     const s3StackName = getS3StackName(stage, this.name);
@@ -270,7 +276,6 @@ export class ApiService extends ServiceDefinition {
       name: this.name,
       stage,
       moduleName: path.parse(this.buildFilePath).name,
-      projectName,
       codeBucketName: bucketName,
       codeS3Key: key,
       userPoolId: userPoolId != null ? String(userPoolId) : undefined,
@@ -291,7 +296,6 @@ export class ApiService extends ServiceDefinition {
         ]) ?? []
       ),
     }, stage);
-
     return;
   }
 

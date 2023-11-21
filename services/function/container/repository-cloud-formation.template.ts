@@ -1,4 +1,3 @@
-import { getProjectName } from "../../../utils/get-project-name";
 import { uppercase } from "../../../utils/uppercase";
 
 type FunctionRepositoryTemplateParameters = {
@@ -24,6 +23,5 @@ export const getTemplate = ({
   });
 
 export const getStackName = (stage: string, name: string) => {
-  const projectName = getProjectName();
-  return `${projectName}-${stage}-${name}-repository`;
+  return `${stage}-${name}-repository`;
 };

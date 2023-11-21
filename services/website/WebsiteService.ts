@@ -62,7 +62,8 @@ export class WebsiteService extends ServiceDefinition {
   }
 
   async dev() {
-    console.log("Starting", this.name);
+    await super.dev()
+     
 
     await this.writeEnvVarFile("dev", "development");
 
@@ -86,9 +87,17 @@ export class WebsiteService extends ServiceDefinition {
     console.log(
       `${this.name} website is at ${server.resolvedUrls?.local[0]}`
     );
+
+    process.env = {
+      ...process.env,
+      ...(await this.getEnvironmentVariables())
+    }
   }
 
   async deploy(stage: string) {
+    await super.deploy(stage)
+    
+
     await this.writeEnvVarFile(stage, "production");
 
     const cloudformationClient = new CloudFormation();

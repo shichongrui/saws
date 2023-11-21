@@ -12,7 +12,7 @@ import type {
   APIGatewayProxyStructuredResultV2,
 } from "aws-lambda";
 
-import { isBinaryType } from "../utils/binary-types";
+import { isBinaryType } from "../../utils/binary-types";
 
 /**
  * A function that returns the value to use as `context` in route `loader` and

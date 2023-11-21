@@ -16,7 +16,6 @@ import { getTemplate, getStackName } from "./cloud-formation.template";
 import { buildCodeZip } from "../../utils/build-code-zip";
 import { recursivelyReadDir } from "../../utils/recursively-read-dir";
 
-import { build as remixBuild } from "@remix-run/dev/dist/cli/commands";
 import { readConfig } from "@remix-run/dev/dist/config";
 import { createFileWatchCache } from "@remix-run/dev/dist/compiler/fileWatchCache";
 import * as compiler from "@remix-run/dev/dist/compiler/compiler";
@@ -26,7 +25,6 @@ import { ServiceDefinition, ServiceDefinitionConfig } from "../ServiceDefinition
 import { BUILD_DIR } from "../../utils/constants";
 import { CloudFormation } from "../../helpers/aws/cloudformation";
 import { S3 } from "../../helpers/aws/s3";
-import { getProjectName } from "../../utils/get-project-name";
 import { Cloudfront } from "../../helpers/aws/cloudfront";
 
 interface RemixServiceConfig extends ServiceDefinitionConfig {
@@ -106,6 +104,7 @@ export class RemixService extends ServiceDefinition {
       
       this.buildContext = await esbuild.context({
         minify: mode === "production",
+        treeShaking: true,
         entryPoints: [this.entryPointPath],
         bundle: true,
         outfile: this.buildFilePath,
@@ -123,12 +122,7 @@ export class RemixService extends ServiceDefinition {
   }
 
   async dev() {
-    for (const dependency of this.dependencies) {
-      process.env = {
-        ...process.env,
-        ...(await dependency.getEnvironmentVariables()),
-      };
-    }
+    await super.dev()
 
     console.log("Building remix app", this.name);
 
@@ -158,6 +152,11 @@ export class RemixService extends ServiceDefinition {
     });
 
     await this.startDevServer();
+
+    process.env = {
+      ...process.env,
+      ...(await this.getEnvironmentVariables())
+    }
   }
 
   captureHandlerRef() {
@@ -262,13 +261,15 @@ export class RemixService extends ServiceDefinition {
   }
 
   async deploy(stage: string) {
+    await super.deploy(stage)
+    
+
     console.log(`Creating bucket to store ${this.name} code in`);
     // create s3 bucket
     const cloudformationClient = new CloudFormation();
     const s3Client = new S3();
 
-    const projectName = getProjectName();
-    const bucketName = `${projectName}-${stage}-${this.name}-code`;
+    const bucketName = `${stage}-${this.name}-code`;
 
     const s3Template = getS3CodeTemplate({ bucketName, name: this.name });
     const s3StackName = getS3CodeStackName(stage, this.name);
@@ -313,7 +314,6 @@ export class RemixService extends ServiceDefinition {
       name: this.name,
       stage,
       moduleName: path.parse(this.buildFilePath).name,
-      projectName,
       codeBucketName: bucketName,
       codeS3Key: key,
       permissions: [

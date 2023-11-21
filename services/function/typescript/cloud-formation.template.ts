@@ -1,12 +1,10 @@
 import { AWSPermission } from "../../../utils/aws-permission";
-import { getProjectName } from "../../../utils/get-project-name";
 import { uppercase } from "../../../utils/uppercase";
 import { TypescriptFunctionServiceConfig } from "./TypescriptFunctionService";
 
 type SawsFunctionTemplateProperties = {
   name: string;
   moduleName: string;
-  projectName: string;
   codeBucketName: string;
   codeS3Key: string;
   stage: string;
@@ -18,7 +16,6 @@ type SawsFunctionTemplateProperties = {
 export const getTemplate = ({
   name,
   moduleName,
-  projectName,
   codeBucketName,
   codeS3Key,
   stage,
@@ -88,11 +85,10 @@ export const getTemplate = ({
             Variables: {
               NODE_ENV: "production",
               STAGE: stage,
-              PROJECT_NAME: projectName,
               ...environment,
             },
           },
-          FunctionName: `${projectName}-${stage}-${name}`,
+          FunctionName: `${stage}-${name}`,
           Handler: `${moduleName}.handler`,
           Runtime: "nodejs16.x",
           PackageType: "Zip",
@@ -140,6 +136,5 @@ export const getTemplate = ({
 };
 
 export const getStackName = (stage: string, name: string) => {
-  const projectName = getProjectName();
-  return `${projectName}-${stage}-${name}`;
+  return `${stage}-${name}-function`;
 };

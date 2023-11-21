@@ -21,7 +21,7 @@ export const devCommand = async (path: string) => {
     ...(await serviceDefinition.getEnvironmentVariables()),
   };
 
-  await serviceDefinition.forEachDependency(async (dependency) => {
+  serviceDefinition.forEachDependency(async (dependency) => {
     dependency.getStdOut()?.pipe(process.stdout)
   })
 };

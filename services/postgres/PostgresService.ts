@@ -9,7 +9,6 @@ import path from "node:path";
 import {
   generatePrismaClient,
   prismaMigrate,
-  runMigrationsLocally,
 } from "../../helpers/prisma";
 import { getStackName, getTemplate } from "./cloud-formation.template";
 import { ServiceDefinition } from "../ServiceDefinition";
@@ -18,7 +17,7 @@ import { CloudFormation } from "../../helpers/aws/cloudformation";
 import { EC2 } from "../../helpers/aws/ec2";
 
 import { SAWS_DIR } from "../../utils/constants";
-import { Client } from 'pg'
+import { Client } from "pg";
 import { startContainer } from "../../helpers/docker";
 
 export class PostgresService extends ServiceDefinition {
@@ -27,6 +26,8 @@ export class PostgresService extends ServiceDefinition {
 
   async dev() {
     await super.dev();
+    ;
+
     await this.startPostgresDocker();
     await this.createDB();
 
@@ -40,11 +41,17 @@ export class PostgresService extends ServiceDefinition {
         await generatePrismaClient();
       }
     });
+
+    process.env = {
+      ...process.env,
+      ...(await this.getEnvironmentVariables())
+    }
   }
 
   async deploy(stage: string) {
-    console.log("Deploying Postgres", this.name);
     await super.deploy(stage);
+    
+
     const cloudformationClient = new CloudFormation();
     const ec2Client = new EC2();
 
@@ -60,7 +67,7 @@ export class PostgresService extends ServiceDefinition {
       dbPasswordParameterName: getDBPasswordParameterName(this.name, stage),
       vpcId: defaultVpcId,
     });
-    const stackName = getStackName(stage);
+    const stackName = getStackName(stage, this.name);
 
     const results = await cloudformationClient.deployStack(stackName, template);
 
@@ -100,7 +107,7 @@ export class PostgresService extends ServiceDefinition {
 
     if (PostgresService.process == null) {
       PostgresService.process = await startContainer({
-        name: "postgres",
+        name: this.name,
         additionalArguments: [
           "-e",
           `POSTGRES_PASSWORD=${password}`,
@@ -158,20 +165,24 @@ export class PostgresService extends ServiceDefinition {
 
     console.log("DB did not exist. Creating and running migrations");
     await client.query(`CREATE DATABASE ${getDBName(this.name, "local")}`);
-
-    await runMigrationsLocally({
-      username: String(this.outputs.postgresUsername),
-      password,
-      endpoint: String(this.outputs.postgresHost),
-      dbName: String(this.outputs.postgresDBName),
-      port: String(this.outputs.postgresPort),
-    });
+    console.log("there");
+    try {
+      await prismaMigrate({
+        username: String(this.outputs.postgresUsername),
+        password,
+        endpoint: String(this.outputs.postgresHost),
+        dbName: String(this.outputs.postgresDBName),
+        port: String(this.outputs.postgresPort),
+      });
+    } catch (err) {
+      console.log("error", err);
+    }
+    console.log("here");
   }
 
   exit() {
     PostgresService.process?.kill();
     PostgresService.process = undefined;
-    
   }
 
   async getEnvironmentVariables() {
@@ -181,7 +192,7 @@ export class PostgresService extends ServiceDefinition {
         this.outputs.postgresUsername
       ),
       [this.parameterizedEnvVarName("POSTGRES_PASSWORD")]: password,
-      [this.parameterizedEnvVarName("POSTGRES_ENDPOINT")]: String(
+      [this.parameterizedEnvVarName("POSTGRES_HOST")]: String(
         this.outputs.postgresHost
       ),
       [this.parameterizedEnvVarName("POSTGRES_PORT")]: String(

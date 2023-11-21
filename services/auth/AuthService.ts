@@ -5,7 +5,6 @@ import {
 } from "../ServiceDefinition";
 import { CloudFormation } from "../../helpers/aws/cloudformation";
 import { getStackName, getTemplate } from "./cloud-formation.template";
-import { getProjectName } from "../../utils/get-project-name";
 import { Cognito } from "../../helpers/aws/cognito";
 import path from "node:path";
 import { DEV_USER_PASSWORD_PARAMETER_NAME, SAWS_DIR } from "../../utils/constants";
@@ -30,7 +29,8 @@ export class AuthService extends ServiceDefinition {
   }
 
   async dev() {
-    console.log("Starting Auth...");
+    await super.dev()
+    
     await this.startCognitoDocker();
     const params = await this.seedCognito();
     await this.setOutputs(
@@ -40,18 +40,24 @@ export class AuthService extends ServiceDefinition {
       },
       "local"
     );
+    process.env = {
+      ...process.env,
+      ...(await this.getEnvironmentVariables())
+    }
   }
 
   async deploy(stage: string) {
+    await super.deploy(stage)
+    
     console.log("Deploying Auth...");
 
     const cloudformationClient = new CloudFormation();
 
     const template = getTemplate({
-      projectName: getProjectName(),
       stage,
+      name: this.name,
     });
-    const stackName = getStackName(stage);
+    const stackName = getStackName(stage, this.name);
 
     const results = await cloudformationClient.deployStack(stackName, template);
 
@@ -67,6 +73,7 @@ export class AuthService extends ServiceDefinition {
       },
       stage
     );
+
     return;
   }
 
@@ -199,11 +206,10 @@ export class AuthService extends ServiceDefinition {
   async getCognitoParameters() {
     const password = this.devUserConfig?.password ?? "password";
 
-    const projectName = getProjectName();
     return {
-      poolName: `${projectName}-local-${this.name}-users`,
-      clientName: `${projectName}-local-${this.name}-users-client`,
-      devUserEmail: this.devUserConfig?.email ?? `dev@${projectName}.com`,
+      poolName: `local-${this.name}-user-pool`,
+      clientName: `local-${this.name}-user-pool-client`,
+      devUserEmail: this.devUserConfig?.email ?? `dev@${this.name}.com`,
       devUserPassword: password,
     };
   }

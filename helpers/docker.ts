@@ -85,7 +85,7 @@ export const startContainer = async ({
     ...command
   ]);
 
-  await retryUntil(check, 5000);
+  await retryUntil(check, 500);
 
   return childProcess
 }

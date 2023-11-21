@@ -1,8 +1,5 @@
-import { getProjectName } from "../../utils/get-project-name";
-
 type ContainerTemplateProperties = {
   stage: string;
-  projectName: string;
   name: string;
   repositoryName: string;
   environment: Record<string, string>;
@@ -13,7 +10,6 @@ type ContainerTemplateProperties = {
 
 export const getTemplate = ({
   stage,
-  projectName,
   name,
   repositoryName,
   environment,
@@ -30,20 +26,20 @@ export const getTemplate = ({
       Cluster: {
         Type: "AWS::ECS::Cluster",
         Properties: {
-          ClusterName: `${projectName}-${stage}-${name}-cluster`,
+          ClusterName: `${stage}-${name}-cluster`,
         },
       },
       CloudWatchLogsGroup: {
         Type: "AWS::Logs::LogGroup",
         Properties: {
-          LogGroupName: `/${projectName}/${stage}/${name}`,
+          LogGroupName: `/${stage}/${name}`,
           RetentionInDays: 30,
         }
       },
       TaskDefinition: {
         Type: "AWS::ECS::TaskDefinition",
         Properties: {
-          Family: `${projectName}-${stage}-${name}-cluster`,
+          Family: `${stage}-${name}-cluster`,
           RequiresCompatibilities: ["EC2"],
           Memory: 900,
           NetworkMode: "host",
@@ -99,7 +95,7 @@ export const getTemplate = ({
       SecurityGroup: {
         Type: "AWS::EC2::SecurityGroup",
         Properties: {
-          GroupName: `${projectName}-${stage}-${name}-security-group`,
+          GroupName: `${stage}-${name}-security-group`,
           GroupDescription: "Allow HTTP",
           SecurityGroupIngress: [
             {
@@ -222,6 +218,5 @@ export const getTemplate = ({
 };
 
 export const getStackName = (stage: string, name: string) => {
-  const projectName = getProjectName();
-  return `${projectName}-${stage}-${name}`;
+  return `${stage}-${name}-container`;
 };

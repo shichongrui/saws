@@ -11,7 +11,6 @@ import { FunctionService, FunctionServiceConfig } from "../FunctionService";
 import { lambdaServer } from "../../../utils/LambdaServer";
 import { loginToAWSDocker, pushImage, tagImage, waitForContainerToBeStopped } from "../../../helpers/docker";
 import { CloudFormation } from "../../../helpers/aws/cloudformation";
-import { getProjectName } from "../../../utils/get-project-name";
 
 interface ContainerFunctionServiceConfig extends FunctionServiceConfig {
   port?: number;
@@ -25,7 +24,10 @@ export class ContainerFunctionService extends FunctionService {
   constructor(
     config: ContainerFunctionServiceConfig,
   ) {
-    super(config);
+    super({
+      ...config,
+      runtime: 'container'
+    });
 
     this.configPort = config.port;
   }
@@ -52,6 +54,9 @@ export class ContainerFunctionService extends FunctionService {
   }
 
   async dev() {
+    await super.dev()
+    
+
     await lambdaServer.start();
     await waitForContainerToBeStopped(this.name);
 
@@ -86,10 +91,18 @@ export class ContainerFunctionService extends FunctionService {
       console.log(this.name, "ready");
     });
 
+    process.env = {
+      ...process.env,
+      ...(await this.getEnvironmentVariables())
+    }
+
     return;
   }
 
   async deploy(stage: string) {
+    await super.deploy(stage)
+    
+
     console.log("Creating ECS repository for", this.name);
     // build repository
     const cloudformationClient = new CloudFormation();
@@ -114,14 +127,12 @@ export class ContainerFunctionService extends FunctionService {
     await tagImage(this.name, accountId, repositoryName, "latest");
     await pushImage(accountId, repositoryName, "latest");
 
-    const projectName = getProjectName();
     await cloudformationClient.deployStack(
       getStackName(stage, this.name),
       getTemplate({
         name: this.name,
         repositoryName: repositoryName,
         tag: "latest",
-        projectName,
         stage,
         memory: this.memory,
       })
@@ -131,9 +142,7 @@ export class ContainerFunctionService extends FunctionService {
   }
 
   async getEnvironmentVariables() {
-    return {
-      [this.parameterizedEnvVarName('PROJECT_NAME')]: getProjectName(),
-    };
+    return {};
   }
 
   getStdOut() {

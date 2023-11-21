@@ -1,4 +1,3 @@
-import { getProjectName } from "../../utils/get-project-name";
 import { uppercase } from "../../utils/uppercase";
 
 type PostgresTemplateParameters = {
@@ -77,7 +76,6 @@ export const getTemplate = ({
   }
 });
 
-export const getStackName = (stage: string) => {
-  const projectName = getProjectName();
-  return `${projectName}-${stage}-postgres`;
+export const getStackName = (stage: string, name: string) => {
+  return `${stage}-${name}-postgres`;
 };

@@ -1,11 +1,9 @@
-import { getProjectName } from "../../../utils/get-project-name";
 import { uppercase } from "../../../utils/uppercase";
 
 type SawsFunctionTemplateProperties = {
   name: string;
   repositoryName: string;
   tag: string;
-  projectName: string;
   stage: string;
   memory?: number;
 };
@@ -14,7 +12,6 @@ export const getTemplate = ({
   name,
   repositoryName,
   tag,
-  projectName,
   stage,
   memory = 128,
 }: SawsFunctionTemplateProperties) => {
@@ -67,7 +64,7 @@ export const getTemplate = ({
           Code: {
             ImageUri: { "Fn::Sub": `\${AWS::AccountId}.dkr.ecr.us-east-1.amazonaws.com/${repositoryName}:${tag}` },
           },
-          FunctionName: `${projectName}-${stage}-${name}`,
+          FunctionName: `${stage}-${name}`,
           PackageType: "Image",
           MemorySize: memory,
           Timeout: 60,
@@ -81,6 +78,5 @@ export const getTemplate = ({
 }
 
 export const getStackName = (stage: string, name: string) => {
-  const projectName = getProjectName();
-  return `${projectName}-${stage}-${name}`;
+  return `${stage}-${name}-function`;
 };

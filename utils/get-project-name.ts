@@ -1,6 +1,7 @@
 import * as path from "path";
+import finder from 'find-package-json'
 
 export const getProjectName = () => {
-  const packageJsonPath = path.resolve("./package.json");
-  return require(packageJsonPath).name;
+  const pkg = finder(__dirname).next().value
+  return pkg!.name!;
 };

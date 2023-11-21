@@ -10,7 +10,7 @@ export class FileStorage {
   }
 
   getBucketName() {
-    return `${process.env.STAGE}-${this.name}-file-storage`
+    return `${process.env.STAGE}-${this.name}`
   }
 
   async getFile(path: string) {

@@ -1,13 +1,33 @@
-const { ServiceDefinition } = require('@shichongrui/saws')
-const { PostgresService } = require('@shichongrui/saws')
+const {
+  ServiceDefinition,
+  PostgresService,
+  TypescriptFunctionService,
+  RemixService,
+  FileStorageService,
+} = require("../");
+
+const postgres = new PostgresService({
+  name: "saws-example-db",
+});
 
 const serviceDefinition = new ServiceDefinition({
-  name: 'saws-example',
+  name: "saws-example",
   dependencies: [
-    new PostgresService({
-      name: 'saws-example-db'
-    })
-  ]
-})
+    new TypescriptFunctionService({
+      name: "saws-example-function",
+      dependencies: [postgres],
+    }),
+    new RemixService({
+      name: "saws-example-website",
+      port: 8000,
+      dependencies: [
+        postgres,
+        new FileStorageService({
+          name: "saws-example-files",
+        }),
+      ],
+    }),
+  ],
+});
 
-module.exports = serviceDefinition
+module.exports = serviceDefinition;

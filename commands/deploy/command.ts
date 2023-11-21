@@ -1,5 +1,4 @@
 import { createCacheDir } from "../../utils/create-directories";
-import { onProcessExit } from "../../utils/on-exit";
 import { getSawsConfig } from "../../utils/get-saws-config";
 
 export const deployCommand = async (path: string, { stage }: { stage: string }) => {

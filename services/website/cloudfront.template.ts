@@ -1,5 +1,3 @@
-import { getProjectName } from "../../utils/get-project-name";
-
 type CloudfrontTemplateParameters = {
   domain: string;
   certificateArn: string;
@@ -92,6 +90,5 @@ export const getTemplate = ({
   });
 
 export const getStackName = (stage: string, name: string) => {
-  const projectName = getProjectName();
-  return `${projectName}-${stage}-${name}`;
+  return `${stage}-${name}-website`;
 };

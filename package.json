@@ -1,6 +1,6 @@
 {
   "name": "@shichongrui/saws",
-  "version": "0.0.19",
+  "version": "0.0.22",
   "repository": {
     "url": "git@github.com:shichongrui/saws.git"
   },
@@ -16,9 +16,17 @@
     "prettier:fix": "prettier --write .",
     "build": "rm -rf dist && npx tsc"
   },
+  "peerDependencies": {
+    "@prisma/client": ">=5.0.0",
+    "@remix-run/node": ">=2.0.0",
+    "@remix-run/react": ">=2.0.0",
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
   "devDependencies": {
     "@prisma/client": "^5.6.0",
     "@remix-run/node": "^2.3.0",
+    "@remix-run/react": "^2.3.0",
     "@types/adm-zip": "^0.5.4",
     "@types/aws-lambda": "^8.10.126",
     "@types/find-package-json": "^1.2.6",
@@ -29,7 +37,10 @@
     "@types/pg": "^8.10.9",
     "@types/prompt": "^1.1.8",
     "@types/react": "^18.2.22",
+    "@types/react-dom": "^18.2.15",
     "@types/ws": "^8.5.9",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "typescript": "^5.2.2"
   },
   "publishConfig": {
