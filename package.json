@@ -1,6 +1,6 @@
 {
   "name": "@shichongrui/saws",
-  "version": "0.0.22",
+  "version": "0.0.25",
   "repository": {
     "url": "git@github.com:shichongrui/saws.git"
   },
@@ -60,6 +60,7 @@
     "@graphql-tools/schema": "^10.0.0",
     "@remix-run/dev": "^2.3.0",
     "adm-zip": "^0.5.10",
+    "amazon-cognito-identity-js": "^6.3.7",
     "apollo-server-lambda": "^3.13.0",
     "aws-lambda": "^1.0.7",
     "chokidar": "^3.5.3",

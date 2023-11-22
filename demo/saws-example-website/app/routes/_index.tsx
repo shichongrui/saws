@@ -1,11 +1,11 @@
 import * as React from "react";
-import { json } from "@remix-run/node";
+import { LoaderFunctionArgs, json } from "@remix-run/node";
 import { prisma } from "../utils/prisma.server";
 import { useLoaderData } from '@remix-run/react';
 import { functionsClient } from '../utils/functions.server';
 import { files } from '../utils/file-storage.server';
 
-export const loader = async () => {
+export const loader = async ({ request }: LoaderFunctionArgs) => {
   const users = await prisma.user.findMany();
 
   const result = await functionsClient.call<{ event: { test: boolean } }>('saws-example-function', {

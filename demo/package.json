@@ -11,5 +11,8 @@
   "dependencies": {
     "@remix-run/node": "^2.3.0",
     "isbot": "latest"
+  },
+  "devDependencies": {
+    "@emotion/cache": "^11.11.0"
   }
 }

@@ -26,7 +26,6 @@ export class PostgresService extends ServiceDefinition {
 
   async dev() {
     await super.dev();
-    ;
 
     await this.startPostgresDocker();
     await this.createDB();

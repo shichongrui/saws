@@ -2,6 +2,7 @@ import { Readable } from "stream";
 import { writeStageOutputs } from "../utils/stage-outputs";
 import { uppercase } from "../utils/uppercase";
 import { AWSPermission } from "../utils/aws-permission";
+import { parameterizedEnvVarName } from "../utils/parameterized-env-var-name";
 
 export interface ServiceDefinitionConfig {
   name: string;
@@ -82,7 +83,7 @@ export class ServiceDefinition {
   }
 
   parameterizedEnvVarName(envVarName: string) {
-    return `${uppercase(this.name.replace(/[^a-zA-Z\d]/g, "_"))}_${envVarName}`;
+    return parameterizedEnvVarName(this.name, envVarName);
   }
 
   // this needs to be recursive down dependencies

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { LinksFunction, json } from "@remix-run/node";
+import { LinksFunction } from "@remix-run/node";
 import {
   Links,
   Meta,
@@ -8,7 +8,6 @@ import {
   ScrollRestoration,
   MetaFunction,
   LiveReload,
-  useLoaderData,
 } from "@remix-run/react";
 
 export const meta: MetaFunction = () => [
@@ -35,7 +34,7 @@ export let links: LinksFunction = () => {
 };
 
 interface DocumentProps {
-  children: React.ReactNode;
+  children: React.ReactElement;
 }
 
 const Document = ({ children }: DocumentProps, emotionCache) => {

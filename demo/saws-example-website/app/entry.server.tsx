@@ -9,10 +9,6 @@ export default function handleRequest(
   responseHeaders: Headers,
   remixContext: EntryContext
 ) {
-  const html = renderToString(
-    <RemixServer context={remixContext} url={request.url} />
-  );
-
   const markup = renderToString(
     <RemixServer context={remixContext} url={request.url} />
   );

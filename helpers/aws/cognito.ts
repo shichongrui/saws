@@ -51,7 +51,7 @@ export class Cognito {
     const command = new CreateUserPoolClientCommand({
       ClientName: name,
       UserPoolId: userPoolId,
-      ExplicitAuthFlows: ["ALLOW_USER_SRP_AUTH", "ALLOW_REFRESH_TOKEN_AUTH"],
+      ExplicitAuthFlows: ["ALLOW_USER_SRP_AUTH", "ALLOW_REFRESH_TOKEN_AUTH", "ALLOW_USER_PASSWORD_AUTH"],
       GenerateSecret: false,
       AccessTokenValidity: 1,
       TokenValidityUnits: {

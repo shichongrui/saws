@@ -40,9 +40,7 @@ __export(entry_server_exports, {
 });
 var React = __toESM(require("react")), import_server = require("react-dom/server"), import_react = require("@remix-run/react");
 function handleRequest(request, responseStatusCode, responseHeaders, remixContext) {
-  let html = (0, import_server.renderToString)(
-    /* @__PURE__ */ React.createElement(import_react.RemixServer, { context: remixContext, url: request.url })
-  ), markup = (0, import_server.renderToString)(
+  let markup = (0, import_server.renderToString)(
     /* @__PURE__ */ React.createElement(import_react.RemixServer, { context: remixContext, url: request.url })
   );
   return responseHeaders.set("Content-Type", "text/html"), new Response(`<!DOCTYPE html>${markup}`, {
@@ -86,7 +84,7 @@ __export(index_exports, {
   default: () => index_default,
   loader: () => loader
 });
-var React3 = __toESM(require("react")), import_node2 = require("@remix-run/node");
+var React3 = __toESM(require("react")), import_node3 = require("@remix-run/node");
 
 // ../libraries.ts
 var libraries_exports = {};
@@ -99,9 +97,13 @@ __export(libraries_exports, {
   RestAPI: () => RestAPI,
   Router: () => import_express.Router,
   SecretsManager: () => SecretsManager,
+  SessionClient: () => SessionClient,
   Translate: () => Translate,
+  captureEnvVars: () => captureEnvVars,
+  createFileUploadHandler: () => createFileUploadHandler,
   express: () => import_express.default,
-  getPrismaClient: () => getPrismaClient
+  getPrismaClient: () => getPrismaClient,
+  multipartFormData: () => multipartFormData
 });
 
 // ../libraries/api/index.ts
@@ -364,17 +366,27 @@ var import_client_cognito_identity_provider = require("@aws-sdk/client-cognito-i
   }
 };
 
+// ../utils/uppercase.ts
+var uppercase = (text) => {
+  let [first, ...rest] = text;
+  return first.toUpperCase() + rest.join("");
+};
+
+// ../utils/parameterized-env-var-name.ts
+var parameterizedEnvVarName = (name, variable) => `${uppercase(name.replace(/[^a-zA-Z\d]/g, "_"))}_${variable}`;
+
 // ../libraries/auth.ts
-var AuthClient = class {
+var import_amazon_cognito_identity_js = require("amazon-cognito-identity-js"), AuthClient = class {
   client;
   userPoolId;
   userPoolClientId;
-  constructor(stage = process.env.STAGE ?? "local", userPoolId = process.env.USER_POOL_ID, userPoolClientId = process.env.USER_POOL_CLIENT_ID) {
+  constructor(name) {
+    let userPoolId = process.env[parameterizedEnvVarName(name, "USER_POOL_ID")], userPoolClientId = process.env[parameterizedEnvVarName(name, "USER_POOL_CLIENT_ID")];
     if (this.client = new Cognito(process.env.STAGE ?? "local"), userPoolId == null || userPoolClientId == null)
       throw new Error(
         "USER_POOL_ID and USER_POOL_CLIENT_ID must be present in the environment variables"
       );
-    this.userPoolId = userPoolId, this.userPoolClientId = userPoolClientId;
+    this.userPoolId = userPoolId, this.userPoolClientId = userPoolClientId, console.log(process.env.STAGE, userPoolId, userPoolClientId);
   }
   deleteUserFromToken(token) {
     return this.client.deleteUser(token);
@@ -397,6 +409,128 @@ var AuthClient = class {
       this.userPoolClientId,
       refreshToken
     )).AuthenticationResult?.AccessToken;
+  }
+}, captureEnvVars = (name) => {
+  let userPoolId = parameterizedEnvVarName(name, "USER_POOL_ID"), userPoolClientId = parameterizedEnvVarName(name, "USER_POOL_CLIENT_ID");
+  return {
+    [userPoolId]: process.env[userPoolId],
+    [userPoolClientId]: process.env[userPoolClientId]
+  };
+}, SessionClient = class {
+  userPool;
+  constructor(name) {
+    let userPoolId = window.ENV[parameterizedEnvVarName(name, "USER_POOL_ID")], userPoolClientId = window.ENV[parameterizedEnvVarName(name, "USER_POOL_CLIENT_ID")];
+    this.userPool = new import_amazon_cognito_identity_js.CognitoUserPool({
+      UserPoolId: userPoolId,
+      ClientId: userPoolClientId,
+      endpoint: window.ENV.STAGE === "local" ? "http://127.0.0.1:9229" : void 0,
+      Storage: new import_amazon_cognito_identity_js.CookieStorage({
+        domain: window?.location?.hostname,
+        secure: window?.location?.hostname !== "localhost",
+        path: "/",
+        expires: 365
+      })
+    });
+  }
+  getCurrentUser() {
+    return this.userPool.getCurrentUser();
+  }
+  async signIn(username, password) {
+    return new Promise((resolve3, reject) => {
+      let cognitoUser = new import_amazon_cognito_identity_js.CognitoUser({
+        Username: username,
+        Pool: this.userPool
+      });
+      cognitoUser.setAuthenticationFlowType("USER_PASSWORD_AUTH"), cognitoUser.authenticateUser(
+        new import_amazon_cognito_identity_js.AuthenticationDetails({ Username: username, Password: password }),
+        {
+          onSuccess: () => {
+            resolve3(cognitoUser);
+          },
+          onFailure: (err) => {
+            reject(err);
+          }
+        }
+      );
+    });
+  }
+  async signUp({
+    username,
+    password,
+    attributes,
+    autoSignIn
+  }) {
+    return new Promise((resolve3, reject) => {
+      let attributeList = [];
+      for (let key in attributes)
+        attributeList.push(
+          new import_amazon_cognito_identity_js.CognitoUserAttribute({
+            Name: key,
+            Value: attributes[key]
+          })
+        );
+      this.userPool.signUp(
+        username,
+        password,
+        attributeList,
+        [],
+        async (err, result) => {
+          if (err) {
+            reject(err);
+            return;
+          }
+          if (autoSignIn && autoSignIn.enabled)
+            try {
+              await this.signIn(username, password), resolve3(result);
+            } catch (signInError) {
+              reject(signInError);
+            }
+          else
+            resolve3(result);
+        }
+      );
+    });
+  }
+  async confirmSignUp(email, code) {
+    return new Promise((resolve3, reject) => {
+      let userData = {
+        Username: email,
+        Pool: this.userPool
+      };
+      new import_amazon_cognito_identity_js.CognitoUser(userData).confirmRegistration(code, !0, (err) => {
+        if (err)
+          return reject(err);
+        resolve3(null);
+      });
+    });
+  }
+  async completeNewPassword(user, newPassword) {
+    return new Promise((resolve3, reject) => {
+      user.completeNewPasswordChallenge(newPassword, null, {
+        onSuccess: () => {
+          resolve3(null);
+        },
+        onFailure: (err) => {
+          reject(err);
+        }
+      });
+    });
+  }
+  signOut() {
+    return this.getCurrentUser()?.signOut();
+  }
+  refreshTokenIfNeeded() {
+    let currentUser = this.getCurrentUser();
+    currentUser?.getSession((err, session) => {
+      if (err != null || session == null)
+        return currentUser.signOut();
+      if (session.isValid())
+        return;
+      let refreshToken = session.getRefreshToken();
+      currentUser.refreshSession(refreshToken, (err2) => {
+        err2 != null && currentUser.signOut();
+      });
+    });
   }
 };
 
@@ -526,17 +660,6 @@ var import_client_lambda = require("@aws-sdk/client-lambda"), FunctionsClient = 
 
 // ../libraries/postgres.ts
 var import_client = require("@prisma/client");
-
-// ../utils/uppercase.ts
-var uppercase = (text) => {
-  let [first, ...rest] = text;
-  return first.toUpperCase() + rest.join("");
-};
-
-// ../utils/parameterized-env-var-name.ts
-var parameterizedEnvVarName = (name, variable) => `${uppercase(name.replace(/[^a-zA-Z\d]/g, "_"))}_${variable}`;
-
-// ../libraries/postgres.ts
 var getPrismaClient = (name) => {
   let {
     [parameterizedEnvVarName(name, "POSTGRES_USERNAME")]: username,
@@ -554,7 +677,7 @@ var getPrismaClient = (name) => {
   });
 };
 
-// ../libraries/remix.ts
+// ../libraries/remix/remix-app.ts
 var import_node = require("@remix-run/node");
 
 // ../utils/binary-types.ts
@@ -624,7 +747,7 @@ function isBinaryType(contentType) {
   return binaryTypes.includes(test);
 }
 
-// ../libraries/remix.ts
+// ../libraries/remix/remix-app.ts
 var RemixApp = class {
   createLambdaHandler = ({
     getLoadContext,
@@ -676,6 +799,53 @@ var RemixApp = class {
   }
 };
 
+// ../libraries/remix/create-file-upload-handler.ts
+var import_node_crypto = require("node:crypto"), import_node_fs = require("node:fs"), import_promises = require("node:fs/promises"), import_node_os = require("node:os"), import_node_path = require("node:path"), import_node_stream = require("node:stream"), import_node_util = require("node:util"), import_server_runtime = require("@remix-run/server-runtime"), defaultFilePathResolver = ({ filename }) => {
+  let ext = filename ? (0, import_node_path.extname)(filename) : "";
+  return "upload_" + (0, import_node_crypto.randomBytes)(4).readUInt32LE(0) + ext;
+};
+function createFileUploadHandler({
+  directory = (0, import_node_os.tmpdir)(),
+  file = defaultFilePathResolver,
+  maxPartSize = 3e6
+} = {}) {
+  return async ({ name, filename, contentType, data }) => {
+    if (!filename)
+      return;
+    let filedir = (0, import_node_path.resolve)(directory), path2 = typeof file == "string" ? file : file({ name, filename, contentType });
+    if (!path2)
+      return;
+    let filepath = (0, import_node_path.resolve)(filedir, path2);
+    await (0, import_promises.mkdir)((0, import_node_path.dirname)(filepath), { recursive: !0 }).catch(() => {
+    });
+    let writeFileStream = (0, import_node_fs.createWriteStream)(filepath), size = 0, deleteFile = !1;
+    try {
+      for await (let chunk of data) {
+        if (size += chunk.byteLength, size > maxPartSize)
+          throw deleteFile = !0, new import_server_runtime.MaxPartSizeExceededError(name, maxPartSize);
+        writeFileStream.write(chunk);
+      }
+    } finally {
+      writeFileStream.end(), await (0, import_node_util.promisify)(import_node_stream.finished)(writeFileStream), deleteFile && await (0, import_promises.rm)(filepath).catch(() => {
+      });
+    }
+    return filepath;
+  };
+}
+
+// ../libraries/remix/multipart-form-data.ts
+var import_node2 = require("@remix-run/node");
+var multipartFormData = (request) => (0, import_node2.unstable_parseMultipartFormData)(
+  request,
+  (0, import_node2.unstable_composeUploadHandlers)(
+    createFileUploadHandler({
+      maxPartSize: 5e6,
+      file: ({ filename }) => filename
+    }),
+    (0, import_node2.unstable_createMemoryUploadHandler)()
+  )
+);
+
 // ../helpers/aws/ssm.ts
 var import_client_ssm = require("@aws-sdk/client-ssm"), SSM = class {
   client;
@@ -703,8 +873,8 @@ var import_client_ssm = require("@aws-sdk/client-ssm"), SSM = class {
 var path = __toESM(require("path")), SAWS_DIR = path.resolve("./.saws"), BUILD_DIR = path.resolve(SAWS_DIR, "build");
 
 // ../libraries/secrets.ts
-var import_node_path = require("node:path"), import_envfile = require("envfile"), import_fs2 = require("fs"), cache = {}, LocalSecretsManager = class {
-  secretsFilePath = (0, import_node_path.resolve)(SAWS_DIR, ".secrets");
+var import_node_path2 = require("node:path"), import_envfile = require("envfile"), import_fs2 = require("fs"), cache = {}, LocalSecretsManager = class {
+  secretsFilePath = (0, import_node_path2.resolve)(SAWS_DIR, ".secrets");
   async ensureSecretsFileExists() {
     try {
       await import_fs2.promises.stat(this.secretsFilePath);
@@ -790,11 +960,11 @@ var functionsClient = new FunctionsClient(process.env.STAGE);
 var files = new FileStorage("saws-example-files");
 
 // saws-example-website/app/routes/_index.tsx
-var loader = async () => {
+var loader = async ({ request }) => {
   let users = await prisma.user.findMany(), result = await functionsClient.call("saws-example-function", {
     test: !0
   }), fileUrl = await files.getFileUrl("/1.png");
-  return (0, import_node2.json)({
+  return (0, import_node3.json)({
     users,
     result,
     fileUrl
@@ -805,7 +975,7 @@ var loader = async () => {
 };
 
 // server-assets-manifest:@remix-run/dev/assets-manifest
-var assets_manifest_default = { entry: { module: "/public/build/entry.client-NQ3YT2S6.js", imports: ["/public/build/_shared/chunk-LBAIJNBE.js", "/public/build/_shared/chunk-Y54NFNLJ.js", "/public/build/_shared/chunk-NKWASPW3.js", "/public/build/_shared/chunk-75IOGHNW.js", "/public/build/_shared/chunk-JJMPHSMP.js", "/public/build/_shared/chunk-GDS3J3YF.js", "/public/build/_shared/chunk-QXY5AXJY.js"] }, routes: { root: { id: "root", parentId: void 0, path: "", index: void 0, caseSensitive: void 0, module: "/public/build/root-WTF7ZQ52.js", imports: void 0, hasAction: !1, hasLoader: !1, hasErrorBoundary: !1 }, "routes/_index": { id: "routes/_index", parentId: "root", path: void 0, index: !0, caseSensitive: void 0, module: "/public/build/routes/_index-E7U2S5FN.js", imports: void 0, hasAction: !1, hasLoader: !0, hasErrorBoundary: !1 } }, version: "05c18ea6", hmr: { runtime: "/public/build/_shared/chunk-NKWASPW3.js", timestamp: 1700523184840 }, url: "/public/build/manifest-05C18EA6.js" };
+var assets_manifest_default = { entry: { module: "/public/build/entry.client-NQ3YT2S6.js", imports: ["/public/build/_shared/chunk-LBAIJNBE.js", "/public/build/_shared/chunk-Y54NFNLJ.js", "/public/build/_shared/chunk-NKWASPW3.js", "/public/build/_shared/chunk-75IOGHNW.js", "/public/build/_shared/chunk-JJMPHSMP.js", "/public/build/_shared/chunk-GDS3J3YF.js", "/public/build/_shared/chunk-QXY5AXJY.js"] }, routes: { root: { id: "root", parentId: void 0, path: "", index: void 0, caseSensitive: void 0, module: "/public/build/root-4RQKQZTL.js", imports: void 0, hasAction: !1, hasLoader: !1, hasErrorBoundary: !1 }, "routes/_index": { id: "routes/_index", parentId: "root", path: void 0, index: !0, caseSensitive: void 0, module: "/public/build/routes/_index-XUYX2OLG.js", imports: void 0, hasAction: !1, hasLoader: !0, hasErrorBoundary: !1 } }, version: "fc4a240f", hmr: { runtime: "/public/build/_shared/chunk-NKWASPW3.js", timestamp: 1700619460761 }, url: "/public/build/manifest-FC4A240F.js" };
 
 // server-entry-module:@remix-run/dev/server-build
 var mode = "development", assetsBuildDirectory = "./.saws/build/saws-example-website/public/build", future = { v3_fetcherPersist: !1 }, publicPath = "/public/build/", entry = { module: entry_server_exports }, routes = {

@@ -4,7 +4,8 @@ const {
   TypescriptFunctionService,
   RemixService,
   FileStorageService,
-} = require("../");
+  AuthService
+} = require("../dist/services");
 
 const postgres = new PostgresService({
   name: "saws-example-db",
@@ -24,6 +25,13 @@ const serviceDefinition = new ServiceDefinition({
         postgres,
         new FileStorageService({
           name: "saws-example-files",
+        }),
+        new AuthService({
+          name: "saws-auth",
+          devUser: {
+            email: "dev@saws.com",
+            password: "password",
+          },
         }),
       ],
     }),
