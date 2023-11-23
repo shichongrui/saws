@@ -4,7 +4,7 @@ import { SAWS_DIR } from "./constants";
 import type { Outputs } from "../services/ServiceDefinition";
 
 export const getStageOutputs = async (stage: string): Promise<Record<string, Outputs>> => {
-  const outputPath = path.resolve(SAWS_DIR, `saws-api-${stage}-output.json`);
+  const outputPath = path.resolve(SAWS_DIR, `saws-${stage}-output.json`);
   try {
     await fs.stat(outputPath);
     const outputsText = await fs.readFile(outputPath, { encoding: "utf-8" });
@@ -25,6 +25,7 @@ export const writeStageOutputs = async (
     ...currentOutputs,
     ...newOutputs,
   };
+
   await fs.writeFile(
     path.resolve(SAWS_DIR, `saws-${stage}-output.json`),
     JSON.stringify(outputs, null, 2)

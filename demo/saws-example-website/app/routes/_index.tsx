@@ -8,6 +8,8 @@ import { files } from '../utils/file-storage.server';
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const users = await prisma.user.findMany();
 
+  console.log(users[0], Object.keys(users[0]))
+
   const result = await functionsClient.call<{ event: { test: boolean } }>('saws-example-function', {
     test: true,
   })

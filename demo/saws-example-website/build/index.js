@@ -99,10 +99,11 @@ __export(libraries_exports, {
   SecretsManager: () => SecretsManager,
   SessionClient: () => SessionClient,
   Translate: () => Translate,
-  captureEnvVars: () => captureEnvVars,
+  captureAuthEnvVars: () => captureAuthEnvVars,
   createFileUploadHandler: () => createFileUploadHandler,
   express: () => import_express.default,
   getPrismaClient: () => getPrismaClient,
+  getSession: () => getSession,
   multipartFormData: () => multipartFormData
 });
 
@@ -277,7 +278,7 @@ var import_client_cognito_identity_provider = require("@aws-sdk/client-cognito-i
     let command = new import_client_cognito_identity_provider.CreateUserPoolClientCommand({
       ClientName: name,
       UserPoolId: userPoolId,
-      ExplicitAuthFlows: ["ALLOW_USER_SRP_AUTH", "ALLOW_REFRESH_TOKEN_AUTH"],
+      ExplicitAuthFlows: ["ALLOW_USER_SRP_AUTH", "ALLOW_REFRESH_TOKEN_AUTH", "ALLOW_USER_PASSWORD_AUTH"],
       GenerateSecret: !1,
       AccessTokenValidity: 1,
       TokenValidityUnits: {
@@ -366,14 +367,8 @@ var import_client_cognito_identity_provider = require("@aws-sdk/client-cognito-i
   }
 };
 
-// ../utils/uppercase.ts
-var uppercase = (text) => {
-  let [first, ...rest] = text;
-  return first.toUpperCase() + rest.join("");
-};
-
 // ../utils/parameterized-env-var-name.ts
-var parameterizedEnvVarName = (name, variable) => `${uppercase(name.replace(/[^a-zA-Z\d]/g, "_"))}_${variable}`;
+var parameterizedEnvVarName = (name, variable) => `${name.replace(/[^a-zA-Z\d]/g, "_").toUpperCase()}_${variable}`;
 
 // ../libraries/auth.ts
 var import_amazon_cognito_identity_js = require("amazon-cognito-identity-js"), AuthClient = class {
@@ -386,7 +381,7 @@ var import_amazon_cognito_identity_js = require("amazon-cognito-identity-js"), A
       throw new Error(
         "USER_POOL_ID and USER_POOL_CLIENT_ID must be present in the environment variables"
       );
-    this.userPoolId = userPoolId, this.userPoolClientId = userPoolClientId, console.log(process.env.STAGE, userPoolId, userPoolClientId);
+    this.userPoolId = userPoolId, this.userPoolClientId = userPoolClientId;
   }
   deleteUserFromToken(token) {
     return this.client.deleteUser(token);
@@ -410,7 +405,7 @@ var import_amazon_cognito_identity_js = require("amazon-cognito-identity-js"), A
       refreshToken
     )).AuthenticationResult?.AccessToken;
   }
-}, captureEnvVars = (name) => {
+}, captureAuthEnvVars = (name) => {
   let userPoolId = parameterizedEnvVarName(name, "USER_POOL_ID"), userPoolClientId = parameterizedEnvVarName(name, "USER_POOL_CLIENT_ID");
   return {
     [userPoolId]: process.env[userPoolId],
@@ -439,7 +434,13 @@ var import_amazon_cognito_identity_js = require("amazon-cognito-identity-js"), A
     return new Promise((resolve3, reject) => {
       let cognitoUser = new import_amazon_cognito_identity_js.CognitoUser({
         Username: username,
-        Pool: this.userPool
+        Pool: this.userPool,
+        Storage: new import_amazon_cognito_identity_js.CookieStorage({
+          domain: window?.location?.hostname,
+          secure: window?.location?.hostname !== "localhost",
+          path: "/",
+          expires: 365
+        })
       });
       cognitoUser.setAuthenticationFlowType("USER_PASSWORD_AUTH"), cognitoUser.authenticateUser(
         new import_amazon_cognito_identity_js.AuthenticationDetails({ Username: username, Password: password }),
@@ -495,7 +496,13 @@ var import_amazon_cognito_identity_js = require("amazon-cognito-identity-js"), A
     return new Promise((resolve3, reject) => {
       let userData = {
         Username: email,
-        Pool: this.userPool
+        Pool: this.userPool,
+        Storage: new import_amazon_cognito_identity_js.CookieStorage({
+          domain: window?.location?.hostname,
+          secure: window?.location?.hostname !== "localhost",
+          path: "/",
+          expires: 365
+        })
       };
       new import_amazon_cognito_identity_js.CognitoUser(userData).confirmRegistration(code, !0, (err) => {
         if (err)
@@ -846,6 +853,55 @@ var multipartFormData = (request) => (0, import_node2.unstable_parseMultipartFor
   )
 );
 
+// ../libraries/remix/session.server.ts
+var import_jwks_rsa = __toESM(require("jwks-rsa")), import_jsonwebtoken2 = __toESM(require("jsonwebtoken"));
+async function getSession(name, request) {
+  let client = (0, import_jwks_rsa.default)({
+    jwksUri: String(process.env[parameterizedEnvVarName(name, "USER_POOL_JWKS_URI")])
+  }), getJwksKey = (header, callback) => {
+    client.getSigningKey(header.kid, (_, key) => {
+      callback(null, key?.getPublicKey());
+    });
+  }, verifyToken = (accessToken2) => new Promise((resolve3, reject) => {
+    import_jsonwebtoken2.default.verify(accessToken2, getJwksKey, {}, (err, decoded) => {
+      if (err)
+        return reject(err);
+      resolve3(decoded);
+    });
+  }), cookieString = request.headers.get("Cookie");
+  if (cookieString == null)
+    return;
+  let cookies = cookieString.split(/;\s?/g), authCookie = cookies.find(
+    (cookie) => cookie.match(/CognitoIdentityServiceProvider\..*\.accessToken/g)
+  );
+  if (authCookie == null)
+    return;
+  let accessToken = authCookie.split("=")[1];
+  try {
+    return await verifyToken(accessToken);
+  } catch (err) {
+    if (err instanceof Error && err.name === "TokenExpiredError") {
+      let refreshCookie = cookies.find(
+        (cookie) => cookie.match(/CognitoIdentityServiceProvider\..*\.refreshToken/g)
+      );
+      if (refreshCookie == null)
+        return;
+      let refreshToken = refreshCookie.split("=")[1];
+      if (refreshToken == null)
+        return;
+      try {
+        let newAccessToken = await new AuthClient(name).refreshAccessToken(refreshToken);
+        return newAccessToken == null ? void 0 : await verifyToken(newAccessToken);
+      } catch (err2) {
+        console.log("Failed to attempt refresh token validation", err2);
+        return;
+      }
+    }
+    console.log("Failed to validate access token", err);
+    return;
+  }
+}
+
 // ../helpers/aws/ssm.ts
 var import_client_ssm = require("@aws-sdk/client-ssm"), SSM = class {
   client;
@@ -961,7 +1017,9 @@ var files = new FileStorage("saws-example-files");
 
 // saws-example-website/app/routes/_index.tsx
 var loader = async ({ request }) => {
-  let users = await prisma.user.findMany(), result = await functionsClient.call("saws-example-function", {
+  let users = await prisma.user.findMany();
+  console.log(users[0], Object.keys(users[0]));
+  let result = await functionsClient.call("saws-example-function", {
     test: !0
   }), fileUrl = await files.getFileUrl("/1.png");
   return (0, import_node3.json)({
@@ -975,7 +1033,7 @@ var loader = async ({ request }) => {
 };
 
 // server-assets-manifest:@remix-run/dev/assets-manifest
-var assets_manifest_default = { entry: { module: "/public/build/entry.client-NQ3YT2S6.js", imports: ["/public/build/_shared/chunk-LBAIJNBE.js", "/public/build/_shared/chunk-Y54NFNLJ.js", "/public/build/_shared/chunk-NKWASPW3.js", "/public/build/_shared/chunk-75IOGHNW.js", "/public/build/_shared/chunk-JJMPHSMP.js", "/public/build/_shared/chunk-GDS3J3YF.js", "/public/build/_shared/chunk-QXY5AXJY.js"] }, routes: { root: { id: "root", parentId: void 0, path: "", index: void 0, caseSensitive: void 0, module: "/public/build/root-4RQKQZTL.js", imports: void 0, hasAction: !1, hasLoader: !1, hasErrorBoundary: !1 }, "routes/_index": { id: "routes/_index", parentId: "root", path: void 0, index: !0, caseSensitive: void 0, module: "/public/build/routes/_index-XUYX2OLG.js", imports: void 0, hasAction: !1, hasLoader: !0, hasErrorBoundary: !1 } }, version: "fc4a240f", hmr: { runtime: "/public/build/_shared/chunk-NKWASPW3.js", timestamp: 1700619460761 }, url: "/public/build/manifest-FC4A240F.js" };
+var assets_manifest_default = { entry: { module: "/public/build/entry.client-NQ3YT2S6.js", imports: ["/public/build/_shared/chunk-LBAIJNBE.js", "/public/build/_shared/chunk-Y54NFNLJ.js", "/public/build/_shared/chunk-NKWASPW3.js", "/public/build/_shared/chunk-75IOGHNW.js", "/public/build/_shared/chunk-JJMPHSMP.js", "/public/build/_shared/chunk-GDS3J3YF.js", "/public/build/_shared/chunk-QXY5AXJY.js"] }, routes: { root: { id: "root", parentId: void 0, path: "", index: void 0, caseSensitive: void 0, module: "/public/build/root-JA557W6Q.js", imports: void 0, hasAction: !1, hasLoader: !1, hasErrorBoundary: !1 }, "routes/_index": { id: "routes/_index", parentId: "root", path: void 0, index: !0, caseSensitive: void 0, module: "/public/build/routes/_index-JWHSDOUE.js", imports: void 0, hasAction: !1, hasLoader: !0, hasErrorBoundary: !1 } }, version: "ab3e9064", hmr: { runtime: "/public/build/_shared/chunk-NKWASPW3.js", timestamp: 1700715633895 }, url: "/public/build/manifest-AB3E9064.js" };
 
 // server-entry-module:@remix-run/dev/server-build
 var mode = "development", assetsBuildDirectory = "./.saws/build/saws-example-website/public/build", future = { v3_fetcherPersist: !1 }, publicPath = "/public/build/", entry = { module: entry_server_exports }, routes = {

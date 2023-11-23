@@ -7,13 +7,11 @@ export const onProcessExit = (callback: () => void) => {
 process.on('exit', () => {
   registeredFunctions.forEach(f => f());
   registeredFunctions = [];
-
-  process.exit(1);
+  process.exit()
 });
 
 process.on('SIGINT', () => {
   registeredFunctions.forEach(f => f());
   registeredFunctions = [];
-
-  process.exit(1)
+  process.exit()
 })
