@@ -211,7 +211,7 @@ export const getTemplate = ({
       },
     },
     Outputs: {
-      graphqlEndpoint: {
+      apiEndpoint: {
         Description: "ApiGateway Url",
         Value: {
           "Fn::Sub": `https://\${SawsApiGateway}.execute-api.\${AWS::Region}.amazonaws.com/${stage}/`,

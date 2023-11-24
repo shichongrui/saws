@@ -191,15 +191,10 @@ export class ApiService extends ServiceDefinition {
         await this.setOutputs(
           {
             apiEndpoint: `http://localhost:${port}`,
-            graphiqlEndpoint: `http://localhost:${port}/graphiql`,
           },
           "local"
         );
         console.log(`${this.name} Endpoint:`, `http://localhost:${port}`);
-        console.log(
-          `${this.name} GraphiQL Endpoint:`,
-          `http://localhost:${port}/graphiql`
-        );
         resolve(null);
       });
     });
