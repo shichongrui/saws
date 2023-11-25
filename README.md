@@ -250,35 +250,77 @@ The `AuthService` will accept the following configuration options:
 
 `SAWS` includes a couple of libraries for making interacting with your `AuthService` easier.
 
+**`AuthClient`**
 
+This is a library intended for use in a server environment to manager users in your `AuthService`. To use the library, it looks like the following:
+```js
+import { AuthClient } from '@shichongrui/saws/dist/libraries/auth'
+
+const authClient = new AuthClient('my-auth')
+```
+In order to instantiate an `AuthClient` using the `name` of your `AuthService` you will need to list your `AuthService` as a dependency in the service where you'd like to interact with your `AuthService`. See the example above that shows the `AuthService` as a dependency of an `ApiService`. That `APIService` is where you might use this library.
+
+This library is a WIP and more methods can be added to it. At this time it supports the following methods:
+- `deleteUserFromToken(jwt: string)` - Deletes a user from your user pool from their JWT token
+- `createUser(email: string, emailVerified: boolean)` - Create a user in your user pool. This will trigger an email to the user with a temporary password to use to sign in.
+- `getUser(email: string)` - Gets a user based on their email address.
+- `refreshAccessToken(refreshToken: string)` - Returns a new JWT for a user using their refresh token.
+
+**`SessionClient`**
+
+This is a library intended for use in a browser/client environment to manage an individual user's authentication session with your application. To use the library, it looks like the following:
+```js
+import { SessionClient } from '@shichongrui/saws/dist/libraries/auth'
+
+const sessionClient = new SessionClient('my-auth')
+```
+
+To use the library, the environment variables that are exported as part of your `AuthService` need to be included in your front end application at `window.ENV`. To make it easier to capture these environment variables, a utility function `captureAuthEnvVars` is available to use.
+```js
+import { captureAuthEnvVars } from '@shichongrui/saws/dist/libraries/auth'
+
+const environment = captureAuthEnvVars('my-auth')
+```
+This would need to be called from a service such as an `APIService` or `RemixService` that depend on an `AuthService`, and then attached to `window.ENV`.
+
+`SessionClient` includes the following methods:
+ - `getCurrentUser()` - Returns the currently logged in user.
+ - `signIn(username: string, password: string)` - Logs in a user using their username and password. It will automatically capture their authentication tokens as cookies in your application. If the user requires a challenge, that will be returned as well.
+ - `signUp(username: string, password: string, attributes: Record<string, string>, autoSignIn: { enabled: boolean })` - Will register a user in your user pool. This will result in the confirmation link or code sent to the user via email. If `autoSignIn` is enabled, it will automatically sign the user in as well.
+ - `confirmSignUp(email: string, code: string)` - Allows the user to confirm their sign up with the code sent to their email.
+ - `completeNewPassword(user: CognitoUser, newPassword: string)` - In the event that a user has a temporary password, or is changing their existing password, this method can be used to set the user's new password.
+ - `signOut()` - Signs out the currently logged in user.
+ - `refreshTokenIfNeeded()` - Will refresh the currently logged in user's JWT using the refresh token stored in cookies. It will automatically update the cookies as well. It's encouraged to call this on each api call or route change of your app to keep the token fresh.
 
 #### Development
 
-When you run `npx saws dev` with an `APIService` in your application, `SAWS` will automatically build your code and set up a local web server to expose the api to you.
+When you run `npx saws dev` with an `AuthService` in your application, `SAWS` will automatically run a docker container with [Cognito Local](https://github.com/jagregory/cognito-local) in it. It will also automatically create your User Pool and User Pool Client. It will also provision a user in the user pool for you.
 
 #### Deployment
 
-When you run `npx saws deploy` with an `APIService` in your application, `SAWS` will create a few pieces of infrastructure for you in AWS:
- - An S3 bucket to upload your code to.
- - A lambda function to execute your code.
- - An API Gateway that triggers your lambda function
- - A log group to send your lambda function logs to.
+When you run `npx saws deploy` with an `AuthService` in your application, `SAWS` will create a few pieces of infrastructure for you in AWS:
+ - A Cognito User Pool
+ - A Cognito User Pool Client
 
 #### Outputs
 
-The `APIService` will have the following outputs:
- - `apiEndpoint`: `string` - The URL you can hit to access your API
+The `AuthService` will have the following outputs:
+ - `userPoolId`: `string` - The id of the created user pool
+ - `userPoolName`: `string` - The name of the created user pool
+ - `userPoolClientId`: `string` - The id of the created user pool client
+ - `userPoolClientName`: `string` - The name of the created user pool client
+ - `userPoolJwksUri`: `string` - The JWKS uri to use to validate JWT tokens with the user pool
 
 #### Environment Variables
 
-The `APIService` will inject the following environment variables into compatible service's runtimes, where `SERVICE_NAME` is the name of the service:
- - `SERVICE_NAME_API_URL`: `string` - The URL you can hit to access your API
+The `AuthService` will inject the following environment variables into compatible service's runtimes, where `SERVICE_NAME` is the name of the service:
+ - `SERVICE_NAME_USER_POOL_ID`: `string` - The id of the created user pool
+ - `SERVICE_NAME_USER_POOL_CLIENT_ID`: `string` - The id of the created user pool client
+ - `SERVICE_NAME_USER_POOL_JWKS_URI`: `string` - The JWK URI to use to validate JWT tokens with the user pool
 
 #### Dependencies
 
-When `AuthService` is listed as a dependency of `APIService` it will automatically attach Cognito Authentication to the api. In both development and deployed stages, to use the API you will need a valid JWT from your `AuthService` and it will need to be attached to every request as the `Authorization` header using a `Bearer` token. That JWT will be validated against the JWK uri provided by a Cognito User Pool and the payload of the JWT will be attached to `req.user` in a `RestAPI` and to `ctx.user` in a `GraphQLAPI`.
-
-Other services do not have any automatic side effects when listed as dependencies, other than automatic permissions.
+When other services are listed as a dependency of an `AuthService`, they do not have any automatic side effects.
 
 
 
