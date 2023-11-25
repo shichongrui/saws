@@ -111,7 +111,7 @@ This will create the necessary cloudformation templates required by each of the 
 
 The api service enables you to create REST (using express) or GraphQL (using Apollo) apis and deploy them to AWS Lambda.
 
-#### ServiceUsage
+#### Service Usage
 
 To get started, in your `saws.js` require the `APIService` and add it to your application's infrastructure definition.
 
@@ -207,13 +207,78 @@ The `APIService` will have the following outputs:
 
 #### Environment Variables
 
-The `APIService` will inject the following environment variables into compatible service's runtimes:
- - 
+The `APIService` will inject the following environment variables into compatible service's runtimes, where `SERVICE_NAME` is the name of the service:
+ - `SERVICE_NAME_API_URL`: `string` - The URL you can hit to access your API
 
 #### Dependencies
 
-The following `dependencies` will have automatic side effects when listed as a dependency of 
+When `AuthService` is listed as a dependency of `APIService` it will automatically attach Cognito Authentication to the api. In both development and deployed stages, to use the API you will need a valid JWT from your `AuthService` and it will need to be attached to every request as the `Authorization` header using a `Bearer` token. That JWT will be validated against the JWK uri provided by a Cognito User Pool and the payload of the JWT will be attached to `req.user` in a `RestAPI` and to `ctx.user` in a `GraphQLAPI`.
 
+Other services do not have any automatic side effects when listed as dependencies, other than automatic permissions.
+
+### AuthService
+
+The auth service enables you to easily establish user authentication in your application.
+
+#### Service Usage
+
+To get started, in your `saws.js` require the `AuthService` and add it to your application's infrastructure definition.
+
+```js
+const { ApiService, AuthService } = require('@shichongrui/saws/dist/services/api')
+
+const auth = new AuthService({
+  name: 'my-auth',
+})
+
+module.exports = new APIService({
+  name: 'my-api',
+  dependencies: [
+    auth,
+  ]
+})
+```
+
+#### Config options
+
+The `AuthService` will accept the following configuration options:
+ - `name`: `string` - the name of the service
+ - `dependencies`: `ServiceDefinition[]` - Other services your API depends on
+ - `devUser`: `{ email: string, password: string }` - Credentials for a development user to automatically provision
+
+#### Library Usage
+
+`SAWS` includes a couple of libraries for making interacting with your `AuthService` easier.
+
+
+
+#### Development
+
+When you run `npx saws dev` with an `APIService` in your application, `SAWS` will automatically build your code and set up a local web server to expose the api to you.
+
+#### Deployment
+
+When you run `npx saws deploy` with an `APIService` in your application, `SAWS` will create a few pieces of infrastructure for you in AWS:
+ - An S3 bucket to upload your code to.
+ - A lambda function to execute your code.
+ - An API Gateway that triggers your lambda function
+ - A log group to send your lambda function logs to.
+
+#### Outputs
+
+The `APIService` will have the following outputs:
+ - `apiEndpoint`: `string` - The URL you can hit to access your API
+
+#### Environment Variables
+
+The `APIService` will inject the following environment variables into compatible service's runtimes, where `SERVICE_NAME` is the name of the service:
+ - `SERVICE_NAME_API_URL`: `string` - The URL you can hit to access your API
+
+#### Dependencies
+
+When `AuthService` is listed as a dependency of `APIService` it will automatically attach Cognito Authentication to the api. In both development and deployed stages, to use the API you will need a valid JWT from your `AuthService` and it will need to be attached to every request as the `Authorization` header using a `Bearer` token. That JWT will be validated against the JWK uri provided by a Cognito User Pool and the payload of the JWT will be attached to `req.user` in a `RestAPI` and to `ctx.user` in a `GraphQLAPI`.
+
+Other services do not have any automatic side effects when listed as dependencies, other than automatic permissions.
 
 
 
