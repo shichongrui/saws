@@ -225,7 +225,7 @@ The auth service enables you to easily establish user authentication in your app
 To get started, in your `saws.js` require the `AuthService` and add it to your application's infrastructure definition.
 
 ```js
-const { ApiService, AuthService } = require('@shichongrui/saws/dist/services/api')
+const { ApiService, AuthService } = require('@shichongrui/saws/dist/services')
 
 const auth = new AuthService({
   name: 'my-auth',
@@ -252,7 +252,7 @@ The `AuthService` will accept the following configuration options:
 
 **`AuthClient`**
 
-This is a library intended for use in a server environment to manager users in your `AuthService`. To use the library, it looks like the following:
+This is a library intended for use in a server environment to manage users in your `AuthService`. To use the library, it looks like the following:
 ```js
 import { AuthClient } from '@shichongrui/saws/dist/libraries/auth'
 
@@ -322,7 +322,79 @@ The `AuthService` will inject the following environment variables into compatibl
 
 When other services are listed as a dependency of an `AuthService`, they do not have any automatic side effects.
 
+### ContainerService
 
+TODO
+
+### FileStorageService
+
+The file storage service enables you to read and write files to block storage.
+
+#### Service Usage
+
+To get started, in your `saws.js` require the `FileStorageService` and add it to your application's infrastructure definition.
+
+```js
+const { ApiService, FileStorageService } = require('@shichongrui/saws/dist/services')
+
+const files = new FileStorageService({
+  name: 'my-files',
+})
+
+module.exports = new APIService({
+  name: 'my-api',
+  dependencies: [
+    files,
+  ]
+})
+```
+
+#### Config options
+
+The `FileStorageService` will accept the following configuration options:
+ - `name`: `string` - the name of the service
+ - `dependencies`: `ServiceDefinition[]` - Other services your API depends on
+
+#### Library Usage
+
+`SAWS` includes a library for making interacting with your `FileStorageService` easier.
+
+**`FileStorage`**
+
+This is a library intended for use in a server environment to manage files in your `FileStorageService`. To use the library, it looks like the following:
+```js
+import { FileStorage } from '@shichongrui/saws/dist/libraries/file-storage'
+
+const files = new FileStorage('my-files')
+```
+This library is a WIP and more methods can be added to it. At this time it supports the following methods:
+ - `getFile(path: string)` - Gets a file at a path in your file storage.
+ - `getFileUrl(path: string)` - Gets a signed url to download the file.
+ - `writeFile(path: string, file: UInt8Array)` - Writes a file to the file storage.
+ - `getFileUploadUrl(path: string)` - Returns a signed url that can be used to upload a file.
+
+#### Development
+
+When you run `npx saws dev` with a `FileStorageService` in your application, `SAWS` will automatically run a [Minio](https://min.io) docker container. It will automatically create a bucket based on the name of the service. The default login for the minio console is `minioadmin:minioadmin`.
+
+#### Deployment
+
+When you run `npx saws deploy` with a `FileStorageService` in your application, `SAWS` will create an S3 bucket for you.
+
+#### Outputs
+
+The `FileStorageService` has no outputs.
+
+#### Environment Variables
+
+In development, the `FileStorageService` will inject the following environment variables into compatible service's runtimes:
+ - `S3_ENDPOINT`: `string` - The endpoint to use in an S3 client.
+ - `S3_ACCESS_KEY`: `string` - The access key to use with minio (minioadmin)
+ - `S3_SECRET_KEY`: `string` - The secret key to use with minio (minioadmin)
+
+#### Dependencies
+
+When other services are listed as a dependency of a `FileStorageService`, they do not have any automatic side effects.
 
 
 

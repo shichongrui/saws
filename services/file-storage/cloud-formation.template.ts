@@ -19,13 +19,6 @@ export const getTemplate = ({ name, bucketName }: TemplateParameters) => {
         }
       }
     },
-    Outputs: {
-      codeS3Bucket: {
-        Value: {
-          "Ref": `Saws${uppercasedName}Bucket`
-        }
-      }
-    },
   });
 };
 
