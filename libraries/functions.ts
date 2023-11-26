@@ -4,7 +4,7 @@ export class FunctionsClient {
   client: LambdaClient;
   stage: string;
 
-  constructor(stage: string) {
+  constructor(stage: string = String(process.env.STAGE)) {
     this.client = new LambdaClient({
       endpoint: stage === "local" ? "http://localhost:9000" : undefined,
     });
