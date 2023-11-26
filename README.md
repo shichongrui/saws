@@ -525,6 +525,105 @@ The `TypescriptFunctionService` has no exported environment variables.
 
 When other services are listed as a dependency of a `TypescriptFunctionService`, they do not have any automatic side effects.
 
+### `PostgresService`
+
+The `PostgresService` allows you to have a Postgres database for your application. It also integrates with prisma to give you a database client.
+
+#### Service Usage
+
+To get started, in your `saws.js` require the `PostgresService` and add it to your application's infrastructure definition.
+
+```js
+const {
+  PostgresService,
+  TypescriptFunctionService,
+} = require("@shichongrui/saws/dist/services");
+
+module.exports = new TypescriptFunctionService({
+  name: "my-function",
+  dependencies: [
+    new PostgresService({
+      name: 'my-postgres',
+    })
+  ]
+});
+```
+
+You will also want to create a directory called `prisma` and inside of it create a `schema.prisma` file that can be started with the following:
+
+```
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-1.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+```
+
+You will also want to `npm install -D prisma` into your application to get the Prisma CLI client. In order to enable the prisma CLI client to connect to your local database, you will need to create a `.env` at the root of your project.
+
+It only needs one line that should look like the following with the variables replaced with their proper values:
+```.env
+DATABASE_URL=postgres://<db-username>:<db-password>@<db-host>:<db-port>/<db-name>
+```
+In order to get these values you should run `npm run dev` once so that your postgres database can be provisioned locally. Then you can look in `.saws/saws-local-output.json` for most of the variables. For the `db-password` you can look in `.saws/.secrets` which is your local secrets file.
+
+#### Config options
+
+The `PostgresSErvice` will accept the following configuration options:
+
+- `name`: `string` - the name of the service
+- `dependencies?`: `ServiceDefinition[]` - Other services your database depends on
+
+#### Library Usage
+
+`SAWS` includes Prisma for making interacting with your `PostgresService` easier.
+
+**`getPrismaClient`**
+
+This function can be used to get a preconfigured, ready to go prisma client to start working with:
+```js
+import { getPrismaClient } from "@shichongrui/saws/dist/libraries";
+
+const prisma = getPrismaClient('my-postgres')
+```
+
+Other Prisma CLI commands can be run directly via the `prisma` cli command.
+
+#### Development
+
+When you run `npx saws dev` with a `PostgresService` in your application, `SAWS` will automatically run a postgres docker container and provision it with a user and your service's database. It will also regenerate your prisma client for you anytime it detects a change in the `schema.prisma` file. It will not however automatically push Prisma schema changes, or run migrations locally for you. You will need run those steps with `npx prisma db push` and `npx prisma migrate dev`.
+
+#### Deployment
+
+When you run `npx saws deploy` with a `PostgresService` in your application, `SAWS` will create a RDS Postgres cluster for you. For convenience, it will make this cluster publicly accessible, but of course still password protected. This is done in order to get around the difficulties of accessing RDS from inside of a VPC with a Lambda function.
+
+#### Outputs
+
+The `PostgresService` has the following outputs:
+ - `postgresHost`: `string` - The host of the database cluster.
+ - `postgresPort`: `string` - The port the database is running on.
+ - `postgresUsername`: `string` - The username of the user in the database.
+ - `postgresDBName`: `string` - The name of the database.
+
+In addition `PostgresService` automatically creates a 20 character `crypto.randomBytes` password for your database and saves it as a secret (local file in development, SSM secret in deployed environment).
+
+#### Environment Variables
+
+The `PostgresService` injects the following environment variables into compatible services where `SERVICE_NAME` is the name of the service:
+ - `SERVICE_NAME_POSTGRES_HOST`: `string` - The host of the database cluster.
+ - `SERVICE_NAME_POSTGRES_PORT`: `string` - The port the database is running on.
+ - `SERVICE_NAME_POSTGRES_USERNAME`: `string` - The username of the user in the database.
+ - `SERVICE_NAME_POSTGRES_DB_NAME`: `string` - The name of the database.
+ - `SERVICE_NAME_POSTGRES_PASSWORD`: `string` - The password of the user in the database.
+
+#### Dependencies
+
+When other services are listed as a dependency of a `PostgresService`, they do not have any automatic side effects.
+
 
 
 
