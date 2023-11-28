@@ -82,7 +82,7 @@ export class TypescriptFunctionService extends FunctionService {
 
     process.env = {
       ...process.env,
-      ...(await this.getEnvironmentVariables())
+      ...(await this.getEnvironmentVariables('local'))
     }
   }
 
@@ -139,7 +139,7 @@ export class TypescriptFunctionService extends FunctionService {
     for (const dependency of this.dependencies) {
       environment = {
         ...environment,
-        ...(await dependency.getEnvironmentVariables()),
+        ...(await dependency.getEnvironmentVariables(stage)),
       };
     }
 
@@ -176,7 +176,7 @@ export class TypescriptFunctionService extends FunctionService {
     return;
   }
 
-  async getEnvironmentVariables() {
+  async getEnvironmentVariables(_: string) {
     return {};
   }
 

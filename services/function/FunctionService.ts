@@ -27,7 +27,7 @@ export class FunctionService extends ServiceDefinition {
     lambdaServer.registerFunction(this);
   }
 
-  async getEnvironmentVariables() {
+  async getEnvironmentVariables(_: string) {
     return {};
   }
 

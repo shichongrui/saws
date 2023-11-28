@@ -106,7 +106,7 @@ export class ContainerService extends ServiceDefinition {
 
     process.env = {
       ...process.env,
-      ...(await this.getEnvironmentVariables())
+      ...(await this.getEnvironmentVariables('local'))
     }
   }
 
@@ -142,7 +142,7 @@ export class ContainerService extends ServiceDefinition {
     for (const dependency of this.dependencies) {
       environment = {
         ...environment,
-        ...(await dependency.getEnvironmentVariables())
+        ...(await dependency.getEnvironmentVariables(stage))
       }
     }
 
@@ -180,7 +180,7 @@ export class ContainerService extends ServiceDefinition {
     return this.port;
   }
 
-  async getEnvironmentVariables() {
+  async getEnvironmentVariables(_: string) {
     return {
       [this.parameterizedEnvVarName('URL')]: String(this.outputs.url),
     };

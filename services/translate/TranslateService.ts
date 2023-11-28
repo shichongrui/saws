@@ -10,7 +10,7 @@ export class TranslateService extends ServiceDefinition {
     // no op
   }
 
-  async getEnvironmentVariables() {
+  async getEnvironmentVariables(_: string) {
     return {};
   }
 

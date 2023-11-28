@@ -43,13 +43,12 @@ export class PostgresService extends ServiceDefinition {
 
     process.env = {
       ...process.env,
-      ...(await this.getEnvironmentVariables())
+      ...(await this.getEnvironmentVariables('local'))
     }
   }
 
   async deploy(stage: string) {
     await super.deploy(stage);
-    
 
     const cloudformationClient = new CloudFormation();
     const ec2Client = new EC2();
@@ -184,8 +183,8 @@ export class PostgresService extends ServiceDefinition {
     PostgresService.process = undefined;
   }
 
-  async getEnvironmentVariables() {
-    const password = await getDBPassword(this.name, "local");
+  async getEnvironmentVariables(stage: string) {
+    const password = await getDBPassword(this.name, stage);
     return {
       [this.parameterizedEnvVarName("POSTGRES_USERNAME")]: String(
         this.outputs.postgresUsername

@@ -155,7 +155,7 @@ export class RemixService extends ServiceDefinition {
 
     process.env = {
       ...process.env,
-      ...(await this.getEnvironmentVariables())
+      ...(await this.getEnvironmentVariables('local'))
     }
   }
 
@@ -300,7 +300,7 @@ export class RemixService extends ServiceDefinition {
     for (const dependency of this.dependencies) {
       environment = {
         ...environment,
-        ...(await dependency.getEnvironmentVariables()),
+        ...(await dependency.getEnvironmentVariables(stage)),
       };
     }
 
@@ -355,7 +355,7 @@ export class RemixService extends ServiceDefinition {
     return;
   }
 
-  async getEnvironmentVariables() {
+  async getEnvironmentVariables(_: string) {
     return {};
   }
 

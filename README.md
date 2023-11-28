@@ -624,6 +624,168 @@ The `PostgresService` injects the following environment variables into compatibl
 
 When other services are listed as a dependency of a `PostgresService`, they do not have any automatic side effects.
 
+### `RemixService`
+
+The `RemixService` allows you to create a Remix application.
+
+#### Service Usage
+
+To get started, in your `saws.js` require the `RemixService` and add it to your application's infrastructure definition.
+
+```js
+const {
+  RemixService,
+} = require("@shichongrui/saws/dist/services");
+
+module.exports = new RemixService({
+  name: 'my-remix-app',
+});
+```
+
+At the moment, in order to get a functioning remix app, there remains a bit more set up.
+
+First you will want to run `npm install @remix-run/react @remix-run/node react react-dom`
+
+Then we need to create a folder matching the name of the service. In this case `my-remix-app`. Within this folder we need to create a few files and folders:
+
+`public` folder. This folder can be used to put static assets in.
+`app` folder.
+
+`index.ts`
+```js
+import { RemixApp } from '@shichongrui/saws/dist/libraries'
+import * as build from './build' // note this folder won't exist yet and you may see an error in your editor
+
+const app = new RemixApp()
+
+export const handler = app.createLambdaHandler({ build })
+```
+
+`app/root.tsx`
+```js
+import * as React from "react";
+import { LinksFunction } from "@remix-run/node";
+import {
+  Links,
+  Meta,
+  Outlet,
+  Scripts,
+  ScrollRestoration,
+  MetaFunction,
+  LiveReload,
+} from "@remix-run/react";
+
+export const meta: MetaFunction = () => [
+  {
+    charset: "utf-8",
+  },
+  {
+    title: "SAWS App",
+  },
+  {
+    viewport: "width=device-width,initial-scale=1",
+  },
+];
+
+export let links: LinksFunction = () => {
+  return [];
+};
+
+interface DocumentProps {
+  children: React.ReactElement;
+}
+
+const Document = ({ children }: DocumentProps, emotionCache) => {
+  return (
+    <html lang="en">
+      <head>
+        <Meta />
+        <Links />
+      </head>
+      <body>
+        {children}
+        <ScrollRestoration />
+        <Scripts />
+        <LiveReload />
+      </body>
+    </html>
+  );
+};
+
+export default function App() {
+  return (
+    <Document>
+      <Outlet />
+    </Document>
+  );
+}
+```
+
+`app/entry.client.tsx`
+```js
+import * as React from 'react'
+import { hydrateRoot } from 'react-dom/client'
+import { RemixBrowser } from '@remix-run/react'
+
+hydrateRoot(
+  document,
+  <RemixBrowser />
+)
+```
+
+#### Config options
+
+The `PostgresSErvice` will accept the following configuration options:
+
+- `name`: `string` - the name of the service
+- `dependencies?`: `ServiceDefinition[]` - Other services your database depends on
+
+#### Library Usage
+
+`SAWS` includes Prisma for making interacting with your `PostgresService` easier.
+
+**`getPrismaClient`**
+
+This function can be used to get a preconfigured, ready to go prisma client to start working with:
+```js
+import { getPrismaClient } from "@shichongrui/saws/dist/libraries";
+
+const prisma = getPrismaClient('my-postgres')
+```
+
+Other Prisma CLI commands can be run directly via the `prisma` cli command.
+
+#### Development
+
+When you run `npx saws dev` with a `PostgresService` in your application, `SAWS` will automatically run a postgres docker container and provision it with a user and your service's database. It will also regenerate your prisma client for you anytime it detects a change in the `schema.prisma` file. It will not however automatically push Prisma schema changes, or run migrations locally for you. You will need run those steps with `npx prisma db push` and `npx prisma migrate dev`.
+
+#### Deployment
+
+When you run `npx saws deploy` with a `PostgresService` in your application, `SAWS` will create a RDS Postgres cluster for you. For convenience, it will make this cluster publicly accessible, but of course still password protected. This is done in order to get around the difficulties of accessing RDS from inside of a VPC with a Lambda function.
+
+#### Outputs
+
+The `PostgresService` has the following outputs:
+ - `postgresHost`: `string` - The host of the database cluster.
+ - `postgresPort`: `string` - The port the database is running on.
+ - `postgresUsername`: `string` - The username of the user in the database.
+ - `postgresDBName`: `string` - The name of the database.
+
+In addition `PostgresService` automatically creates a 20 character `crypto.randomBytes` password for your database and saves it as a secret (local file in development, SSM secret in deployed environment).
+
+#### Environment Variables
+
+The `PostgresService` injects the following environment variables into compatible services where `SERVICE_NAME` is the name of the service:
+ - `SERVICE_NAME_POSTGRES_HOST`: `string` - The host of the database cluster.
+ - `SERVICE_NAME_POSTGRES_PORT`: `string` - The port the database is running on.
+ - `SERVICE_NAME_POSTGRES_USERNAME`: `string` - The username of the user in the database.
+ - `SERVICE_NAME_POSTGRES_DB_NAME`: `string` - The name of the database.
+ - `SERVICE_NAME_POSTGRES_PASSWORD`: `string` - The password of the user in the database.
+
+#### Dependencies
+
+When other services are listed as a dependency of a `PostgresService`, they do not have any automatic side effects.
+
 
 
 

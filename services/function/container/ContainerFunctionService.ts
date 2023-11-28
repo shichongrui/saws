@@ -93,7 +93,7 @@ export class ContainerFunctionService extends FunctionService {
 
     process.env = {
       ...process.env,
-      ...(await this.getEnvironmentVariables())
+      ...(await this.getEnvironmentVariables('local'))
     }
 
     return;
@@ -141,7 +141,7 @@ export class ContainerFunctionService extends FunctionService {
     return;
   }
 
-  async getEnvironmentVariables() {
+  async getEnvironmentVariables(_: string) {
     return {};
   }
 

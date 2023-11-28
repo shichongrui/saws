@@ -25,7 +25,7 @@ export const executeCommand = async (
     );
     process.env = {
       ...process.env,
-      ...(await dependency.getEnvironmentVariables()),
+      ...(await dependency.getEnvironmentVariables(stage)),
     };
   });
 
@@ -38,7 +38,7 @@ export const executeCommand = async (
 
   process.env = {
     ...process.env,
-    ...(await serviceDefinition.getEnvironmentVariables()),
+    ...(await serviceDefinition.getEnvironmentVariables(stage)),
   };
 
   const outFile = path.join(BUILD_DIR, "script.js");

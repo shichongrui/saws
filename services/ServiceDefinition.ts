@@ -87,12 +87,12 @@ export class ServiceDefinition {
   }
 
   // this needs to be recursive down dependencies
-  async getEnvironmentVariables(): Promise<Record<string, string>> {
+  async getEnvironmentVariables(stage: string): Promise<Record<string, string>> {
     const environmentVariables: Record<string, string> = {};
     await this.forEachDependencyAsync(async (definition) => {
       Object.assign(
         environmentVariables,
-        await definition.getEnvironmentVariables()
+        await definition.getEnvironmentVariables(stage)
       );
     });
     return environmentVariables;

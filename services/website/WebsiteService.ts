@@ -46,7 +46,7 @@ export class WebsiteService extends ServiceDefinition {
     for (const dependency of this.dependencies) {
       Object.assign(
         environmentVariables,
-        await dependency.getEnvironmentVariables()
+        await dependency.getEnvironmentVariables(stage)
       );
     }
 
@@ -90,7 +90,7 @@ export class WebsiteService extends ServiceDefinition {
 
     process.env = {
       ...process.env,
-      ...(await this.getEnvironmentVariables())
+      ...(await this.getEnvironmentVariables('local'))
     }
   }
 
@@ -191,7 +191,7 @@ export class WebsiteService extends ServiceDefinition {
   }
 
   
-  async getEnvironmentVariables() {
+  async getEnvironmentVariables(_: string) {
     return {};
   }
 

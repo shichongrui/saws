@@ -51,7 +51,7 @@ export class FileStorageService extends ServiceDefinition {
 
     process.env = {
       ...process.env,
-      ...(await this.getEnvironmentVariables()),
+      ...(await this.getEnvironmentVariables('local')),
     };
     
     const childProcess = await startContainer({
@@ -110,7 +110,7 @@ export class FileStorageService extends ServiceDefinition {
     return;
   }
 
-  async getEnvironmentVariables() {
+  async getEnvironmentVariables(_: string) {
     return {
       S3_ENDPOINT: String(this.outputs.s3Endpoint),
       S3_ACCESS_KEY: String(this.outputs.s3AccessKey),

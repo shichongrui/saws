@@ -71,8 +71,6 @@ export class ApiService extends ServiceDefinition {
   async dev() {
     await super.dev();
 
-    
-
     await this.build();
     this.captureHandlerRef();
     watch(this.rootDir, { ignoreInitial: true }).on("all", async (...args) => {
@@ -85,7 +83,7 @@ export class ApiService extends ServiceDefinition {
 
     process.env = {
       ...process.env,
-      ...(await this.getEnvironmentVariables())
+      ...(await this.getEnvironmentVariables('local'))
     }
   }
 
@@ -103,7 +101,7 @@ export class ApiService extends ServiceDefinition {
     for (const dependency of this.dependencies) {
       process.env = {
         ...process.env,
-        ...(await dependency.getEnvironmentVariables()),
+        ...(await dependency.getEnvironmentVariables('local')),
       };
     }
 
@@ -257,7 +255,7 @@ export class ApiService extends ServiceDefinition {
     for (const dependency of this.dependencies) {
       environment = {
         ...environment,
-        ...(await dependency.getEnvironmentVariables()),
+        ...(await dependency.getEnvironmentVariables(stage)),
       };
     }
 
@@ -294,7 +292,7 @@ export class ApiService extends ServiceDefinition {
     return;
   }
 
-  async getEnvironmentVariables() {
+  async getEnvironmentVariables(_: string) {
     return {
       [this.parameterizedEnvVarName("API_URL")]: String(
         this.outputs.apiEndpoint

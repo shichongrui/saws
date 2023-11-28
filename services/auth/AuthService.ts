@@ -42,7 +42,7 @@ export class AuthService extends ServiceDefinition {
     );
     process.env = {
       ...process.env,
-      ...(await this.getEnvironmentVariables())
+      ...(await this.getEnvironmentVariables('local'))
     }
   }
 
@@ -111,7 +111,7 @@ export class AuthService extends ServiceDefinition {
     this.process = childProcess;
   }
 
-  async getEnvironmentVariables() {
+  async getEnvironmentVariables(_: string) {
     return {
       [this.parameterizedEnvVarName("USER_POOL_ID")]: String(
         this.getOutputs().userPoolId ?? ""
