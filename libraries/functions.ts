@@ -17,7 +17,7 @@ export class FunctionsClient {
     config: { async: boolean } = { async: false }
   ): Promise<T> {
     const command = new InvokeCommand({
-      FunctionName: `${process.env.PROJECT_NAME}-${this.stage}-${name}`,
+      FunctionName: `${this.stage}-${name}`,
       InvocationType: config.async ? "Event" : "RequestResponse",
       Payload: Buffer.from(JSON.stringify(payload)),
     });
