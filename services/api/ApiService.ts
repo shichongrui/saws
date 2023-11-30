@@ -22,11 +22,13 @@ import {
 import { npmInstall } from "../../helpers/npm";
 import { buildCodeZip } from "../../utils/build-code-zip";
 import { getStackName, getTemplate } from "./cloud-formation.template";
+import fse from "fs-extra";
 
 interface ApiServiceConfig extends ServiceDefinitionConfig {
   handler?: string;
   externalPackages?: string[];
   port?: number;
+  include?: string[];
 }
 
 export class ApiService extends ServiceDefinition {
@@ -38,6 +40,7 @@ export class ApiService extends ServiceDefinition {
   handlerRef?: any;
   port?: number;
   configPort?: number;
+  include: string[];
 
   constructor(config: ApiServiceConfig) {
     super(config);
@@ -45,6 +48,7 @@ export class ApiService extends ServiceDefinition {
     this.entryPointPath = path.resolve(this.rootDir, "index.ts");
     this.buildFilePath = path.resolve(BUILD_DIR, this.name, "index.js");
     this.externalPackages = config.externalPackages ?? [];
+    this.include = config.include ?? [];
   }
 
   async build() {
@@ -63,6 +67,13 @@ export class ApiService extends ServiceDefinition {
         external: this.externalPackages,
       });
       await this.buildContext.rebuild();
+
+      for (const includePath of this.include) {
+        await fse.copy(
+          path.resolve(this.rootDir, includePath),
+          path.resolve(BUILD_DIR, this.name, includePath)
+        );
+      }
     } catch (err) {
       console.error(err);
     }
@@ -83,8 +94,8 @@ export class ApiService extends ServiceDefinition {
 
     process.env = {
       ...process.env,
-      ...(await this.getEnvironmentVariables('local'))
-    }
+      ...(await this.getEnvironmentVariables("local")),
+    };
   }
 
   captureHandlerRef() {
@@ -101,7 +112,7 @@ export class ApiService extends ServiceDefinition {
     for (const dependency of this.dependencies) {
       process.env = {
         ...process.env,
-        ...(await dependency.getEnvironmentVariables('local')),
+        ...(await dependency.getEnvironmentVariables("local")),
       };
     }
 
@@ -206,7 +217,7 @@ export class ApiService extends ServiceDefinition {
 
   async deploy(stage: string) {
     await super.deploy(stage);
-    
+
     console.log(`Creating bucket to store ${this.name} code in`);
     // create s3 bucket
     const cloudformationClient = new CloudFormation();
@@ -236,6 +247,7 @@ export class ApiService extends ServiceDefinition {
     console.log("Uploading", this.name);
     const zipPath = await buildCodeZip(this.buildFilePath, {
       name: this.name,
+      include: this.include,
       hasExternalModules: this.externalPackages.length > 0,
     });
     const key = path.parse(zipPath).base;
@@ -260,9 +272,7 @@ export class ApiService extends ServiceDefinition {
     }
 
     const permissions = this.dependencies
-      .map((dependency) =>
-        dependency.getPermissions(process.env.STAGE!)
-      )
+      .map((dependency) => dependency.getPermissions(process.env.STAGE!))
       .flat();
 
     const template = getTemplate({
@@ -281,14 +291,17 @@ export class ApiService extends ServiceDefinition {
     const results = await cloudformationClient.deployStack(stackName, template);
     const outputs = results?.Stacks?.[0].Outputs;
 
-    this.setOutputs({
-      ...Object.fromEntries(
-        outputs?.map(({ OutputKey, OutputValue }) => [
-          OutputKey,
-          OutputValue,
-        ]) ?? []
-      ),
-    }, stage);
+    this.setOutputs(
+      {
+        ...Object.fromEntries(
+          outputs?.map(({ OutputKey, OutputValue }) => [
+            OutputKey,
+            OutputValue,
+          ]) ?? []
+        ),
+      },
+      stage
+    );
     return;
   }
 

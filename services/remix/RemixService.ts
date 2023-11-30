@@ -21,7 +21,10 @@ import { createFileWatchCache } from "@remix-run/dev/dist/compiler/fileWatchCach
 import * as compiler from "@remix-run/dev/dist/compiler/compiler";
 import { logger } from "@remix-run/dev/dist/tux/logger";
 import fse from "fs-extra";
-import { ServiceDefinition, ServiceDefinitionConfig } from "../ServiceDefinition";
+import {
+  ServiceDefinition,
+  ServiceDefinitionConfig,
+} from "../ServiceDefinition";
 import { BUILD_DIR } from "../../utils/constants";
 import { CloudFormation } from "../../helpers/aws/cloudformation";
 import { S3 } from "../../helpers/aws/s3";
@@ -30,6 +33,7 @@ import { Cloudfront } from "../../helpers/aws/cloudfront";
 interface RemixServiceConfig extends ServiceDefinitionConfig {
   rootDir?: string;
   port?: number;
+  include?: string[];
 }
 
 export class RemixService extends ServiceDefinition {
@@ -41,15 +45,15 @@ export class RemixService extends ServiceDefinition {
   buildContext?: esbuild.BuildContext;
   entryPointPath: string;
   remixCompiler: any;
+  include: string[];
 
-  constructor(
-    config: RemixServiceConfig
-  ) {
-    super(config)
+  constructor(config: RemixServiceConfig) {
+    super(config);
     this.rootDir = path.resolve(".", config.rootDir ?? this.name);
     this.buildFilePath = path.resolve(BUILD_DIR, this.name, "index.js");
     this.entryPointPath = path.resolve(this.rootDir, "index.ts");
     this.configPort = config.port;
+    this.include = config.include ?? [];
   }
 
   // the default remix build command has a few implications
@@ -75,9 +79,9 @@ export class RemixService extends ServiceDefinition {
     };
 
     let fileWatchCache = createFileWatchCache();
-    
+
     fse.emptyDirSync(config.assetsBuildDirectory);
-    
+
     this.remixCompiler = await compiler.create({
       config,
       options,
@@ -91,17 +95,17 @@ export class RemixService extends ServiceDefinition {
   async build(mode: "development" | "production" = "development") {
     try {
       await this.buildRemix(mode);
-      
+
       await copyDirectory(
         path.join(this.rootDir, "public"),
         path.resolve(BUILD_DIR, this.name, "public")
       );
-        
+
       if (this.buildContext != null) {
         await this.buildContext.rebuild?.();
         return;
       }
-      
+
       this.buildContext = await esbuild.context({
         minify: mode === "production",
         treeShaking: true,
@@ -112,17 +116,24 @@ export class RemixService extends ServiceDefinition {
         platform: "node",
       });
       await this.buildContext.rebuild();
+
+      for (const includePath of this.include) {
+        await fse.copy(
+          path.resolve(this.rootDir, includePath),
+          path.resolve(BUILD_DIR, this.name, includePath)
+        );
+      }
     } catch (err) {
-      console.error('Remix build error', err);
-      this.buildContext?.dispose()
-      this.buildContext = undefined
-      this.remixCompiler?.dispose()
-      this.remixCompiler = null
+      console.error("Remix build error", err);
+      this.buildContext?.dispose();
+      this.buildContext = undefined;
+      this.remixCompiler?.dispose();
+      this.remixCompiler = null;
     }
   }
 
   async dev() {
-    await super.dev()
+    await super.dev();
 
     console.log("Building remix app", this.name);
 
@@ -155,8 +166,8 @@ export class RemixService extends ServiceDefinition {
 
     process.env = {
       ...process.env,
-      ...(await this.getEnvironmentVariables('local'))
-    }
+      ...(await this.getEnvironmentVariables("local")),
+    };
   }
 
   captureHandlerRef() {
@@ -233,9 +244,11 @@ export class RemixService extends ServiceDefinition {
             }
 
             res.writeHead(results.statusCode, headers);
-            res.end(results.isBase64Encoded
-              ? Buffer.from(results.body, 'base64')
-              : results.body);
+            res.end(
+              results.isBase64Encoded
+                ? Buffer.from(results.body, "base64")
+                : results.body
+            );
           } catch (err) {
             console.log(err);
             res.writeHead(500);
@@ -245,9 +258,12 @@ export class RemixService extends ServiceDefinition {
       );
 
       server.listen(port, "0.0.0.0", () => {
-        this.setOutputs({
-          remixEndpoint: `http://localhost:${port}`,
-        }, 'local');
+        this.setOutputs(
+          {
+            remixEndpoint: `http://localhost:${port}`,
+          },
+          "local"
+        );
         console.log(`${this.name} Endpoint:`, `http://localhost:${port}`);
         resolve(null);
       });
@@ -261,8 +277,7 @@ export class RemixService extends ServiceDefinition {
   }
 
   async deploy(stage: string) {
-    await super.deploy(stage)
-    
+    await super.deploy(stage);
 
     console.log(`Creating bucket to store ${this.name} code in`);
     // create s3 bucket
@@ -279,13 +294,14 @@ export class RemixService extends ServiceDefinition {
     console.log("Deploying function", this.name);
 
     await this.build("production");
-    await this.remixCompiler.dispose()
+    await this.remixCompiler.dispose();
     this.buildContext?.dispose();
 
     // upload build to S3
     console.log("Uploading", this.name);
     const zipPath = await buildCodeZip(this.buildFilePath, {
       name: this.name,
+      include: this.include,
       hasExternalModules: false,
     });
     const key = path.parse(zipPath).base;
@@ -305,9 +321,7 @@ export class RemixService extends ServiceDefinition {
     }
 
     const permissions = this.dependencies
-      .map((dependency) =>
-        dependency.getPermissions(stage)
-      )
+      .map((dependency) => dependency.getPermissions(stage))
       .flat();
 
     const template = getTemplate({
@@ -316,24 +330,24 @@ export class RemixService extends ServiceDefinition {
       moduleName: path.parse(this.buildFilePath).name,
       codeBucketName: bucketName,
       codeS3Key: key,
-      permissions: [
-        ...permissions,
-        ...this.getPermissions(stage),
-      ],
+      permissions: [...permissions, ...this.getPermissions(stage)],
       environment,
     });
     const stackName = getStackName(stage, this.name);
     const results = await cloudformationClient.deployStack(stackName, template);
     const outputs = results?.Stacks?.[0].Outputs;
 
-    await this.setOutputs({
-      ...Object.fromEntries(
-        outputs?.map(({ OutputKey, OutputValue }) => [
-          OutputKey,
-          OutputValue,
-        ]) ?? []
-      ),
-    }, stage);
+    await this.setOutputs(
+      {
+        ...Object.fromEntries(
+          outputs?.map(({ OutputKey, OutputValue }) => [
+            OutputKey,
+            OutputValue,
+          ]) ?? []
+        ),
+      },
+      stage
+    );
 
     const publicBuildDir = path.resolve(BUILD_DIR, this.name, "public");
     const publicFiles = await recursivelyReadDir(publicBuildDir);

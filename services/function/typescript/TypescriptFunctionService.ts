@@ -131,6 +131,7 @@ export class TypescriptFunctionService extends FunctionService {
     console.log("Uploading", this.name);
     const zipPath = await buildCodeZip(this.buildFilePath, {
       name: this.name,
+      include: this.include,
       hasExternalModules: this.externalPackages.length > 0,
     });
     const key = path.parse(zipPath).base;

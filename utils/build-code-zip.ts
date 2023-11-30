@@ -2,14 +2,17 @@ import path from "path";
 import crypto from "crypto";
 import AdmZip from "adm-zip";
 import { BUILD_DIR } from "./constants";
+import { promises as fs } from "node:fs";
 
 export const buildCodeZip = async (
   modulePath: string,
   {
     name,
+    include = [],
     hasExternalModules = false,
   }: {
     name: string;
+    include: string[];
     hasExternalModules: boolean;
   }
 ) => {
@@ -30,6 +33,25 @@ export const buildCodeZip = async (
       path.resolve(parsedModulePath.dir, "node_modules"),
       "node_modules"
     );
+  }
+
+  if (include.length > 0) {
+    for (const filePath of include) {
+      const fullPath = path.resolve(parsedModulePath.dir, filePath)
+      const stat = await fs.stat(fullPath)
+      if (stat.isDirectory()) {
+        zip.addLocalFolder(
+          fullPath,
+          filePath,
+        )
+      } else {
+        const directory = path.parse(filePath).dir
+        zip.addLocalFile(
+          fullPath,
+          directory,
+        )
+      }
+    }
   }
 
   zip.addLocalFile(

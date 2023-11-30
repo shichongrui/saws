@@ -17,7 +17,7 @@ const serviceDefinition = new ServiceDefinition({
     new TypescriptFunctionService({
       name: "saws-example-function",
       dependencies: [postgres],
-      include: ['resources/file.json']
+      include: ['resources']
     }),
     new RemixService({
       name: "saws-example-website",
