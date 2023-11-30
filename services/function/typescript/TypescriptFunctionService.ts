@@ -106,7 +106,7 @@ export class TypescriptFunctionService extends FunctionService {
     const cloudformationClient = new CloudFormation();
     const s3Client = new S3();
 
-    const bucketName = `${stage}-${this.name}-code`;
+    const bucketName = `${stage}-${this.name}-code`.toLowerCase();
 
     const s3Template = getS3Template({ bucketName });
     const s3StackName = getS3StackName(stage, this.name);
