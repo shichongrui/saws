@@ -5,6 +5,7 @@ import { getSawsConfig } from "../../utils/get-saws-config";
 export const devCommand = async (path: string) => {
   process.env.NODE_ENV = "development";
   process.env.STAGE = "local";
+  process.env.AWS_REGION = 'us-west-2';
 
   await createCacheDir();
 

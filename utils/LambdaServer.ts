@@ -16,7 +16,7 @@ export class LambdaServer {
       req.url
         ?.replace("/2015-03-31/functions/", "")
         .replace("/invocations", "") ?? "";
-    const functionName = fullFunctionName.split("-local-")[1];
+    const functionName = fullFunctionName.split("local-")[1];
 
     const func = this.functions.find(({ name }) => functionName === name);
 

@@ -17,6 +17,7 @@ export class S3 {
   
   constructor() {
     const config: S3ClientConfig = {}
+
     if (process.env.S3_ENDPOINT != null) {
       config.endpoint = process.env.S3_ENDPOINT
     }
@@ -27,6 +28,7 @@ export class S3 {
         secretAccessKey: String(process.env.S3_SECRET_KEY)
       }
     }
+
     this.client = new S3Client(config);
   }
   

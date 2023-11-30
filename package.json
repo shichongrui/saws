@@ -1,6 +1,6 @@
 {
   "name": "@shichongrui/saws",
-  "version": "0.0.29",
+  "version": "0.0.32",
   "repository": {
     "url": "git@github.com:shichongrui/saws.git"
   },
@@ -69,6 +69,7 @@
     "envfile": "^6.20.0",
     "esbuild": "^0.19.6",
     "find-package-json": "^1.2.0",
+    "fs-extra": "^11.2.0",
     "get-port": "^5.1.1",
     "jsonwebtoken": "^9.0.2",
     "jwks-rsa": "^3.1.0",

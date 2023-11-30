@@ -252,9 +252,11 @@ __reExport(libraries_exports, api_exports);
 var import_client_cognito_identity_provider = require("@aws-sdk/client-cognito-identity-provider"), Cognito = class {
   client;
   constructor(stage) {
-    this.client = new import_client_cognito_identity_provider.CognitoIdentityProviderClient({
-      endpoint: stage === "local" ? "http://localhost:9229" : void 0
-    });
+    let config = {};
+    stage === "local" && (config.endpoint = "http://localhost:9229", config.credentials = {
+      accessKeyId: "cognito-local",
+      secretAccessKey: "cognito-local"
+    }), this.client = new import_client_cognito_identity_provider.CognitoIdentityProviderClient(config);
   }
   async listUserPools() {
     let command = new import_client_cognito_identity_provider.ListUserPoolsCommand({ MaxResults: 60 });
@@ -646,14 +648,16 @@ var FileStorage = class {
 var import_client_lambda = require("@aws-sdk/client-lambda"), FunctionsClient = class {
   client;
   stage;
-  constructor(stage) {
-    this.client = new import_client_lambda.LambdaClient({
-      endpoint: stage === "local" ? "http://localhost:9000" : void 0
-    }), this.stage = stage;
+  constructor(stage = String(process.env.STAGE)) {
+    let config = {};
+    stage === "local" && (config.endpoint = "http://localhost:9000", config.credentials = {
+      accessKeyId: "local-lambda",
+      secretAccessKey: "local-lambda"
+    }), this.client = new import_client_lambda.LambdaClient(config), this.stage = stage;
   }
   async call(name, payload, config = { async: !1 }) {
     let command = new import_client_lambda.InvokeCommand({
-      FunctionName: `${process.env.PROJECT_NAME}-${this.stage}-${name}`,
+      FunctionName: `${this.stage}-${name}`,
       InvocationType: config.async ? "Event" : "RequestResponse",
       Payload: Buffer.from(JSON.stringify(payload))
     }), response = await this.client.send(command), responseText = new TextDecoder().decode(response.Payload);
@@ -1033,7 +1037,7 @@ var loader = async ({ request }) => {
 };
 
 // server-assets-manifest:@remix-run/dev/assets-manifest
-var assets_manifest_default = { entry: { module: "/public/build/entry.client-NQ3YT2S6.js", imports: ["/public/build/_shared/chunk-LBAIJNBE.js", "/public/build/_shared/chunk-Y54NFNLJ.js", "/public/build/_shared/chunk-NKWASPW3.js", "/public/build/_shared/chunk-75IOGHNW.js", "/public/build/_shared/chunk-JJMPHSMP.js", "/public/build/_shared/chunk-GDS3J3YF.js", "/public/build/_shared/chunk-QXY5AXJY.js"] }, routes: { root: { id: "root", parentId: void 0, path: "", index: void 0, caseSensitive: void 0, module: "/public/build/root-JA557W6Q.js", imports: void 0, hasAction: !1, hasLoader: !1, hasErrorBoundary: !1 }, "routes/_index": { id: "routes/_index", parentId: "root", path: void 0, index: !0, caseSensitive: void 0, module: "/public/build/routes/_index-JWHSDOUE.js", imports: void 0, hasAction: !1, hasLoader: !0, hasErrorBoundary: !1 } }, version: "ab3e9064", hmr: { runtime: "/public/build/_shared/chunk-NKWASPW3.js", timestamp: 1700715633895 }, url: "/public/build/manifest-AB3E9064.js" };
+var assets_manifest_default = { entry: { module: "/public/build/entry.client-NQ3YT2S6.js", imports: ["/public/build/_shared/chunk-LBAIJNBE.js", "/public/build/_shared/chunk-Y54NFNLJ.js", "/public/build/_shared/chunk-NKWASPW3.js", "/public/build/_shared/chunk-75IOGHNW.js", "/public/build/_shared/chunk-JJMPHSMP.js", "/public/build/_shared/chunk-GDS3J3YF.js", "/public/build/_shared/chunk-QXY5AXJY.js"] }, routes: { root: { id: "root", parentId: void 0, path: "", index: void 0, caseSensitive: void 0, module: "/public/build/root-JA557W6Q.js", imports: void 0, hasAction: !1, hasLoader: !1, hasErrorBoundary: !1 }, "routes/_index": { id: "routes/_index", parentId: "root", path: void 0, index: !0, caseSensitive: void 0, module: "/public/build/routes/_index-JWHSDOUE.js", imports: void 0, hasAction: !1, hasLoader: !0, hasErrorBoundary: !1 } }, version: "ab3e9064", hmr: { runtime: "/public/build/_shared/chunk-NKWASPW3.js", timestamp: 1701315218668 }, url: "/public/build/manifest-AB3E9064.js" };
 
 // server-entry-module:@remix-run/dev/server-build
 var mode = "development", assetsBuildDirectory = "./.saws/build/saws-example-website/public/build", future = { v3_fetcherPersist: !1 }, publicPath = "/public/build/", entry = { module: entry_server_exports }, routes = {

@@ -163,7 +163,6 @@ export class PostgresService extends ServiceDefinition {
 
     console.log("DB did not exist. Creating and running migrations");
     await client.query(`CREATE DATABASE ${getDBName(this.name, "local")}`);
-    console.log("there");
     try {
       await prismaMigrate({
         username: String(this.outputs.postgresUsername),
@@ -175,7 +174,6 @@ export class PostgresService extends ServiceDefinition {
     } catch (err) {
       console.log("error", err);
     }
-    console.log("here");
   }
 
   exit() {

@@ -486,6 +486,7 @@ The `TypescriptFunctionService` will accept the following configuration options:
 - `rootDir?`: `string` - The path to the directory where your function entrypoint (`index.ts`) is located. If omitted it will default to `name`.
 - `memory?`: `number` - Configure the amount of memory configured for your function.
 - `externalPackages?`: `string[]` - A list of node_modules you do not want bundled into your function but still want included in your function package.
+- `include?`: `string[]` - A list of file paths (from the root dir of your service) to include in your final bundle.
 - `triggers?`: `{ cron?: string }` - A config object that allows you to provide triggers for your function. Currently only `cron` is supported.
 
 #### Library Usage

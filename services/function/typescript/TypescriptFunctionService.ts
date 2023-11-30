@@ -14,12 +14,14 @@ import { lambdaServer } from "../../../utils/LambdaServer";
 import { CloudFormation } from "../../../helpers/aws/cloudformation";
 import { S3 } from "../../../helpers/aws/s3";
 import { npmInstall } from "../../../helpers/npm";
+import fse from "fs-extra";
 
 export interface TypescriptFunctionServiceConfig extends FunctionServiceConfig {
   triggers?: {
     cron?: string;
   };
   externalPackages?: string[];
+  include: string[];
 }
 
 export class TypescriptFunctionService extends FunctionService {
@@ -31,11 +33,12 @@ export class TypescriptFunctionService extends FunctionService {
   entryPointPath: string;
   buildFilePath: string;
   externalPackages: string[];
+  include: string[];
 
   constructor(config: TypescriptFunctionServiceConfig) {
     super({
       ...config,
-      runtime: 'typescript'
+      runtime: "typescript",
     });
 
     this.triggers = config.triggers;
@@ -43,6 +46,7 @@ export class TypescriptFunctionService extends FunctionService {
     this.entryPointPath = path.resolve(this.rootDir, "index.ts");
     this.buildFilePath = path.resolve(BUILD_DIR, this.name, "index.js");
     this.externalPackages = config.externalPackages ?? [];
+    this.include = config.include ?? [];
   }
 
   async build() {
@@ -61,14 +65,17 @@ export class TypescriptFunctionService extends FunctionService {
         external: this.externalPackages,
       });
       await this.buildContext.rebuild();
+
+      for (const includePath of this.include) {
+        await fse.copy(path.resolve(this.rootDir, includePath), path.resolve(BUILD_DIR, this.name, includePath))
+      }
     } catch (err) {
       console.error(err);
     }
   }
 
   async dev() {
-    await super.dev()
-    
+    await super.dev();
 
     console.log("Building function", this.name);
     await this.build();
@@ -82,8 +89,8 @@ export class TypescriptFunctionService extends FunctionService {
 
     process.env = {
       ...process.env,
-      ...(await this.getEnvironmentVariables('local'))
-    }
+      ...(await this.getEnvironmentVariables("local")),
+    };
   }
 
   captureHandlerRef() {
@@ -92,8 +99,7 @@ export class TypescriptFunctionService extends FunctionService {
   }
 
   async deploy(stage: string) {
-    await super.deploy(stage)
-    
+    await super.deploy(stage);
 
     console.log(`Creating bucket to store ${this.name} code in`);
     // create s3 bucket
@@ -181,7 +187,7 @@ export class TypescriptFunctionService extends FunctionService {
   }
 
   getStdOut() {
-    return null
+    return null;
   }
 
   exit() {

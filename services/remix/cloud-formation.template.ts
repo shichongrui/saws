@@ -207,7 +207,7 @@ export const getTemplate = ({
                 DomainName: {
                   "Fn::GetAtt": [
                     `Saws${uppercasedName}ResourcesBucket`,
-                    "DomainName",
+                    "RegionalDomainName",
                   ],
                 },
                 Id: "S3Origin",

@@ -1,13 +1,20 @@
-import { LambdaClient, InvokeCommand } from "@aws-sdk/client-lambda";
+import { LambdaClient, InvokeCommand, LambdaClientConfig } from "@aws-sdk/client-lambda";
 
 export class FunctionsClient {
   client: LambdaClient;
   stage: string;
 
   constructor(stage: string = String(process.env.STAGE)) {
-    this.client = new LambdaClient({
-      endpoint: stage === "local" ? "http://localhost:9000" : undefined,
-    });
+    const config: LambdaClientConfig = {}
+    if (stage === 'local') {
+      config.endpoint = 'http://localhost:9000'
+      config.credentials = {
+        accessKeyId: 'local-lambda',
+        secretAccessKey: 'local-lambda',
+      }
+    }
+
+    this.client = new LambdaClient(config);
     this.stage = stage;
   }
 

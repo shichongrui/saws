@@ -10,15 +10,24 @@ import {
   AdminInitiateAuthCommand,
   DeleteUserCommand,
   AdminCreateUserCommand,
+  CognitoIdentityProviderClientConfig,
 } from "@aws-sdk/client-cognito-identity-provider";
 
 export class Cognito {
   client: CognitoIdentityProviderClient;
 
   constructor(stage: string) {
-    this.client = new CognitoIdentityProviderClient({
-      endpoint: stage === "local" ? "http://localhost:9229" : undefined,
-    });
+    const config: CognitoIdentityProviderClientConfig = {}
+
+    if (stage === 'local') {
+      config.endpoint = 'http://localhost:9229'
+      config.credentials = {
+        accessKeyId: 'cognito-local',
+        secretAccessKey: 'cognito-local'
+      }
+    }
+
+    this.client = new CognitoIdentityProviderClient(config);
   }
 
   async listUserPools() {
