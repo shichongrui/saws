@@ -1,9 +1,9 @@
-import { getPrismaClient } from "../../libraries";
+import { FunctionsClient } from "../../libraries";
 
 (async () => {
-  const prisma = getPrismaClient('saws-example-db')
+  const client = new FunctionsClient();
 
-  const users = await prisma.user.findMany()
+  const results = await client.call('saws-example-function', {})
 
-  console.log(users)
-})()
+  console.log(results)
+})();

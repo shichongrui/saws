@@ -26,7 +26,14 @@ export class LambdaServer {
       return;
     }
 
+    const invocationType = req.headers["x-amz-invocation-type"];
+    if (invocationType === "Event") {
+      res.writeHead(200, undefined);
+      res.end();
+    }
+
     const requestBody = await collectHttpBody(req);
+
     // TODO: once the function service is build, change this
     if (func.runtime === "container") {
       const port = await (func as ContainerFunctionService).getPort();
@@ -38,22 +45,28 @@ export class LambdaServer {
         }
       );
       const responseText = await response.text();
-      res.writeHead(response.status, undefined);
-      res.end(responseText);
+      if (invocationType !== "Event") {
+        res.writeHead(response.status, undefined);
+        res.end(responseText);
+      }
       // TODO: once the function service is build, change this
     } else if (func.runtime === "typescript") {
       const handler = (func as TypescriptFunctionService).handlerRef;
       try {
         const results = await handler(
-          JSON.parse(Buffer.from(requestBody || '', "base64").toString()),
+          JSON.parse(Buffer.from(requestBody || "", "base64").toString()),
           {}
         );
-        res.writeHead(200, undefined);
-        res.end(JSON.stringify(results) ?? "");
+        if (invocationType !== "Event") {
+          res.writeHead(200, undefined);
+          res.end(JSON.stringify(results) ?? "");
+        }
       } catch (err) {
         console.log(err);
-        res.writeHead(500, undefined);
-        res.end(JSON.stringify(err));
+        if (invocationType !== "Event") {
+          res.writeHead(500, undefined);
+          res.end(JSON.stringify(err));
+        }
       }
     }
   };

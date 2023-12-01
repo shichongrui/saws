@@ -1,13 +1,13 @@
 import { Cognito } from "../helpers/aws/cognito";
 import { parameterizedEnvVarName } from "../utils/parameterized-env-var-name";
 import {
+  type ISignUpResult,
+  type CognitoUserSession,
   AuthenticationDetails,
   CognitoUser,
   CognitoUserAttribute,
   CognitoUserPool,
-  CognitoUserSession,
   CookieStorage,
-  ISignUpResult,
 } from "amazon-cognito-identity-js";
 
 export class AuthClient {
@@ -61,26 +61,29 @@ export class AuthClient {
 }
 
 export const captureAuthEnvVars = (name: string) => {
-  const userPoolId = parameterizedEnvVarName(name, 'USER_POOL_ID')
-  const userPoolClientId = parameterizedEnvVarName(name, 'USER_POOL_CLIENT_ID')
+  const userPoolId = parameterizedEnvVarName(name, "USER_POOL_ID");
+  const userPoolClientId = parameterizedEnvVarName(name, "USER_POOL_CLIENT_ID");
   return {
-      [userPoolId]: process.env[userPoolId],
-      [userPoolClientId]: process.env[userPoolClientId],
-  }
-}
+    [userPoolId]: process.env[userPoolId],
+    [userPoolClientId]: process.env[userPoolClientId],
+  };
+};
 
 // For use in the front end
 export class SessionClient {
-  userPool: CognitoUserPool  
+  userPool: CognitoUserPool;
 
   constructor(name: string) {
-    const userPoolId = window.ENV[parameterizedEnvVarName(name, 'USER_POOL_ID')]
-    const userPoolClientId = window.ENV[parameterizedEnvVarName(name, 'USER_POOL_CLIENT_ID')]
+    const userPoolId =
+      window.ENV[parameterizedEnvVarName(name, "USER_POOL_ID")];
+    const userPoolClientId =
+      window.ENV[parameterizedEnvVarName(name, "USER_POOL_CLIENT_ID")];
 
     this.userPool = new CognitoUserPool({
       UserPoolId: userPoolId,
       ClientId: userPoolClientId,
-      endpoint: window.ENV.STAGE === "local" ? "http://127.0.0.1:9229" : undefined,
+      endpoint:
+        window.ENV.STAGE === "local" ? "http://127.0.0.1:9229" : undefined,
       Storage: new CookieStorage({
         domain: window?.location?.hostname,
         secure: window?.location?.hostname !== "localhost",
@@ -88,12 +91,12 @@ export class SessionClient {
         expires: 365,
       }),
     });
-  };
-  
+  }
+
   getCurrentUser() {
     return this.userPool.getCurrentUser();
-  };
-  
+  }
+
   async signIn(username: string, password: string) {
     return new Promise<CognitoUser>((resolve, reject) => {
       const cognitoUser = new CognitoUser({
@@ -106,7 +109,7 @@ export class SessionClient {
           expires: 365,
         }),
       });
-      cognitoUser.setAuthenticationFlowType('USER_PASSWORD_AUTH')
+      cognitoUser.setAuthenticationFlowType("USER_PASSWORD_AUTH");
       cognitoUser.authenticateUser(
         new AuthenticationDetails({ Username: username, Password: password }),
         {
@@ -119,8 +122,8 @@ export class SessionClient {
         }
       );
     });
-  };
-  
+  }
+
   async signUp({
     username,
     password,
@@ -136,7 +139,7 @@ export class SessionClient {
   }) {
     return new Promise<ISignUpResult | undefined>((resolve, reject) => {
       const attributeList = [];
-  
+
       for (const key in attributes) {
         attributeList.push(
           new CognitoUserAttribute({
@@ -145,7 +148,7 @@ export class SessionClient {
           })
         );
       }
-  
+
       this.userPool.signUp(
         username,
         password,
@@ -156,7 +159,7 @@ export class SessionClient {
             reject(err);
             return;
           }
-  
+
           if (autoSignIn && autoSignIn.enabled) {
             try {
               await this.signIn(username, password);
@@ -170,8 +173,8 @@ export class SessionClient {
         }
       );
     });
-  };
-  
+  }
+
   async confirmSignUp(email: string, code: string) {
     return new Promise((resolve, reject) => {
       const userData = {
@@ -190,12 +193,9 @@ export class SessionClient {
         resolve(null);
       });
     });
-  };
-  
-  async completeNewPassword(
-    user: CognitoUser,
-    newPassword: string
-  ) {
+  }
+
+  async completeNewPassword(user: CognitoUser, newPassword: string) {
     return new Promise((resolve, reject) => {
       user.completeNewPasswordChallenge(newPassword, null, {
         onSuccess: () => {
@@ -206,25 +206,26 @@ export class SessionClient {
         },
       });
     });
-  };
-  
+  }
+
   signOut() {
     return this.getCurrentUser()?.signOut();
-  };
-  
-  refreshTokenIfNeeded () {
+  }
+
+  refreshTokenIfNeeded() {
     const currentUser = this.getCurrentUser();
-    currentUser?.getSession((err: Error, session: CognitoUserSession | null) => {
-      if (err != null || session == null) return currentUser.signOut();
-  
-      if (session.isValid()) return;
-  
-      const refreshToken = session.getRefreshToken();
-      currentUser.refreshSession(refreshToken, (err) => {
-        if (err == null) return;
-        currentUser.signOut();
-      });
-    });
-  };
-  
+    currentUser?.getSession(
+      (err: Error, session: CognitoUserSession | null) => {
+        if (err != null || session == null) return currentUser.signOut();
+
+        if (session.isValid()) return;
+
+        const refreshToken = session.getRefreshToken();
+        currentUser.refreshSession(refreshToken, (err) => {
+          if (err == null) return;
+          currentUser.signOut();
+        });
+      }
+    );
+  }
 }

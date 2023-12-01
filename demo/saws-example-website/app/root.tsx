@@ -9,6 +9,9 @@ import {
   MetaFunction,
   LiveReload,
 } from "@remix-run/react";
+import { secrets } from './utils/secrets.server'
+
+console.log(secrets)
 
 export const meta: MetaFunction = () => [
   {

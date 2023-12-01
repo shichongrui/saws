@@ -56,35 +56,7 @@ __export(root_exports, {
   links: () => links,
   meta: () => meta
 });
-var React2 = __toESM(require("react")), import_react2 = require("@remix-run/react"), meta = () => [
-  {
-    charset: "utf-8"
-  },
-  {
-    title: "PM Docs"
-  },
-  {
-    viewport: "width=device-width,initial-scale=1"
-  }
-], links = () => [
-  { rel: "preconnect", href: "https://fonts.googleapis.com" },
-  { rel: "preconnect", href: "https://fonts.gstatic.com" },
-  {
-    rel: "stylesheet",
-    href: "https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700;1,800&display=swap"
-  }
-], Document = ({ children }, emotionCache) => /* @__PURE__ */ React2.createElement("html", { lang: "en" }, /* @__PURE__ */ React2.createElement("head", null, /* @__PURE__ */ React2.createElement(import_react2.Meta, null), /* @__PURE__ */ React2.createElement(import_react2.Links, null)), /* @__PURE__ */ React2.createElement("body", null, children, /* @__PURE__ */ React2.createElement(import_react2.ScrollRestoration, null), /* @__PURE__ */ React2.createElement(import_react2.Scripts, null), /* @__PURE__ */ React2.createElement(import_react2.LiveReload, null)));
-function App() {
-  return /* @__PURE__ */ React2.createElement(Document, null, /* @__PURE__ */ React2.createElement(import_react2.Outlet, null));
-}
-
-// saws-example-website/app/routes/_index.tsx
-var index_exports = {};
-__export(index_exports, {
-  default: () => index_default,
-  loader: () => loader
-});
-var React3 = __toESM(require("react")), import_node3 = require("@remix-run/node");
+var React2 = __toESM(require("react")), import_react2 = require("@remix-run/react");
 
 // ../libraries.ts
 var libraries_exports = {};
@@ -530,16 +502,18 @@ var import_amazon_cognito_identity_js = require("amazon-cognito-identity-js"), A
   }
   refreshTokenIfNeeded() {
     let currentUser = this.getCurrentUser();
-    currentUser?.getSession((err, session) => {
-      if (err != null || session == null)
-        return currentUser.signOut();
-      if (session.isValid())
-        return;
-      let refreshToken = session.getRefreshToken();
-      currentUser.refreshSession(refreshToken, (err2) => {
-        err2 != null && currentUser.signOut();
-      });
-    });
+    currentUser?.getSession(
+      (err, session) => {
+        if (err != null || session == null)
+          return currentUser.signOut();
+        if (session.isValid())
+          return;
+        let refreshToken = session.getRefreshToken();
+        currentUser.refreshSession(refreshToken, (err2) => {
+          err2 != null && currentUser.signOut();
+        });
+      }
+    );
   }
 };
 
@@ -1007,6 +981,41 @@ var import_client_translate = require("@aws-sdk/client-translate"), Translate = 
   }
 };
 
+// saws-example-website/app/utils/secrets.server.ts
+var secrets = new SecretsManager("local");
+
+// saws-example-website/app/root.tsx
+console.log(secrets);
+var meta = () => [
+  {
+    charset: "utf-8"
+  },
+  {
+    title: "PM Docs"
+  },
+  {
+    viewport: "width=device-width,initial-scale=1"
+  }
+], links = () => [
+  { rel: "preconnect", href: "https://fonts.googleapis.com" },
+  { rel: "preconnect", href: "https://fonts.gstatic.com" },
+  {
+    rel: "stylesheet",
+    href: "https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700;1,800&display=swap"
+  }
+], Document = ({ children }, emotionCache) => /* @__PURE__ */ React2.createElement("html", { lang: "en" }, /* @__PURE__ */ React2.createElement("head", null, /* @__PURE__ */ React2.createElement(import_react2.Meta, null), /* @__PURE__ */ React2.createElement(import_react2.Links, null)), /* @__PURE__ */ React2.createElement("body", null, children, /* @__PURE__ */ React2.createElement(import_react2.ScrollRestoration, null), /* @__PURE__ */ React2.createElement(import_react2.Scripts, null), /* @__PURE__ */ React2.createElement(import_react2.LiveReload, null)));
+function App() {
+  return /* @__PURE__ */ React2.createElement(Document, null, /* @__PURE__ */ React2.createElement(import_react2.Outlet, null));
+}
+
+// saws-example-website/app/routes/_index.tsx
+var index_exports = {};
+__export(index_exports, {
+  default: () => index_default,
+  loader: () => loader
+});
+var React3 = __toESM(require("react")), import_node3 = require("@remix-run/node");
+
 // saws-example-website/app/utils/prisma.server.ts
 var prisma = getPrismaClient("saws-example-db");
 
@@ -1037,7 +1046,7 @@ var loader = async ({ request }) => {
 };
 
 // server-assets-manifest:@remix-run/dev/assets-manifest
-var assets_manifest_default = { entry: { module: "/public/build/entry.client-NQ3YT2S6.js", imports: ["/public/build/_shared/chunk-LBAIJNBE.js", "/public/build/_shared/chunk-Y54NFNLJ.js", "/public/build/_shared/chunk-NKWASPW3.js", "/public/build/_shared/chunk-75IOGHNW.js", "/public/build/_shared/chunk-JJMPHSMP.js", "/public/build/_shared/chunk-GDS3J3YF.js", "/public/build/_shared/chunk-QXY5AXJY.js"] }, routes: { root: { id: "root", parentId: void 0, path: "", index: void 0, caseSensitive: void 0, module: "/public/build/root-JA557W6Q.js", imports: void 0, hasAction: !1, hasLoader: !1, hasErrorBoundary: !1 }, "routes/_index": { id: "routes/_index", parentId: "root", path: void 0, index: !0, caseSensitive: void 0, module: "/public/build/routes/_index-JWHSDOUE.js", imports: void 0, hasAction: !1, hasLoader: !0, hasErrorBoundary: !1 } }, version: "ab3e9064", hmr: { runtime: "/public/build/_shared/chunk-NKWASPW3.js", timestamp: 1701315218668 }, url: "/public/build/manifest-AB3E9064.js" };
+var assets_manifest_default = { entry: { module: "/public/build/entry.client-NQ3YT2S6.js", imports: ["/public/build/_shared/chunk-LBAIJNBE.js", "/public/build/_shared/chunk-Y54NFNLJ.js", "/public/build/_shared/chunk-NKWASPW3.js", "/public/build/_shared/chunk-75IOGHNW.js", "/public/build/_shared/chunk-JJMPHSMP.js", "/public/build/_shared/chunk-GDS3J3YF.js", "/public/build/_shared/chunk-QXY5AXJY.js"] }, routes: { root: { id: "root", parentId: void 0, path: "", index: void 0, caseSensitive: void 0, module: "/public/build/root-BYOPHQIY.js", imports: void 0, hasAction: !1, hasLoader: !1, hasErrorBoundary: !1 }, "routes/_index": { id: "routes/_index", parentId: "root", path: void 0, index: !0, caseSensitive: void 0, module: "/public/build/routes/_index-JWHSDOUE.js", imports: void 0, hasAction: !1, hasLoader: !0, hasErrorBoundary: !1 } }, version: "cf7e6cca", hmr: { runtime: "/public/build/_shared/chunk-NKWASPW3.js", timestamp: 1701415269887 }, url: "/public/build/manifest-CF7E6CCA.js" };
 
 // server-entry-module:@remix-run/dev/server-build
 var mode = "development", assetsBuildDirectory = "./.saws/build/saws-example-website/public/build", future = { v3_fetcherPersist: !1 }, publicPath = "/public/build/", entry = { module: entry_server_exports }, routes = {

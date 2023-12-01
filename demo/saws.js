@@ -16,26 +16,26 @@ const serviceDefinition = new ServiceDefinition({
   dependencies: [
     new TypescriptFunctionService({
       name: "saws-example-function",
-      dependencies: [postgres],
+      // dependencies: [postgres],
       include: ['resources']
     }),
-    new RemixService({
-      name: "saws-example-website",
-      port: 8000,
-      dependencies: [
-        postgres,
-        new FileStorageService({
-          name: "saws-example-files",
-        }),
-        new AuthService({
-          name: "saws-auth",
-          devUser: {
-            email: "dev@saws.com",
-            password: "password",
-          },
-        }),
-      ],
-    }),
+    // new RemixService({
+    //   name: "saws-example-website",
+    //   port: 8000,
+    //   dependencies: [
+    //     postgres,
+    //     new FileStorageService({
+    //       name: "saws-example-files",
+    //     }),
+    //     new AuthService({
+    //       name: "saws-auth",
+    //       devUser: {
+    //         email: "dev@saws.com",
+    //         password: "password",
+    //       },
+    //     }),
+    //   ],
+    // }),
   ],
 });
 
