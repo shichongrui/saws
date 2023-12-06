@@ -22,6 +22,7 @@ export interface TypescriptFunctionServiceConfig extends FunctionServiceConfig {
   };
   externalPackages?: string[];
   include: string[];
+  layers?: string[];
 }
 
 export class TypescriptFunctionService extends FunctionService {
@@ -34,6 +35,7 @@ export class TypescriptFunctionService extends FunctionService {
   buildFilePath: string;
   externalPackages: string[];
   include: string[];
+  layers: string[];
 
   constructor(config: TypescriptFunctionServiceConfig) {
     super({
@@ -47,6 +49,7 @@ export class TypescriptFunctionService extends FunctionService {
     this.buildFilePath = path.resolve(BUILD_DIR, this.name, "index.js");
     this.externalPackages = config.externalPackages ?? [];
     this.include = config.include ?? [];
+    this.layers = config.layers ?? [];
   }
 
   async build() {
@@ -163,6 +166,7 @@ export class TypescriptFunctionService extends FunctionService {
       permissions: [...permissions, ...this.getPermissions(stage)],
       environment,
       triggers: this.triggers,
+      layers: this.layers,
     });
     const stackName = getStackName(stage, this.name);
     const results = await cloudformationClient.deployStack(stackName, template);

@@ -11,6 +11,7 @@ type SawsFunctionTemplateProperties = {
   permissions: AWSPermission[];
   environment: Record<string, string>;
   triggers: TypescriptFunctionServiceConfig["triggers"];
+  layers: string[];
 };
 
 export const getTemplate = ({
@@ -22,6 +23,7 @@ export const getTemplate = ({
   permissions,
   environment,
   triggers,
+  layers,
 }: SawsFunctionTemplateProperties) => {
   const uppercasedName = name.split("-").map(uppercase).join("");
   const template: Record<string, any> = {
@@ -101,6 +103,7 @@ export const getTemplate = ({
           },
           MemorySize: 1024,
           Timeout: 900,
+          Layers: layers,
         },
       },
     },
