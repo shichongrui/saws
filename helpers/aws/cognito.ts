@@ -20,6 +20,7 @@ export class Cognito {
     const config: CognitoIdentityProviderClientConfig = {}
 
     if (stage === 'local') {
+      config.region = 'us-west-2'
       config.endpoint = 'http://localhost:9229'
       config.credentials = {
         accessKeyId: 'cognito-local',

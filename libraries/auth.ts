@@ -113,6 +113,10 @@ export class SessionClient {
       cognitoUser.authenticateUser(
         new AuthenticationDetails({ Username: username, Password: password }),
         {
+          newPasswordRequired: () => {
+            cognitoUser.challengeName = 'NEW_PASSWORD_REQUIRED'
+            resolve(cognitoUser)
+          },
           onSuccess: () => {
             resolve(cognitoUser);
           },

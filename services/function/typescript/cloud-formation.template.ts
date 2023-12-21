@@ -11,7 +11,7 @@ type SawsFunctionTemplateProperties = {
   permissions: AWSPermission[];
   environment: Record<string, string>;
   triggers: TypescriptFunctionServiceConfig["triggers"];
-  layers: string[];
+  layers: Array<{ name: string, template: unknown}>;
 };
 
 export const getTemplate = ({
@@ -28,8 +28,13 @@ export const getTemplate = ({
   const uppercasedName = name.split("-").map(uppercase).join("");
   const template: Record<string, any> = {
     AWSTemplateFormatVersion: "2010-09-09",
+    Transform: 'AWS::Serverless-2016-10-31',
     Description: `AWS Cloudformation for ${name} function`,
     Resources: {
+      ...layers.reduce((acc, { name, template }) => {
+        acc[name] = template;
+        return acc;
+      }, {} as Record<string, unknown>),
       [`Saws${uppercasedName}LambdaRole`]: {
         Type: "AWS::IAM::Role",
         Properties: {
@@ -103,7 +108,7 @@ export const getTemplate = ({
           },
           MemorySize: 1024,
           Timeout: 900,
-          Layers: layers,
+          Layers: layers.map(({ name }) => ({ Ref: name })),
         },
       },
     },

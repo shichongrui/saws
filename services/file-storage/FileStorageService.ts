@@ -111,11 +111,19 @@ export class FileStorageService extends ServiceDefinition {
   }
 
   async getEnvironmentVariables(_: string) {
-    return {
-      S3_ENDPOINT: String(this.outputs.s3Endpoint),
-      S3_ACCESS_KEY: String(this.outputs.s3AccessKey),
-      S3_SECRET_KEY: String(this.outputs.s3SecretKey),
-    };
+    const env: Record<string, string> = {}
+    if (this.outputs.s3Endpoint != null) {
+      env.S3_ENDPOINT = String(this.outputs.s3Endpoint)
+    }
+
+    if (this.outputs.s3AccessKey != null) {
+      env.S3_ACCESS_KEY = String(this.outputs.s3AccessKey)
+    }
+
+    if (this.outputs.s3SecretKey != null) {
+      env.S3_SECRET_KEY = String(this.outputs.s3SecretKey)
+    }
+    return env;
   }
 
   getStdOut() {
@@ -127,9 +135,10 @@ export class FileStorageService extends ServiceDefinition {
       {
         Effect: "Allow" as const,
         Action: ["s3:*"],
-        Resource: {
-          "Fn::Sub": `arn:aws:s3:::${this.getBucketName(stage)}`,
-        },
+        Resource: [
+          `arn:aws:s3:::${this.getBucketName(stage)}`,
+          `arn:aws:s3:::${this.getBucketName(stage)}/*`,
+        ],
       },
     ];
   }

@@ -22,7 +22,6 @@ export interface TypescriptFunctionServiceConfig extends FunctionServiceConfig {
   };
   externalPackages?: string[];
   include: string[];
-  layers?: string[];
 }
 
 export class TypescriptFunctionService extends FunctionService {
@@ -35,7 +34,6 @@ export class TypescriptFunctionService extends FunctionService {
   buildFilePath: string;
   externalPackages: string[];
   include: string[];
-  layers: string[];
 
   constructor(config: TypescriptFunctionServiceConfig) {
     super({
@@ -49,7 +47,6 @@ export class TypescriptFunctionService extends FunctionService {
     this.buildFilePath = path.resolve(BUILD_DIR, this.name, "index.js");
     this.externalPackages = config.externalPackages ?? [];
     this.include = config.include ?? [];
-    this.layers = config.layers ?? [];
   }
 
   async build() {
@@ -103,6 +100,8 @@ export class TypescriptFunctionService extends FunctionService {
 
   async deploy(stage: string) {
     await super.deploy(stage);
+
+    const layerTemplates = await Promise.all(this.layers.map(layerArn => this.getLayerTemplate(layerArn, stage)))
 
     console.log(`Creating bucket to store ${this.name} code in`);
     // create s3 bucket
@@ -166,7 +165,7 @@ export class TypescriptFunctionService extends FunctionService {
       permissions: [...permissions, ...this.getPermissions(stage)],
       environment,
       triggers: this.triggers,
-      layers: this.layers,
+      layers: layerTemplates,
     });
     const stackName = getStackName(stage, this.name);
     const results = await cloudformationClient.deployStack(stackName, template);
