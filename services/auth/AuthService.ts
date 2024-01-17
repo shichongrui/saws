@@ -237,7 +237,7 @@ export class AuthService extends ServiceDefinition {
         Resource: {
           "Fn::Sub": `arn:aws:cognito-idp:\${AWS::Region}:\${AWS::AccountId}:userpool/${this.outputs.userPoolId}`,
         },
-        Action: ["cognito-idp:AdminGetUser", "cognito-idp:AdminInitiateAuth"],
+        Action: ["cognito-idp:AdminGetUser", "cognito-idp:AdminInitiateAuth", "cognito-idp:AdminCreateUser"],
       },
     ];
   }

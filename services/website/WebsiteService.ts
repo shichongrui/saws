@@ -63,7 +63,6 @@ export class WebsiteService extends ServiceDefinition {
 
   async dev() {
     await super.dev()
-     
 
     await this.writeEnvVarFile("dev", "development");
 

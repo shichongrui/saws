@@ -15,9 +15,19 @@ export const getTemplate = ({ name, bucketName }: TemplateParameters) => {
       [`Saws${uppercasedName}Bucket`]: {
         Type: "AWS::S3::Bucket",
         Properties: {
-          BucketName: bucketName
-        }
-      }
+          BucketName: bucketName,
+          CorsConfiguration: {
+            CorsRules: [
+              {
+                AllowedHeaders: ["*"],
+                AllowedMethods: ["GET", "PUT", "POST"],
+                AllowedOrigins: ["*"],
+                ExposedHeaders: [],
+              },
+            ],
+          },
+        },
+      },
     },
   });
 };

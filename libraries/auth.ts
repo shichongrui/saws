@@ -73,6 +73,9 @@ export const captureAuthEnvVars = (name: string) => {
 export class SessionClient {
   userPool: CognitoUserPool;
 
+  autoSignInEnabled: boolean;
+  password?: string;
+
   constructor(name: string) {
     const userPoolId =
       window.ENV[parameterizedEnvVarName(name, "USER_POOL_ID")];
@@ -91,6 +94,8 @@ export class SessionClient {
         expires: 365,
       }),
     });
+
+    this.autoSignInEnabled = false;
   }
 
   getCurrentUser() {
@@ -137,11 +142,12 @@ export class SessionClient {
     username: string;
     password: string;
     attributes: Record<string, string>;
-    autoSignIn: {
+    autoSignIn?: {
       enabled: true;
     };
   }) {
     return new Promise<ISignUpResult | undefined>((resolve, reject) => {
+      this.autoSignInEnabled = autoSignIn?.enabled ?? false
       const attributeList = [];
 
       for (const key in attributes) {
@@ -164,7 +170,7 @@ export class SessionClient {
             return;
           }
 
-          if (autoSignIn && autoSignIn.enabled) {
+          if (result?.userConfirmed && autoSignIn && autoSignIn.enabled) {
             try {
               await this.signIn(username, password);
               resolve(result);
@@ -172,6 +178,7 @@ export class SessionClient {
               reject(signInError);
             }
           } else {
+            this.password = password;
             resolve(result);
           }
         }
@@ -194,6 +201,13 @@ export class SessionClient {
       const cognitoUser = new CognitoUser(userData);
       cognitoUser.confirmRegistration(code, true, (err) => {
         if (err) return reject(err);
+
+        if (this.autoSignInEnabled && this.password != null) {
+          this.signIn(email, this.password).then(resolve).catch(reject)
+          this.password = undefined;
+          return;
+        }
+
         resolve(null);
       });
     });

@@ -139,7 +139,6 @@ var import_jsonwebtoken = require("jsonwebtoken"), API = class {
 
 // ../libraries/api/GraphQLAPI.ts
 __reExport(GraphQLAPI_exports, require("apollo-server-lambda"));
-__reExport(GraphQLAPI_exports, require("aws-lambda"));
 __reExport(GraphQLAPI_exports, require("graphql"));
 var GraphQLAPI = class extends API {
   apolloServer;
@@ -225,7 +224,7 @@ var import_client_cognito_identity_provider = require("@aws-sdk/client-cognito-i
   client;
   constructor(stage) {
     let config = {};
-    stage === "local" && (config.endpoint = "http://localhost:9229", config.credentials = {
+    stage === "local" && (config.region = "us-west-2", config.endpoint = "http://localhost:9229", config.credentials = {
       accessKeyId: "cognito-local",
       secretAccessKey: "cognito-local"
     }), this.client = new import_client_cognito_identity_provider.CognitoIdentityProviderClient(config);
@@ -387,6 +386,8 @@ var import_amazon_cognito_identity_js = require("amazon-cognito-identity-js"), A
   };
 }, SessionClient = class {
   userPool;
+  autoSignInEnabled;
+  password;
   constructor(name) {
     let userPoolId = window.ENV[parameterizedEnvVarName(name, "USER_POOL_ID")], userPoolClientId = window.ENV[parameterizedEnvVarName(name, "USER_POOL_CLIENT_ID")];
     this.userPool = new import_amazon_cognito_identity_js.CognitoUserPool({
@@ -399,7 +400,7 @@ var import_amazon_cognito_identity_js = require("amazon-cognito-identity-js"), A
         path: "/",
         expires: 365
       })
-    });
+    }), this.autoSignInEnabled = !1;
   }
   getCurrentUser() {
     return this.userPool.getCurrentUser();
@@ -419,6 +420,9 @@ var import_amazon_cognito_identity_js = require("amazon-cognito-identity-js"), A
       cognitoUser.setAuthenticationFlowType("USER_PASSWORD_AUTH"), cognitoUser.authenticateUser(
         new import_amazon_cognito_identity_js.AuthenticationDetails({ Username: username, Password: password }),
         {
+          newPasswordRequired: () => {
+            cognitoUser.challengeName = "NEW_PASSWORD_REQUIRED", resolve3(cognitoUser);
+          },
           onSuccess: () => {
             resolve3(cognitoUser);
           },
@@ -436,6 +440,7 @@ var import_amazon_cognito_identity_js = require("amazon-cognito-identity-js"), A
     autoSignIn
   }) {
     return new Promise((resolve3, reject) => {
+      this.autoSignInEnabled = autoSignIn?.enabled ?? !1;
       let attributeList = [];
       for (let key in attributes)
         attributeList.push(
@@ -454,14 +459,14 @@ var import_amazon_cognito_identity_js = require("amazon-cognito-identity-js"), A
             reject(err);
             return;
           }
-          if (autoSignIn && autoSignIn.enabled)
+          if (result?.userConfirmed && autoSignIn && autoSignIn.enabled)
             try {
               await this.signIn(username, password), resolve3(result);
             } catch (signInError) {
               reject(signInError);
             }
           else
-            resolve3(result);
+            this.password = password, resolve3(result);
         }
       );
     });
@@ -481,6 +486,10 @@ var import_amazon_cognito_identity_js = require("amazon-cognito-identity-js"), A
       new import_amazon_cognito_identity_js.CognitoUser(userData).confirmRegistration(code, !0, (err) => {
         if (err)
           return reject(err);
+        if (this.autoSignInEnabled && this.password != null) {
+          this.signIn(email, this.password).then(resolve3).catch(reject), this.password = void 0;
+          return;
+        }
         resolve3(null);
       });
     });
@@ -592,6 +601,13 @@ var import_client_s3 = require("@aws-sdk/client-s3"), import_s3_request_presigne
     });
     return this.client.send(command);
   }
+  deleteObject(bucketName, key) {
+    let command = new import_client_s3.DeleteObjectCommand({
+      Bucket: bucketName,
+      Key: key
+    });
+    return this.client.send(command);
+  }
 };
 
 // ../libraries/file-storage.ts
@@ -608,13 +624,26 @@ var FileStorage = class {
     return await this.client.getFile(this.getBucketName(), path2);
   }
   async getFileUrl(path2) {
-    return await this.client.getPresignedFileUrl(this.getBucketName(), path2);
+    return await this.client.getPresignedFileUrl(
+      this.getBucketName(),
+      path2
+    );
   }
   async getFileUploadUrl(path2) {
-    return await this.client.getPresignedUploadUrl(this.getBucketName(), path2);
+    return await this.client.getPresignedUploadUrl(
+      this.getBucketName(),
+      path2
+    );
   }
   async writeFile(path2, file) {
-    return await this.client.uploadFile(this.getBucketName(), path2, file);
+    return await this.client.uploadFile(
+      this.getBucketName(),
+      path2,
+      file
+    );
+  }
+  async deleteFile(path2) {
+    let response = await this.client.deleteObject(this.getBucketName(), path2);
   }
 };
 
@@ -707,6 +736,7 @@ var binaryTypes = [
   "video/3gpp",
   "video/mp2t",
   "video/mpeg",
+  "video/mp4",
   "video/ogg",
   "video/quicktime",
   "video/webm",
@@ -1046,7 +1076,7 @@ var loader = async ({ request }) => {
 };
 
 // server-assets-manifest:@remix-run/dev/assets-manifest
-var assets_manifest_default = { entry: { module: "/public/build/entry.client-NQ3YT2S6.js", imports: ["/public/build/_shared/chunk-LBAIJNBE.js", "/public/build/_shared/chunk-Y54NFNLJ.js", "/public/build/_shared/chunk-NKWASPW3.js", "/public/build/_shared/chunk-75IOGHNW.js", "/public/build/_shared/chunk-JJMPHSMP.js", "/public/build/_shared/chunk-GDS3J3YF.js", "/public/build/_shared/chunk-QXY5AXJY.js"] }, routes: { root: { id: "root", parentId: void 0, path: "", index: void 0, caseSensitive: void 0, module: "/public/build/root-BYOPHQIY.js", imports: void 0, hasAction: !1, hasLoader: !1, hasErrorBoundary: !1 }, "routes/_index": { id: "routes/_index", parentId: "root", path: void 0, index: !0, caseSensitive: void 0, module: "/public/build/routes/_index-JWHSDOUE.js", imports: void 0, hasAction: !1, hasLoader: !0, hasErrorBoundary: !1 } }, version: "cf7e6cca", hmr: { runtime: "/public/build/_shared/chunk-NKWASPW3.js", timestamp: 1701415269887 }, url: "/public/build/manifest-CF7E6CCA.js" };
+var assets_manifest_default = { entry: { module: "/public/build/entry.client-NQ3YT2S6.js", imports: ["/public/build/_shared/chunk-LBAIJNBE.js", "/public/build/_shared/chunk-Y54NFNLJ.js", "/public/build/_shared/chunk-NKWASPW3.js", "/public/build/_shared/chunk-75IOGHNW.js", "/public/build/_shared/chunk-JJMPHSMP.js", "/public/build/_shared/chunk-GDS3J3YF.js", "/public/build/_shared/chunk-QXY5AXJY.js"] }, routes: { root: { id: "root", parentId: void 0, path: "", index: void 0, caseSensitive: void 0, module: "/public/build/root-NZOINTML.js", imports: void 0, hasAction: !1, hasLoader: !1, hasErrorBoundary: !1 }, "routes/_index": { id: "routes/_index", parentId: "root", path: void 0, index: !0, caseSensitive: void 0, module: "/public/build/routes/_index-JWHSDOUE.js", imports: void 0, hasAction: !1, hasLoader: !0, hasErrorBoundary: !1 } }, version: "d2e24707", hmr: { runtime: "/public/build/_shared/chunk-NKWASPW3.js", timestamp: 1705469932152 }, url: "/public/build/manifest-D2E24707.js" };
 
 // server-entry-module:@remix-run/dev/server-build
 var mode = "development", assetsBuildDirectory = "./.saws/build/saws-example-website/public/build", future = { v3_fetcherPersist: !1 }, publicPath = "/public/build/", entry = { module: entry_server_exports }, routes = {

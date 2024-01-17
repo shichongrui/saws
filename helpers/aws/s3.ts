@@ -1,5 +1,6 @@
 import {
   CreateBucketCommand,
+  DeleteObjectCommand,
   GetObjectCommand,
   HeadObjectCommand,
   ListBucketsCommand,
@@ -118,6 +119,14 @@ export class S3 {
       Bucket: bucketName,
       Prefix: prefix,
       Delimiter: delimiter,
+    })
+    return this.client.send(command)
+  }
+
+  deleteObject(bucketName: string, key: string) {
+    const command = new DeleteObjectCommand({
+      Bucket: bucketName,
+      Key: key,
     })
     return this.client.send(command)
   }

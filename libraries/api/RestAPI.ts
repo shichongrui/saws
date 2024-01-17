@@ -1,7 +1,7 @@
 import { API } from "./API";
 import createHandler from "serverless-http";
 import { Express } from "express";
-import { APIGatewayProxyHandler } from "aws-lambda";
+import type { APIGatewayProxyHandler } from "aws-lambda";
 
 declare global {
   namespace Express {

@@ -14,13 +14,6 @@ import type {
 
 import { isBinaryType } from "../../utils/binary-types";
 
-/**
- * A function that returns the value to use as `context` in route `loader` and
- * `action` functions.
- *
- * You can think of this as an escape hatch that allows you to pass
- * environment/platform-specific values through to your loader/action.
- */
 export type GetLoadContextFunction = (
   event: APIGatewayProxyEventV2
 ) => Promise<AppLoadContext> | AppLoadContext;

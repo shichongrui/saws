@@ -79,5 +79,4 @@ export class GraphQLAPI extends API {
 }
 
 export * from "apollo-server-lambda";
-export * from "aws-lambda";
 export * from "graphql";

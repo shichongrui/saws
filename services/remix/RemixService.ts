@@ -61,11 +61,11 @@ export class RemixService extends ServiceDefinition {
   // 2. it doesn't dispose of the compiler and thus it hangs
   // So we are building it ourselves based on how it works but without that stuff
   async buildRemix(mode: "development" | "production") {
-    // if (this.remixCompiler != null) {
-    //   console.log('Existing remix compiler')
-    //   await this.remixCompiler.compile();
-    //   return;
-    // }
+    if (this.remixCompiler != null) {
+      console.log('Existing remix compiler')
+      await this.remixCompiler.compile();
+      return;
+    }
 
     let config = await readConfig(path.resolve("."));
     const port = await this.getPort();

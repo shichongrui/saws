@@ -99,7 +99,7 @@ export class CloudFormation {
     const command = new CreateStackCommand({
       StackName: stackName,
       TemplateBody: templateBody,
-      Capabilities: [Capability.CAPABILITY_NAMED_IAM],
+      Capabilities: [Capability.CAPABILITY_NAMED_IAM, Capability.CAPABILITY_AUTO_EXPAND],
     });
     await this.client.send(command);
   

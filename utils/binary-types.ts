@@ -43,6 +43,7 @@ const binaryTypes = [
   "video/3gpp",
   "video/mp2t",
   "video/mpeg",
+  "video/mp4",
   "video/ogg",
   "video/quicktime",
   "video/webm",

@@ -1,6 +1,6 @@
 import path from "node:path";
 // import { getPrismaClient } from "../../libraries";
-import { Handler } from "../../libraries";
+import type { Handler } from "aws-lambda";
 import { promises as fs } from "node:fs"
 
 // const prisma = getPrismaClient("saws-example-db");
