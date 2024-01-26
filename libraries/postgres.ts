@@ -1,7 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { parameterizedEnvVarName } from "../utils/parameterized-env-var-name";
 
-export const getPrismaClient = (name: string) => {
+export const getPrismaClient = (name: string): PrismaClient => {
   const {
     [parameterizedEnvVarName(name, "POSTGRES_USERNAME")]: username,
     [parameterizedEnvVarName(name, "POSTGRES_HOST")]: host,

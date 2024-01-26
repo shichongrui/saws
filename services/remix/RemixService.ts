@@ -62,9 +62,9 @@ export class RemixService extends ServiceDefinition {
   // So we are building it ourselves based on how it works but without that stuff
   async buildRemix(mode: "development" | "production") {
     if (this.remixCompiler != null) {
-      console.log('Existing remix compiler')
-      await this.remixCompiler.compile();
-      return;
+      await this.remixCompiler.cancel()
+      await this.remixCompiler.dispose()
+      this.remixCompiler = null
     }
 
     let config = await readConfig(path.resolve("."));
@@ -89,7 +89,6 @@ export class RemixService extends ServiceDefinition {
       logger,
     });
     await this.remixCompiler.compile();
-    await this.remixCompiler.dispose();
   }
 
   async build(mode: "development" | "production" = "development") {
@@ -294,7 +293,7 @@ export class RemixService extends ServiceDefinition {
     console.log("Deploying function", this.name);
 
     await this.build("production");
-    await this.remixCompiler.dispose();
+    await this.remixCompiler?.dispose();
     this.buildContext?.dispose();
 
     // upload build to S3

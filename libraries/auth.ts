@@ -119,8 +119,8 @@ export class SessionClient {
         new AuthenticationDetails({ Username: username, Password: password }),
         {
           newPasswordRequired: () => {
-            cognitoUser.challengeName = 'NEW_PASSWORD_REQUIRED'
-            resolve(cognitoUser)
+            cognitoUser.challengeName = "NEW_PASSWORD_REQUIRED";
+            resolve(cognitoUser);
           },
           onSuccess: () => {
             resolve(cognitoUser);
@@ -147,7 +147,7 @@ export class SessionClient {
     };
   }) {
     return new Promise<ISignUpResult | undefined>((resolve, reject) => {
-      this.autoSignInEnabled = autoSignIn?.enabled ?? false
+      this.autoSignInEnabled = autoSignIn?.enabled ?? false;
       const attributeList = [];
 
       for (const key in attributes) {
@@ -203,7 +203,7 @@ export class SessionClient {
         if (err) return reject(err);
 
         if (this.autoSignInEnabled && this.password != null) {
-          this.signIn(email, this.password).then(resolve).catch(reject)
+          this.signIn(email, this.password).then(resolve).catch(reject);
           this.password = undefined;
           return;
         }
@@ -217,6 +217,46 @@ export class SessionClient {
     return new Promise((resolve, reject) => {
       user.completeNewPasswordChallenge(newPassword, null, {
         onSuccess: () => {
+          resolve(null);
+        },
+        onFailure: (err) => {
+          reject(err);
+        },
+      });
+    });
+  }
+
+  async setNewPassword({
+    username,
+    code,
+    newPassword,
+    autoSignIn,
+  }: {
+    username: string;
+    code: string;
+    newPassword: string;
+    autoSignIn?: {
+      enabled: boolean;
+    };
+  }) {
+    return new Promise((resolve, reject) => {
+      const user = new CognitoUser({
+        Username: username,
+        Pool: this.userPool,
+        Storage: new CookieStorage({
+          domain: window?.location?.hostname,
+          secure: window?.location?.hostname !== "localhost",
+          path: "/",
+          expires: 365,
+        }),
+      });
+
+      user.confirmPassword(code, newPassword, {
+        onSuccess: () => {
+          if (autoSignIn?.enabled) {
+            resolve(this.signIn(username, newPassword));
+            return
+          }
           resolve(null);
         },
         onFailure: (err) => {

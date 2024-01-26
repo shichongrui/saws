@@ -71,6 +71,8 @@ export const startContainer = async ({
   command = [],
   check
 }: StartContainerParameters) => {
+  await waitForContainerToBeStopped(name)
+
   onProcessExit(() => {
     dockerCommand(`stop ${name}`, { echo: false });
   });
