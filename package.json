@@ -1,6 +1,6 @@
 {
   "name": "@shichongrui/saws",
-  "version": "0.0.86",
+  "version": "0.0.88",
   "repository": {
     "url": "git@github.com:shichongrui/saws.git"
   },
@@ -55,7 +55,7 @@
     "@aws-sdk/client-lambda": "^3.454.0",
     "@aws-sdk/client-s3": "^3.454.0",
     "@aws-sdk/client-serverlessapplicationrepository": "^3.465.0",
-    "@aws-sdk/client-ses": "^3.454.0",
+    "@aws-sdk/client-ses": "^3.507.0",
     "@aws-sdk/client-ssm": "^3.454.0",
     "@aws-sdk/client-translate": "^3.454.0",
     "@aws-sdk/s3-request-presigner": "^3.454.0",

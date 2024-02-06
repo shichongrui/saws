@@ -62,8 +62,8 @@ export class RemixService extends ServiceDefinition {
   // So we are building it ourselves based on how it works but without that stuff
   async buildRemix(mode: "development" | "production") {
     if (this.remixCompiler != null) {
-      await this.remixCompiler.cancel()
-      await this.remixCompiler.dispose()
+      await this.remixCompiler?.cancel()
+      await this.remixCompiler?.dispose()
       this.remixCompiler = null
     }
 
