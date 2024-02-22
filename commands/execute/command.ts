@@ -5,8 +5,8 @@ import esbuild from "esbuild";
 import { BUILD_DIR, SAWS_DIR } from "../../utils/constants";
 
 export const executeCommand = async (
-  sawsPath: string,
   scriptPath: string,
+  sawsPath: string,
   { stage = "local" }: { stage: string }
 ) => {
   process.env.STAGE = stage;

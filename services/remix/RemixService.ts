@@ -76,6 +76,7 @@ export class RemixService extends ServiceDefinition {
         mode === "development"
           ? new URL(`http://localhost:${port}`)
           : undefined,
+      external: ['@aws-sdk']
     };
 
     let fileWatchCache = createFileWatchCache();
@@ -104,7 +105,6 @@ export class RemixService extends ServiceDefinition {
         await this.buildContext.rebuild?.();
         return;
       }
-
       this.buildContext = await esbuild.context({
         minify: mode === "production",
         treeShaking: true,
@@ -113,6 +113,7 @@ export class RemixService extends ServiceDefinition {
         outfile: this.buildFilePath,
         sourcemap: true,
         platform: "node",
+        external: ['@aws-sdk']
       });
       await this.buildContext.rebuild();
 

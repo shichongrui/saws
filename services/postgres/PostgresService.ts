@@ -11,7 +11,7 @@ import {
   prismaMigrate,
 } from "../../helpers/prisma";
 import { getStackName, getTemplate } from "./cloud-formation.template";
-import { ServiceDefinition } from "../ServiceDefinition";
+import { ServiceDefinition, ServiceDefinitionConfig } from "../ServiceDefinition";
 import { watch } from "chokidar";
 import { CloudFormation } from "../../helpers/aws/cloudformation";
 import { EC2 } from "../../helpers/aws/ec2";
@@ -20,9 +20,19 @@ import { SAWS_DIR } from "../../utils/constants";
 import { Client } from "pg";
 import { startContainer } from "../../helpers/docker";
 
+export interface PostgresServiceConfig extends ServiceDefinitionConfig {
+  imageName?: string
+}
+
 export class PostgresService extends ServiceDefinition {
   static process?: ChildProcess;
   private dbPassword?: string;
+  private imageName: string;
+
+  constructor(config: PostgresServiceConfig) {
+    super(config)
+    this.imageName = config.imageName ?? 'postgres:14'
+  }
 
   async dev() {
     await super.dev();
@@ -114,7 +124,7 @@ export class PostgresService extends ServiceDefinition {
           "-v",
           `${path.resolve(SAWS_DIR, "postgres")}/:/var/lib/postgresql/data`,
         ],
-        image: "postgres:14",
+        image: this.imageName,
         check: async () => {
           const client = new Client({
             user: "postgres",

@@ -97,7 +97,7 @@ export const getTemplate = ({
           },
           FunctionName: `${stage}-${name}`,
           Handler: `${moduleName}.handler`,
-          Runtime: "nodejs16.x",
+          Runtime: "nodejs20.x",
           PackageType: "Zip",
           Role: {
             "Fn::GetAtt": [`Saws${uppercasedName}LambdaRole`, "Arn"],
