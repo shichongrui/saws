@@ -2,6 +2,7 @@
   "name": "demo",
   "version": "1.0.0",
   "description": "",
+  "private": true,
   "main": "remix.config.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -9,13 +10,39 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@remix-run/node": "^2.3.0",
-    "isbot": "latest"
+    "@chakra-ui/react": "^2.8.2",
+    "@emotion/cache": "^11.11.0",
+    "@emotion/react": "^11",
+    "@emotion/server": "^11",
+    "@emotion/styled": "^11",
+    "@prisma/client": "^5.10.2",
+    "@remix-run/node": "^2.7.2",
+    "@remix-run/react": "^2.7.2",
+    "@shichongrui/saws-aws": "workspace:^",
+    "@shichongrui/saws-cli": "workspace:^",
+    "@shichongrui/saws-cognito": "workspace:^",
+    "@shichongrui/saws-core": "workspace:^",
+    "@shichongrui/saws-file-storage": "workspace:^",
+    "@shichongrui/saws-function": "workspace:^",
+    "@shichongrui/saws-postgres": "workspace:^",
+    "@shichongrui/saws-remix": "workspace:^",
+    "@shichongrui/saws-remix-auth": "workspace:^",
+    "@shichongrui/saws-secrets": "workspace:^",
+    "@shichongrui/saws-utils": "workspace:^",
+    "aws-lambda": "^1.0.7",
+    "framer-motion": "^6",
+    "isbot": "^4.4.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@emotion/cache": "^11.11.0"
+    "@remix-run/dev": "^2.7.2",
+    "@types/aws-lambda": "^8.10.134",
+    "@types/react": "^18.2.58",
+    "@types/react-dom": "^18.2.19",
+    "prisma": "^5.10.2"
   },
   "prisma": {
-    "seed": "node ../dist/bin/saws.js execute ./saws.js ./prisma/seed.ts"
+    "seed": "npx saws execute ./prisma/seed.ts"
   }
 }

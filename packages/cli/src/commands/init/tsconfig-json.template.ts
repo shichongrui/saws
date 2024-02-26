@@ -1,0 +1,20 @@
+export const tsconfigJsonTemplate = () => `{
+  "include": ["**/*.ts", "*.ts", "**/*.tsx", "global.d.ts"],
+  "exclude": [".saws", "node_modules"],
+  "compilerOptions": {
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "jsx": "react-jsx",
+    "target": "ES2022",
+    "module": "Node16",
+    "resolveJsonModule": true,
+    "strict": true,
+    "allowJs": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "skipLibCheck": true
+  }
+}
+    
+`

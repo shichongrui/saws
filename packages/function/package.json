@@ -1,0 +1,35 @@
+{
+  "name": "@shichongrui/saws-function",
+  "version": "1.0.0",
+  "description": "",
+  "keywords": [],
+  "exports": {
+    "./typescript-function-service": "./dist/src/service/typescript/TypescriptFunctionService.js",
+    "./container-function-service": "./dist/src/service/container/ContainerFunctionService.js",
+    "./functions-client": "./dist/src/library/FunctionsClient.js"
+  },
+  "files": [
+    "./dist"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-serverlessapplicationrepository": "^3.515.0",
+    "@shichongrui/lambda-server": "workspace:^",
+    "@shichongrui/saws-aws": "workspace:^",
+    "@shichongrui/saws-utils": "workspace:^",
+    "@types/fs-extra": "^11.0.4",
+    "chokidar": "^3.6.0",
+    "esbuild": "^0.20.1",
+    "fs-extra": "^11.2.0",
+    "get-port": "^5.1.1",
+    "js-yaml": "^4.1.0"
+  },
+  "devDependencies": {
+    "@shichongrui/saws-core": "workspace:^",
+    "@types/js-yaml": "^4.0.9"
+  },
+  "peerDependencies": {
+    "@shichongrui/saws-core": ">=3"
+  }
+}

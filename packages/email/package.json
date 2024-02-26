@@ -1,0 +1,24 @@
+{
+  "name": "@shichongrui/saws-email",
+  "version": "1.0.0",
+  "description": "",
+  "keywords": [],
+  "exports": {
+    "./email-service": "./dist/src/EmailService.js",
+    "./email-library": "./dist/src/EmailLibrary.js"
+  },
+  "files": [
+    "./dist"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@shichongrui/saws-aws": "workspace:^"
+  },
+  "devDependencies": {
+    "@shichongrui/saws-core": "workspace:^"
+  },
+  "peerDependencies": {
+    "@shichongrui/saws-core": ">=3"
+  }
+}

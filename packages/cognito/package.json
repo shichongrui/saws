@@ -1,0 +1,29 @@
+{
+  "name": "@shichongrui/saws-cognito",
+  "version": "1.0.0",
+  "description": "",
+  "keywords": [],
+  "exports": {
+    "./cognito-service": "./dist/src/service/CognitoService.js",
+    "./cognito-client": "./dist/src/libraries/CognitoClient.js",
+    "./session-client": "./dist/src/libraries/SessionClient.js"
+  },
+  "files": [
+    "./dist"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@shichongrui/saws-aws": "workspace:^",
+    "@shichongrui/saws-utils": "workspace:^",
+    "@shichongrui/saws-secrets": "workspace:^",
+    "amazon-cognito-identity-js": "^6.3.7"
+  },
+  "devDependencies": {
+    "@shichongrui/saws-core": "workspace:^",
+    "@aws-sdk/client-cognito-identity-provider": "^3.515.0"
+  },
+  "peerDependencies": {
+    "@shichongrui/saws-core": ">=3"
+  }
+}

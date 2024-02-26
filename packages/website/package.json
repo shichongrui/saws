@@ -1,0 +1,27 @@
+{
+  "name": "@shichongrui/saws-website",
+  "version": "1.0.0",
+  "description": "",
+  "keywords": [],
+  "exports": {
+    "./website-service": "./dist/src/WebsiteService.js"
+  },
+  "files": [
+    "./dist"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@shichongrui/saws-aws": "workspace:^",
+    "@shichongrui/saws-core": "workspace:^",
+    "@shichongrui/saws-utils": "workspace:^",
+    "get-port": "^5.1.1",
+    "vite": "^5.1.4"
+  },
+  "devDependencies": {
+    "@shichongrui/saws-core": "workspace:^"
+  },
+  "peerDependencies": {
+    "@shichongrui/saws-core": ">=3"
+  }
+}

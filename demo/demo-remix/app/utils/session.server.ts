@@ -1,0 +1,1 @@
+export { getSession } from '@shichongrui/saws-remix-auth/session'

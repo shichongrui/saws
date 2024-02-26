@@ -1,21 +1,20 @@
-import { getPrismaClient } from "../../libraries";
+import { getPrismaClient } from "@shichongrui/saws-postgres/get-prisma-client";
 
 const main = async () => {
-  const prisma = getPrismaClient('saws-example-db');
+  const prisma = getPrismaClient('demo-db');
 
   await prisma.user.upsert({
     where: {
-      email: 'dev@saws.com',
+      id: 2,
     },
     update: {},
     create: {
+      id: 2,
       email: 'dev@saws.com',
       cognito_id: '12345',
       first_name: 'Dev',
       last_name: 'User',
       account_id: 1,
-      created_by_user_id: 1,
-      updated_by_user_id: 1,
     }
   })
 }

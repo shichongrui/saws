@@ -1,0 +1,35 @@
+{
+  "name": "@shichongrui/saws-aws",
+  "version": "1.0.0",
+  "description": "",
+  "exports": {
+    "./cloudformation": "./dist/src/cloudformation.js",
+    "./cloudfront": "./dist/src/cloudfront.js",
+    "./cognito": "./dist/src/cognito.js",
+    "./ec2": "./dist/src/ec2.js",
+    "./lambda": "./dist/src/lambda.js",
+    "./s3": "./dist/src/s3.js",
+    "./ses": "./dist/src/ses.js",
+    "./ssm": "./dist/src/ssm.js",
+    "./sts": "./dist/src/sts.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-cloudformation": "^3.515.0",
+    "@aws-sdk/client-cloudfront": "^3.515.0",
+    "@aws-sdk/client-cognito-identity-provider": "^3.515.0",
+    "@aws-sdk/client-ec2": "^3.515.0",
+    "@aws-sdk/client-lambda": "^3.518.0",
+    "@aws-sdk/client-s3": "^3.515.0",
+    "@aws-sdk/client-ses": "^3.515.0",
+    "@aws-sdk/client-ssm": "^3.519.0",
+    "@aws-sdk/client-sts": "^3.515.0",
+    "@aws-sdk/s3-request-presigner": "^3.515.0",
+    "mime": "^3.0.0"
+  },
+  "devDependencies": {
+    "@types/mime": "^3.0.0"
+  }
+}

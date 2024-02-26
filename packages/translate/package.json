@@ -1,0 +1,24 @@
+{
+  "name": "@shichongrui/saws-translate",
+  "version": "1.0.0",
+  "description": "",
+  "keywords": [],
+  "exports": {
+    "./translate-service": "./dist/src/TranslateService.js",
+    "./translate-library": "./dist/src/TranslateLibrary.js"
+  },
+  "files": [
+    "./dist"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-translate": "^3.515.0"
+  },
+  "devDependencies": {
+    "@shichongrui/saws-core": "workspace:^"
+  },
+  "peerDependencies": {
+    "@shichongrui/saws-core": ">=3"
+  }
+}
