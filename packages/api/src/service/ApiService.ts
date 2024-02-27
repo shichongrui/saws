@@ -9,7 +9,7 @@ import {
 import { BUILD_DIR } from "@shichongrui/saws-utils/constants";
 import { buildCodeZip } from "@shichongrui/saws-utils/build-code-zip";
 import { collectHttpBody } from "@shichongrui/saws-utils/collect-http-body";
-import { npmInstall } from "@shichongrui/saws-utils/npm";
+import { npmInstall } from "@shichongrui/saws-utils/dependency-management";
 import { watch } from "chokidar";
 import esbuild from "esbuild";
 import fse from "fs-extra";

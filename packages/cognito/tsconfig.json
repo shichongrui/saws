@@ -5,5 +5,11 @@
   "compilerOptions": {
     "rootDir": ".",
     "outDir": "./dist"
-  }
+  },
+  "references": [
+    { "path": "../aws" },
+    { "path": "../utils" },
+    { "path": "../secrets" },
+    { "path": "../core" }
+  ]
 }

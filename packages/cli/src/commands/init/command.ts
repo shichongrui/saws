@@ -1,7 +1,7 @@
 import path from 'node:path'
 import fs from 'node:fs'
 import { packageJsonTemplate } from './package-json.template'
-import { npmInstall } from '@shichongrui/saws-utils/npm'
+import { installDependency, npmInstall } from '@shichongrui/saws-utils/dependency-management'
 import { tsconfigJsonTemplate } from './tsconfig-json.template'
 import { sawsJsTemplate } from './saws-js.template'
 
@@ -15,16 +15,17 @@ export const initCommand = async () => {
 
   const packageJson = JSON.parse(fs.readFileSync('./package.json', 'utf-8'))
 
-  const dependencies = ['@shichongrui/saws-core']
+  // not used for now
+  const dependencies: string[] = []
   const installedDependencies = packageJson.dependencies ?? {}
   if (dependencies.some(d => installedDependencies[d] == null)) {
-    await npmInstall(dependencies.join(' '))
+    await installDependency(dependencies.join(' '))
   }
   
   const devDependencies = ['typescript']
   const installedDevDependencies = packageJson.devDependencies ?? {}
   if (devDependencies.some(d => installedDevDependencies[d] == null)) {
-    await npmInstall(devDependencies.join(' '))
+    await installDependency(devDependencies.join(' '))
   }
 
   const tsconfigExists = fs.existsSync('./tsconfig.json')

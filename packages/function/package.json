@@ -1,6 +1,6 @@
 {
   "name": "@shichongrui/saws-function",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "keywords": [],
   "exports": {
@@ -30,6 +30,6 @@
     "@types/js-yaml": "^4.0.9"
   },
   "peerDependencies": {
-    "@shichongrui/saws-core": ">=3"
+    "@shichongrui/saws-core": ">=1.0.0"
   }
 }

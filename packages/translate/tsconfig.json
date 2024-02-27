@@ -5,5 +5,8 @@
   "compilerOptions": {
     "rootDir": ".",
     "outDir": "./dist"
-  }
+  },
+  "references": [
+    { "path": "../core" }
+  ]
 }

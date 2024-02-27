@@ -1,6 +1,6 @@
 {
   "name": "@shichongrui/saws-cli",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "bin": {
     "saws": "./dist/bin/saws.js"
@@ -20,6 +20,6 @@
     "@types/find-package-json": "^1.2.6"
   },
   "peerDependencies": {
-    "@shichongrui/saws-core": ">=3"
+    "@shichongrui/saws-core": ">=1.0.0"
   }
 }

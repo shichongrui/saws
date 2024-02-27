@@ -1,6 +1,6 @@
 {
   "name": "@shichongrui/saws-cognito",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "keywords": [],
   "exports": {
@@ -24,6 +24,6 @@
     "@aws-sdk/client-cognito-identity-provider": "^3.515.0"
   },
   "peerDependencies": {
-    "@shichongrui/saws-core": ">=3"
+    "@shichongrui/saws-core": ">=1.0.0"
   }
 }

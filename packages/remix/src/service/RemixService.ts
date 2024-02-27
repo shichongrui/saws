@@ -1,13 +1,11 @@
-import {
-  BUILD_DIR,
-} from "@shichongrui/saws-utils/constants"
-import { buildCodeZip } from "@shichongrui/saws-utils/build-code-zip"
-import { copyDirectory } from "@shichongrui/saws-utils/copy-directory"
-import { recursivelyReadDir } from "@shichongrui/saws-utils/recursively-read-dir"
-import { transformRequestToLambdaEvent } from "@shichongrui/saws-utils/transform-incoming-message-to-lambda-event"
+import { buildCodeZip } from "@shichongrui/saws-utils/build-code-zip";
+import { BUILD_DIR } from "@shichongrui/saws-utils/constants";
+import { copyDirectory } from "@shichongrui/saws-utils/copy-directory";
+import { recursivelyReadDir } from "@shichongrui/saws-utils/recursively-read-dir";
+import { transformRequestToLambdaEvent } from "@shichongrui/saws-utils/transform-incoming-message-to-lambda-event";
 import { watch } from "chokidar";
 import esbuild from "esbuild";
-import { promises as fs } from "fs";
+import fs from "fs";
 import getPort from "get-port";
 import http, { IncomingMessage, ServerResponse } from "http";
 import mime from "mime-types";
@@ -18,11 +16,11 @@ import {
   getStackName as getS3CodeStackName,
   getTemplate as getS3CodeTemplate,
 } from "./code-s3-cloud-formation.template";
-
 import * as compiler from "@remix-run/dev/dist/compiler/compiler";
 import { createFileWatchCache } from "@remix-run/dev/dist/compiler/fileWatchCache";
 import { readConfig } from "@remix-run/dev/dist/config";
 import { logger } from "@remix-run/dev/dist/tux/logger";
+import { lambdaServer } from "@shichongrui/lambda-server";
 import { CloudFormation } from "@shichongrui/saws-aws/cloudformation";
 import { Cloudfront } from "@shichongrui/saws-aws/cloudfront";
 import { S3 } from "@shichongrui/saws-aws/s3";
@@ -31,7 +29,13 @@ import {
   ServiceDefinitionConfig,
 } from "@shichongrui/saws-core";
 import fse from "fs-extra";
-import { lambdaServer } from "@shichongrui/lambda-server";
+import findPackageJson from "find-package-json";
+import { installDependency } from "@shichongrui/saws-utils/dependency-management";
+import { createFileIfNotExists } from "@shichongrui/saws-utils/create-file-if-not-exists";
+import { rootTemplate } from "./templates/root.template";
+import { indexRouteTemplate } from "./templates/index-route.template";
+import { indexTemplate } from "./templates/index.template";
+import { remixConfig } from "./templates/remix-config.template";
 
 interface RemixServiceConfig extends ServiceDefinitionConfig {
   rootDir?: string;
@@ -59,6 +63,62 @@ export class RemixService extends ServiceDefinition {
     this.include = config.include ?? [];
   }
 
+  async init() {
+    try {
+      const finder = findPackageJson();
+      const packageJson = finder.next().value;
+
+      const requiredDependencies = [
+        "@remix-run/node",
+        "@remix-run/react",
+        "isbot@4",
+        "react",
+        "react-dom",
+      ];
+      const missingDependencies = requiredDependencies.filter(
+        (d) => packageJson?.dependencies?.[d] == null
+      );
+      if (missingDependencies.length > 0) {
+        console.log('Installing missing dependencies', missingDependencies.join(' '))
+        await installDependency(missingDependencies.join(" "));
+      }
+
+      const requiredDevDependencies = ["@remix-run/dev", "@types/react", "@types/react-dom"];
+      const missingDevDependencies = requiredDevDependencies.filter(
+        (d) => packageJson?.devDependencies?.[d] == null
+      );
+      if (missingDevDependencies.length > 0) {
+        console.log('Installing missing development dependencies', missingDevDependencies.join (' '))
+        await installDependency("-D " + missingDevDependencies.join(" "));
+      }
+
+      fs.mkdirSync(path.resolve(this.rootDir, "public"), { recursive: true });
+      fs.mkdirSync(path.resolve(this.rootDir, "build"), { recursive: true });
+      fs.mkdirSync(path.resolve(this.rootDir, "app", "routes"), {
+        recursive: true,
+      });
+
+      createFileIfNotExists(
+        path.resolve(this.rootDir, "app", "root.tsx"),
+        rootTemplate({ name: this.name })
+      );
+      createFileIfNotExists(
+        path.resolve(this.rootDir, "app", "routes", "_index.tsx"),
+        indexRouteTemplate()
+      );
+      createFileIfNotExists(
+        path.resolve(this.rootDir, "index.ts"),
+        indexTemplate()
+      );
+      createFileIfNotExists(
+        path.resolve(".", "remix.config.js"),
+        remixConfig({ name: this.name })
+      );
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
   // the default remix build command has a few implications
   // 1. it does a process.exit(1) on any build failures
   // 2. it doesn't dispose of the compiler and thus it hangs
@@ -79,7 +139,7 @@ export class RemixService extends ServiceDefinition {
         mode === "development"
           ? new URL(`http://localhost:${port}`)
           : undefined,
-      external: mode === 'production' ? ["@aws-sdk"] : [],
+      external: mode === "production" ? ["@aws-sdk"] : [],
     };
 
     let fileWatchCache = createFileWatchCache();
@@ -117,7 +177,7 @@ export class RemixService extends ServiceDefinition {
         outfile: this.buildFilePath,
         sourcemap: true,
         platform: "node",
-        external: mode === 'production' ? ["@aws-sdk"] : [],
+        external: mode === "production" ? ["@aws-sdk"] : [],
         loader: { ".node": "file" },
       });
       await this.buildContext.rebuild();
@@ -164,7 +224,7 @@ export class RemixService extends ServiceDefinition {
 
     await this.build();
     await this.registerFunction();
-    
+
     broadcast({ type: "RELOAD" });
     watch(this.rootDir, {
       ignoreInitial: true,
@@ -175,7 +235,7 @@ export class RemixService extends ServiceDefinition {
       await this.registerFunction();
       broadcast({ type: "RELOAD" });
     });
-    
+
     await this.startDevServer();
     await lambdaServer.start();
   }
@@ -200,7 +260,7 @@ export class RemixService extends ServiceDefinition {
         async (req: IncomingMessage, res: ServerResponse) => {
           if (req.method === "GET" && req.url?.startsWith("/public")) {
             try {
-              const file = await fs.readFile(
+              const file = fs.readFileSync(
                 path.join(BUILD_DIR, this.name, req.url!)
               );
               const contentType =

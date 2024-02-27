@@ -1,6 +1,6 @@
 {
   "name": "@shichongrui/saws-postgres",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "exports": {
     "./postgres-service": "./dist/src/service/PostgresService.js",
@@ -26,7 +26,7 @@
     "prisma": "^5.10.2"
   },
   "peerDependencies": {
-    "@shichongrui/saws-core": ">=3",
+    "@shichongrui/saws-core": ">=1.0.0",
     "@prisma/client": ">=5.0.0",
     "prisma": ">=5.0.0"
   }

@@ -20,8 +20,13 @@ export class ServiceDefinition {
     this.dependencies = config.dependencies ?? [];
   }
 
+  async init() {
+    return
+  }
+
   async dev() {
     console.log("Start dev", this.name);
+    await this.init()
     await this.forEachDependencyAsync(async (dependency) => {
       if (dependency.deved) return
       await dependency.dev();

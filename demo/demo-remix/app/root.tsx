@@ -16,7 +16,7 @@ import { useContext, useEffect } from "react";
 import { ClientStyleContext, ServerStyleContext } from "./utils/context";
 import { captureAuthEnvVars } from '@shichongrui/saws-cognito/cognito-client';
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader() {
   return json({
     ENV: {
       STAGE: process.env.STAGE,

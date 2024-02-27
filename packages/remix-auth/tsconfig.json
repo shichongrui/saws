@@ -5,5 +5,9 @@
   "compilerOptions": {
     "rootDir": ".",
     "outDir": "./dist"
-  }
+  },
+  "references": [
+    { "path": "../utils" },
+    { "path": "../cognito" },
+  ]
 }

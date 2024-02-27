@@ -1,6 +1,6 @@
 {
   "name": "@shichongrui/saws-remix",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "keywords": [],
   "exports": {
@@ -20,6 +20,7 @@
     "@shichongrui/saws-utils": "workspace:^",
     "chokidar": "^3.6.0",
     "esbuild": "^0.20.1",
+    "find-package-json": "^1.2.0",
     "fs-extra": "^11.2.0",
     "get-port": "^5.1.1",
     "mime-types": "^2.1.35",
@@ -31,15 +32,16 @@
     "@remix-run/server-runtime": "^2.7.2",
     "@shichongrui/saws-core": "workspace:^",
     "@types/aws-lambda": "^8.10.134",
+    "@types/find-package-json": "^1.2.6",
     "@types/fs-extra": "^11.0.4",
     "@types/mime-types": "^2.1.4",
     "@types/ws": "^8.5.10",
     "aws-lambda": "^1.0.7"
   },
   "peerDependencies": {
-    "@shichongrui/saws-core": ">=3",
     "@remix-run/dev": ">=2",
     "@remix-run/node": ">=2",
-    "@remix-run/server-runtime": ">=2"
+    "@remix-run/server-runtime": ">=2",
+    "@shichongrui/saws-core": ">=1.0.0"
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@shichongrui/saws-api",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "exports": {
     "./api-service": "./dist/src/service/ApiService.js",
@@ -39,6 +39,6 @@
     "@types/jsonwebtoken": "^9.0.5"
   },
   "peerDependencies": {
-    "@shichongrui/saws-core": ">=3"
+    "@shichongrui/saws-core": ">=1.0.0"
   }
 }

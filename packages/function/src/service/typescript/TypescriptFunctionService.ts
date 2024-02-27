@@ -8,7 +8,7 @@ import { watch } from "chokidar";
 import esbuild from "esbuild";
 import { buildCodeZip } from "@shichongrui/saws-utils/build-code-zip";
 import { BUILD_DIR } from "@shichongrui/saws-utils/constants";
-import { npmInstall } from "@shichongrui/saws-utils/npm";
+import { npmInstall } from "@shichongrui/saws-utils/dependency-management";
 import { FunctionService, FunctionServiceConfig } from "../FunctionService";
 import { lambdaServer } from "@shichongrui/lambda-server";
 import { CloudFormation } from "@shichongrui/saws-aws/cloudformation";

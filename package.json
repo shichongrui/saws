@@ -1,9 +1,14 @@
 {
   "name": "@shichongrui/saws",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.0.1",
   "scripts": {
-    "dev": "tsc -b -w"
+    "dev": "tsc -b -w",
+    "build": "./scripts/build.sh",
+    "bump:patch": "./scripts/increment-version.sh patch",
+    "bump:minor": "./scripts/increment-version.sh minor",
+    "bump:major": "./scripts/increment-version.sh major",
+    "prepublish": "npm run build"
   },
   "repository": {
     "url": "git@github.com:shichongrui/saws.git"

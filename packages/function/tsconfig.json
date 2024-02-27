@@ -5,5 +5,11 @@
   "compilerOptions": {
     "rootDir": ".",
     "outDir": "./dist"
-  }
+  },
+  "references": [
+    { "path": "../lambda-server" },
+    { "path": "../aws" },
+    { "path": "../utils" },
+    { "path": "../core" },
+  ]
 }
