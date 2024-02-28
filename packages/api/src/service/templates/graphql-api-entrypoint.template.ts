@@ -1,5 +1,4 @@
 export const graphqlApiEntrypointTemplate = () => /* ts*/`import { GraphQLAPI } from '@shichongrui/saws-api/graphql-api';
-import { gql, GraphQLScalarType, Kind } from "graphql";
 import { ApolloContext } from 'apollo-server-lambda';
 import { mergeTypeDefs, mergeResolvers } from "@graphql-tools/merge";
 import {
