@@ -1,7 +1,7 @@
 import path from 'node:path'
 import fs from 'node:fs'
 import { packageJsonTemplate } from './package-json.template'
-import { installDependency, npmInstall } from '@shichongrui/saws-utils/dependency-management'
+import { installDependency, npmInstallDependency } from '@shichongrui/saws-utils/dependency-management'
 import { tsconfigJsonTemplate } from './tsconfig-json.template'
 import { sawsJsTemplate } from './saws-js.template'
 

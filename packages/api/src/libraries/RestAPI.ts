@@ -29,7 +29,7 @@ export class RestAPI extends API {
 
   createLambdaHandler = (): APIGatewayProxyHandler => {
     const handler = createHandler(this.app, { provider: "aws" });
-    return async (event, context, callback) => {
+    return async (event, context) => {
       context.callbackWaitsForEmptyEventLoop = false;
 
       this.authenticateRequest(event);
@@ -37,17 +37,14 @@ export class RestAPI extends API {
 
       try {
         const results = await handler(event, context) as any;
-        callback(null, results);
         return results;
       } catch (error) {
         console.error(
           "Error while processing request",
           JSON.stringify(error, null, 2)
         );
-        callback(error as Error);
+        throw error
       }
     };
   };
 }
-
-export { default as express, Router } from 'express'

@@ -9,7 +9,7 @@ import {
 import { BUILD_DIR } from "@shichongrui/saws-utils/constants";
 import { buildCodeZip } from "@shichongrui/saws-utils/build-code-zip";
 import { collectHttpBody } from "@shichongrui/saws-utils/collect-http-body";
-import { npmInstall } from "@shichongrui/saws-utils/dependency-management";
+import { npmInstallDependency } from "@shichongrui/saws-utils/dependency-management";
 import { watch } from "chokidar";
 import esbuild from "esbuild";
 import fse from "fs-extra";
@@ -47,6 +47,7 @@ export class ApiService extends ServiceDefinition {
     this.rootDir = path.resolve(".", config.handler ?? this.name);
     this.entryPointPath = path.resolve(this.rootDir, "index.ts");
     this.buildFilePath = path.resolve(BUILD_DIR, this.name, "index.js");
+    this.configPort = config.port
     this.externalPackages = config.externalPackages ?? [];
     this.include = config.include ?? [];
   }
@@ -232,10 +233,9 @@ export class ApiService extends ServiceDefinition {
     // for external node modules, we need to re-install them so that we get
     // them and all their dependencies
     if (this.externalPackages.length > 0) {
-      await npmInstall(
-        this.externalPackages.join(" "),
-        path.parse(this.buildFilePath).dir
-      );
+      await npmInstallDependency(this.externalPackages.join(" "), {
+        cwd: path.parse(this.buildFilePath).dir,
+      });
     }
 
     // upload build to S3

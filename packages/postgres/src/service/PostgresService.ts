@@ -18,6 +18,11 @@ import { EC2 } from "@shichongrui/saws-aws/ec2";
 import { SAWS_DIR } from "@shichongrui/saws-utils/constants";
 import { Client } from "pg";
 import { startContainer } from "@shichongrui/saws-utils/docker";
+import { installMissingDependencies } from '@shichongrui/saws-utils/dependency-management'
+import { createFileIfNotExists } from '@shichongrui/saws-utils/create-file-if-not-exists'
+import fs from 'node:fs'
+import { schemaPrismaTemplate } from "./templates/schema-prisma.template";
+import { envTemplate } from "./templates/env.template";
 
 export interface PostgresServiceConfig extends ServiceDefinitionConfig {
   imageName?: string;
@@ -31,6 +36,24 @@ export class PostgresService extends ServiceDefinition {
   constructor(config: PostgresServiceConfig) {
     super(config);
     this.imageName = config.imageName ?? "postgres:14";
+  }
+
+  async init() {
+    const requiredDependencies = ['@prisma/client']
+    await installMissingDependencies(requiredDependencies)
+
+    const requiredDevDependencies = ['prisma']
+    await installMissingDependencies(requiredDevDependencies, { development: true })
+
+    fs.mkdirSync(path.resolve('./prisma'), { recursive: true })
+
+    createFileIfNotExists(path.resolve('./prisma/schema.prisma'), schemaPrismaTemplate())
+
+    const password = await getDBPassword(this.name, "local");
+    createFileIfNotExists(path.resolve('.env'), envTemplate({
+      dbName: getDBName(this.name, 'local'),
+      password,
+    }))
   }
 
   async dev() {

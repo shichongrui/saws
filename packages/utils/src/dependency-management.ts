@@ -1,11 +1,17 @@
 import { exec } from "child_process";
 import fs from "node:fs";
 import path from "node:path";
+import findPackageJson from 'find-package-json'
 
-export const npmInstall = (dependency?: string, cwd: string = ".") => {
+type Options = {
+  cwd?: string
+  development?: boolean
+}
+
+export const npmInstall = (cwd?: string) => {
   return new Promise((resolve, reject) => {
     exec(
-      `npm install --prefix ${cwd} ${dependency}`,
+      `npm install`,
       {
         cwd,
       },
@@ -18,14 +24,35 @@ export const npmInstall = (dependency?: string, cwd: string = ".") => {
       }
     );
   });
+}
+
+export const npmInstallDependency = (dependency: string, options: Options) => {
+  return new Promise((resolve, reject) => {
+    const prefix = options.cwd ? `--prefix ${options.cwd}` : ''
+    const development = options.development ? '-D' : ''
+    exec(
+      `npm install ${development} ${dependency} ${prefix}`,
+      {
+        cwd: options.cwd,
+      },
+      (err, res) => {
+        if (err != null) {
+          return reject(err);
+        }
+
+        resolve(null);
+      }
+    );
+  });
 };
 
-export const yarnInstall = (dependency?: string, cwd: string = ".") => {
+export const yarnInstallDependency = (dependency: string, options: Options) => {
   return new Promise((resolve, reject) => {
+    const development = options.development ? '-D' : ''
     exec(
-      `yarn install ${dependency}`,
+      `yarn install ${development} ${dependency}`,
       {
-        cwd,
+        cwd: options.cwd,
       },
       (err) => {
         if (err != null) return reject(err);
@@ -35,12 +62,13 @@ export const yarnInstall = (dependency?: string, cwd: string = ".") => {
   });
 };
 
-export const pnpmInstall = (dependency?: string, cwd: string = ".") => {
+export const pnpmInstallDependency = (dependency: string, options: Options) => {
   return new Promise((resolve, reject) => {
+    const development = options.development ? '-D' : ''
     exec(
-      `pnpm install ${dependency}`,
+      `pnpm install ${development} ${dependency}`,
       {
-        cwd,
+        cwd: options.cwd,
       },
       (err) => {
         if (err != null) return reject(err);
@@ -56,15 +84,26 @@ export const determinePackageManager = () => {
   return 'npm'
 };
 
-export const installDependency = (dependency: string) => {
+export const installDependency = (dependency: string, options: Options = {}) => {
   const packageManager = determinePackageManager()
 
   switch (packageManager) {
     case 'npm':
-      return npmInstall(dependency)
+      return npmInstallDependency(dependency, options)
     case 'yarn':
-      return yarnInstall(dependency)
+      return yarnInstallDependency(dependency, options)
     case 'pnpm':
-      return pnpmInstall(dependency)
+      return pnpmInstallDependency(dependency, options)
   }
 };
+
+export const installMissingDependencies = async (dependencies: string[], options: Options = {}) => {
+  const packageJson = findPackageJson().next().value
+  const missingDependencies = dependencies.filter(
+    (d) => options.development ? packageJson?.devDependencies?.[d] == null : packageJson?.dependencies?.[d] == null
+  );
+  if (missingDependencies.length > 0) {
+    console.log('Installing missing dependencies', missingDependencies.join(' '))
+    await installDependency(missingDependencies.join(" "), options);
+  }
+}

@@ -448,6 +448,9 @@ importers:
 
   packages/remix:
     dependencies:
+      '@remix-run/react':
+        specifier: '>=2'
+        version: 2.7.2(react-dom@18.2.0)(react@18.2.0)(typescript@5.3.3)
       '@shichongrui/lambda-server':
         specifier: workspace:^
         version: link:../lambda-server
@@ -463,9 +466,6 @@ importers:
       esbuild:
         specifier: ^0.20.1
         version: 0.20.1
-      find-package-json:
-        specifier: ^1.2.0
-        version: 1.2.0
       fs-extra:
         specifier: ^11.2.0
         version: 11.2.0
@@ -494,9 +494,6 @@ importers:
       '@types/aws-lambda':
         specifier: ^8.10.134
         version: 8.10.134
-      '@types/find-package-json':
-        specifier: ^1.2.6
-        version: 1.2.6
       '@types/fs-extra':
         specifier: ^11.0.4
         version: 11.0.4
@@ -642,14 +639,44 @@ importers:
 
   test:
     dependencies:
+      '@graphql-tools/merge':
+        specifier: ^9.0.3
+        version: 9.0.3(graphql@16.8.1)
+      '@graphql-tools/schema':
+        specifier: ^10.0.3
+        version: 10.0.3(graphql@16.8.1)
+      '@prisma/client':
+        specifier: ^5.10.2
+        version: 5.10.2(prisma@5.10.2)
       '@remix-run/node':
         specifier: ^2.7.2
         version: 2.7.2(typescript@5.3.3)
       '@remix-run/react':
         specifier: ^2.7.2
         version: 2.7.2(react-dom@18.2.0)(react@18.2.0)(typescript@5.3.3)
+      '@shichongrui/saws-api':
+        specifier: workspace:^
+        version: link:../packages/api
+      '@shichongrui/saws-function':
+        specifier: workspace:^
+        version: link:../packages/function
+      '@shichongrui/saws-postgres':
+        specifier: workspace:^
+        version: link:../packages/postgres
+      '@shichongrui/saws-website':
+        specifier: workspace:^
+        version: link:../packages/website
+      apollo-server-lambda:
+        specifier: ^3.13.0
+        version: 3.13.0(graphql@16.8.1)
+      express:
+        specifier: ^4.18.2
+        version: 4.18.2
+      graphql:
+        specifier: ^16.8.1
+        version: 16.8.1
       isbot:
-        specifier: '4'
+        specifier: ^4.4.0
         version: 4.4.0
       react:
         specifier: ^18.2.0
@@ -667,12 +694,21 @@ importers:
       '@shichongrui/saws-cli':
         specifier: workspace:^
         version: link:../packages/cli
+      '@types/aws-lambda':
+        specifier: ^8.10.134
+        version: 8.10.134
       '@types/react':
         specifier: ^18.2.59
         version: 18.2.59
       '@types/react-dom':
         specifier: ^18.2.19
         version: 18.2.19
+      aws-lambda:
+        specifier: ^1.0.7
+        version: 1.0.7
+      prisma:
+        specifier: ^5.10.2
+        version: 5.10.2
 
 packages:
 

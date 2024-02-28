@@ -65,18 +65,14 @@ export class GraphQLAPI extends API {
 
       try {
         const results = await handler(event, context, () => {});
-        callback(null, results);
         return results;
       } catch (error) {
         console.error(
           "Error while processing request",
           JSON.stringify(error, null, 2)
         );
-        callback(error as Error);
+        throw error
       }
     };
   };
 }
-
-export * from "apollo-server-lambda";
-export * from "graphql";

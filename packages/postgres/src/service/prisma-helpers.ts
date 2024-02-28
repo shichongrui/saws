@@ -1,4 +1,6 @@
 import { exec } from "child_process";
+import fs from 'node:fs';
+import path from 'node:path';
 
 type DBParameters = {
   username: string;
@@ -10,6 +12,9 @@ type DBParameters = {
 
 export const generatePrismaClient = () => {
   return new Promise(async (resolve, reject) => {
+    // if the schema has no models, this command will fail so we need to check first
+    const schemaContents = fs.readFileSync(path.resolve('./prisma/schema.prisma'), 'utf-8')
+    if (schemaContents.search(/^model .* {$/) === -1) return resolve(null)
     exec(`npx prisma generate`, async (err) => {
       if (err != null) {
         reject(err);

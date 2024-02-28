@@ -58,7 +58,7 @@ export class LambdaServer {
     try {
       const results = await this.invokeFunction(
         functionName,
-        JSON.parse(Buffer.from(requestBody || "", "base64").toString()),
+        JSON.parse(requestBody ?? ''),
         {}
       );
       if (invocationType !== "Event") {

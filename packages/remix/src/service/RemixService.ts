@@ -29,8 +29,7 @@ import {
   ServiceDefinitionConfig,
 } from "@shichongrui/saws-core";
 import fse from "fs-extra";
-import findPackageJson from "find-package-json";
-import { installDependency } from "@shichongrui/saws-utils/dependency-management";
+import { installMissingDependencies } from "@shichongrui/saws-utils/dependency-management";
 import { createFileIfNotExists } from "@shichongrui/saws-utils/create-file-if-not-exists";
 import { rootTemplate } from "./templates/root.template";
 import { indexRouteTemplate } from "./templates/index-route.template";
@@ -65,32 +64,17 @@ export class RemixService extends ServiceDefinition {
 
   async init() {
     try {
-      const finder = findPackageJson();
-      const packageJson = finder.next().value;
-
       const requiredDependencies = [
         "@remix-run/node",
         "@remix-run/react",
-        "isbot@4",
+        "isbot",
         "react",
         "react-dom",
       ];
-      const missingDependencies = requiredDependencies.filter(
-        (d) => packageJson?.dependencies?.[d] == null
-      );
-      if (missingDependencies.length > 0) {
-        console.log('Installing missing dependencies', missingDependencies.join(' '))
-        await installDependency(missingDependencies.join(" "));
-      }
+      await installMissingDependencies(requiredDependencies)
 
       const requiredDevDependencies = ["@remix-run/dev", "@types/react", "@types/react-dom"];
-      const missingDevDependencies = requiredDevDependencies.filter(
-        (d) => packageJson?.devDependencies?.[d] == null
-      );
-      if (missingDevDependencies.length > 0) {
-        console.log('Installing missing development dependencies', missingDevDependencies.join (' '))
-        await installDependency("-D " + missingDevDependencies.join(" "));
-      }
+      await installMissingDependencies(requiredDevDependencies, { development: true })
 
       fs.mkdirSync(path.resolve(this.rootDir, "public"), { recursive: true });
       fs.mkdirSync(path.resolve(this.rootDir, "build"), { recursive: true });

@@ -8,12 +8,18 @@ import { watch } from "chokidar";
 import esbuild from "esbuild";
 import { buildCodeZip } from "@shichongrui/saws-utils/build-code-zip";
 import { BUILD_DIR } from "@shichongrui/saws-utils/constants";
-import { npmInstall } from "@shichongrui/saws-utils/dependency-management";
+import {
+  installMissingDependencies,
+  npmInstallDependency,
+} from "@shichongrui/saws-utils/dependency-management";
 import { FunctionService, FunctionServiceConfig } from "../FunctionService";
 import { lambdaServer } from "@shichongrui/lambda-server";
 import { CloudFormation } from "@shichongrui/saws-aws/cloudformation";
 import { S3 } from "@shichongrui/saws-aws/s3";
 import fse from "fs-extra";
+import fs from "node:fs";
+import { createFileIfNotExists } from '@shichongrui/saws-utils/create-file-if-not-exists'
+import { entrypointTemplate } from "./entrypoint.template";
 
 export interface TypescriptFunctionServiceConfig extends FunctionServiceConfig {
   triggers?: {
@@ -46,6 +52,15 @@ export class TypescriptFunctionService extends FunctionService {
     this.buildFilePath = path.resolve(BUILD_DIR, this.name, "index.js");
     this.externalPackages = config.externalPackages ?? [];
     this.include = config.include ?? [];
+  }
+
+  async init() {
+    await installMissingDependencies(["aws-lambda"]);
+    await installMissingDependencies(["@types/aws-lambda"], { development: true })
+
+    fs.mkdirSync(path.resolve(this.name), { recursive: true });
+
+    await createFileIfNotExists(path.resolve(this.name, 'index.ts'), entrypointTemplate())
   }
 
   async build() {
@@ -130,10 +145,9 @@ export class TypescriptFunctionService extends FunctionService {
     // for external node modules, we need to re-install them so that we get
     // them and all their dependencies
     if (this.externalPackages.length > 0) {
-      await npmInstall(
-        this.externalPackages.join(" "),
-        path.parse(this.buildFilePath).dir
-      );
+      await npmInstallDependency(this.externalPackages.join(" "), {
+        cwd: path.parse(this.buildFilePath).dir,
+      });
     }
 
     // upload build to S3

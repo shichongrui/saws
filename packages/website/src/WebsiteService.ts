@@ -7,7 +7,6 @@ import {
 } from "@shichongrui/saws-core";
 import { BUILD_DIR } from "@shichongrui/saws-utils/constants";
 import { recursivelyReadDir } from "@shichongrui/saws-utils/recursively-read-dir";
-import { promises as fs } from "fs";
 import getPort from "get-port";
 import path from "path";
 import vite from "vite";
@@ -16,6 +15,11 @@ import {
   getStackName as getS3StackName,
   getTemplate as getS3Template,
 } from "./s3-cloud-formation.template";
+import fs from "node:fs";
+import { indexHtmlTemplate } from "./templates/index-html.template";
+import { createFileIfNotExists } from "@shichongrui/saws-utils/create-file-if-not-exists";
+import { mainCSSTemplate } from "./templates/main-css.template";
+import { mainTSTemplate } from "./templates/main-ts.template";
 
 interface WebsiteServiceConfig extends ServiceDefinitionConfig {
   port?: number;
@@ -42,6 +46,23 @@ export class WebsiteService extends ServiceDefinition {
     this.certificateArn = config.certificateArn;
   }
 
+  async init() {
+    fs.mkdirSync(path.resolve(this.name), { recursive: true });
+    createFileIfNotExists(
+      path.resolve(this.name, "index.html"),
+      indexHtmlTemplate({ name: this.name })
+    );
+    createFileIfNotExists(
+      path.resolve(this.name, 'main.css'),
+      mainCSSTemplate()
+    )
+    createFileIfNotExists(
+      path.resolve(this.name, 'main.ts'),
+      mainTSTemplate()
+    )
+    await this.writeEnvVarFile("dev", "development");
+  }
+
   async writeEnvVarFile(stage: string, nodeEnv: "development" | "production") {
     const environmentVariables = {
       ...this.env,
@@ -52,7 +73,7 @@ export class WebsiteService extends ServiceDefinition {
       Object.entries(environmentVariables)
         .map(([key, value]) => `VITE_${key}=${value}\n`)
         .join("") + `NODE_ENV=${nodeEnv}\n`;
-    await fs.writeFile(
+    fs.writeFileSync(
       path.resolve(this.rootDir, `.env.${stage}`),
       envFileContents,
       "utf-8"
@@ -61,8 +82,6 @@ export class WebsiteService extends ServiceDefinition {
 
   async dev() {
     await super.dev();
-
-    await this.writeEnvVarFile("dev", "development");
 
     this.port = await getPort({ port: this.configPort });
 

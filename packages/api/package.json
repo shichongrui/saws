@@ -3,7 +3,8 @@
   "version": "1.0.1",
   "description": "",
   "exports": {
-    "./api-service": "./dist/src/service/ApiService.js",
+    "./rest-api-service": "./dist/src/service/RestApiService.js",
+    "./graphql-api-service": "./dist/src/service/GraphQLApiService.js",
     "./graphql-api": "./dist/src/libraries/GraphQLAPI.js",
     "./rest-api": "./dist/src/libraries/RestAPI.js"
   },
