@@ -1,16 +1,16 @@
-import { CloudFormation } from "@shichongrui/saws-aws/cloudformation";
-import { getAwsAccountId } from "@shichongrui/saws-utils/get-aws-account-id";
+import { CloudFormation } from "@saws/aws/cloudformation";
+import { getAwsAccountId } from "@saws/utils/get-aws-account-id";
 import { ChildProcess, exec } from "child_process";
 import { watch } from "chokidar";
 import getPort from "get-port";
-import { lambdaServer } from "@shichongrui/lambda-server";
+import { lambdaServer } from "@saws/lambda-server";
 import { FunctionService, FunctionServiceConfig } from "../FunctionService";
 import { getStackName, getTemplate } from "./cloud-formation.template";
 import {
   getStackName as getRepositoryStackName,
   getTemplate as getRepositoryTemplate,
 } from "./repository-cloud-formation.template";
-import { loginToAWSDocker, pushImage, tagImage, waitForContainerToBeStopped } from "@shichongrui/saws-utils/docker";
+import { loginToAWSDocker, pushImage, tagImage, waitForContainerToBeStopped } from "@saws/utils/docker";
 
 interface ContainerFunctionServiceConfig extends FunctionServiceConfig {
   port?: number;

@@ -1,3 +1,3 @@
-import { SecretsManager } from "@shichongrui/saws-secrets/secrets-manager";
+import { SecretsManager } from "@saws/secrets/secrets-manager";
 
 export const secrets = new SecretsManager('local')

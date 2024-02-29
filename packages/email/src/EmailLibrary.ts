@@ -1,4 +1,4 @@
-import { SES } from "@shichongrui/saws-aws/ses";
+import { SES } from "@saws/aws/ses";
 
 type EmailConfig = {
   to: string[];

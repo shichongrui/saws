@@ -1,4 +1,4 @@
-import { uppercase } from "@shichongrui/saws-utils/uppercase";
+import { uppercase } from "@saws/utils/uppercase";
 
 type TemplateParameters = {
   bucketName: string;

@@ -1,5 +1,5 @@
-import { uppercase } from "@shichongrui/saws-utils/uppercase";
-import type { AWSPermission } from "@shichongrui/saws-utils/aws-permission";
+import { uppercase } from "@saws/utils/uppercase";
+import type { AWSPermission } from "@saws/utils/aws-permission";
 
 type ApiTemplateProperties = {
   name: string;

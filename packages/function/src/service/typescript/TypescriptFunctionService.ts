@@ -6,19 +6,19 @@ import {
 } from "./s3-cloud-formation.template";
 import { watch } from "chokidar";
 import esbuild from "esbuild";
-import { buildCodeZip } from "@shichongrui/saws-utils/build-code-zip";
-import { BUILD_DIR } from "@shichongrui/saws-utils/constants";
+import { buildCodeZip } from "@saws/utils/build-code-zip";
+import { BUILD_DIR } from "@saws/utils/constants";
 import {
   installMissingDependencies,
   npmInstallDependency,
-} from "@shichongrui/saws-utils/dependency-management";
+} from "@saws/utils/dependency-management";
 import { FunctionService, FunctionServiceConfig } from "../FunctionService";
-import { lambdaServer } from "@shichongrui/lambda-server";
-import { CloudFormation } from "@shichongrui/saws-aws/cloudformation";
-import { S3 } from "@shichongrui/saws-aws/s3";
+import { lambdaServer } from "@saws/lambda-server";
+import { CloudFormation } from "@saws/aws/cloudformation";
+import { S3 } from "@saws/aws/s3";
 import fse from "fs-extra";
 import fs from "node:fs";
-import { createFileIfNotExists } from '@shichongrui/saws-utils/create-file-if-not-exists'
+import { createFileIfNotExists } from '@saws/utils/create-file-if-not-exists'
 import { entrypointTemplate } from "./entrypoint.template";
 
 export interface TypescriptFunctionServiceConfig extends FunctionServiceConfig {

@@ -12,7 +12,7 @@ import type {
   APIGatewayProxyStructuredResultV2,
 } from "aws-lambda";
 
-import { isBinaryType } from "@shichongrui/saws-utils/binary-types";
+import { isBinaryType } from "@saws/utils/binary-types";
 
 export type GetLoadContextFunction = (
   event: APIGatewayProxyEventV2

@@ -1,5 +1,5 @@
 {
-  "name": "@shichongrui/saws-file-storage",
+  "name": "@saws/file-storage",
   "version": "1.0.1",
   "description": "",
   "keywords": [],
@@ -11,16 +11,16 @@
     "./dist"
   ],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
-    "@shichongrui/saws-aws": "workspace:^",
-    "@shichongrui/saws-utils": "workspace:^"
+    "@saws/aws": "workspace:^",
+    "@saws/utils": "workspace:^"
   },
   "devDependencies": {
     "@aws-sdk/client-s3": "^3.515.0",
-    "@shichongrui/saws-core": "workspace:^"
+    "@saws/core": "workspace:^"
   },
   "peerDependencies": {
-    "@shichongrui/saws-core": ">=1.0.0"
+    "@saws/core": ">=1.0.0"
   }
 }

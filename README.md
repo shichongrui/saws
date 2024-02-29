@@ -8,24 +8,49 @@ SAWS gives you infrastructure primitives that know how to run local versions of 
 
 </div>
 
-## Overview
-
-SAWS manages a number of things for you:
-- Based on the infrastructure needs of your app it automatically sets up a development environment for you.
-- It automatically sets up a deploy process and infrastructure for you in AWS.
-- It automatically connects various infrastructure primitives together for you and ensures permissions are set properly across them.
-- It provides libraries to make working with these services seemless.
-
 ## Table of Contents
+- [Overview](#overview)
 - [Getting Started](#getting-started)
- - [Installation](#installation)
- - [saws.js](#saws-js)
- - [Add a service](#add-a-service)
- - [Start developing](#develop)
- - [Deploy](#deploy)
+  - [Installation](#installation)
+  - [saws.js](#saws-js)
+  - [Add a service](#add-a-service)
+  - [Start developing](#develop)
+  - [Deploy](#deploy)
 - [Services](#services)
 - [Libraries](#libraries)
 - [Philosophy](#philosophy)
+
+## Overview
+
+💡 Ever have an idea for a project and think to yourself, "I'm going to need a web app, a database, authentication, and file storage." 💡
+
+So you feverishly get started. You find some docker containers for postgres and a local equivalent of S3. You happen across another project that emulates cognito locally, then you decide to create a Remix app. Great we're off to the races.
+
+But then you realize, "Well I need an ORM...", "Oh I need to download AWS SDKs for Cognito and S3...", "Wait I can't ever remember what the names of things in the AWS SDK are, guess I'll live in the docs..."
+
+But you finally have your app running locally and your feeling great about it. But now you need to deploy it...
+
+"Well lets go look up Cloudformation docs for RDS...", "Man why doesn't this work..." "Well there goes my evening...", "Yes it deployed but there's an error..." "Oh I didn't add the right permission..." "Oh my clients are all configured for local, I need to go change everything to work for local infrastructure and deployed infrastructure..."
+
+This is the pain of starting a new project, and the pain that SAWS fixes.
+
+<b>With SAWS all you have to do is say, I want Remix, Postgres, file storage, and authentication. And it handles the rest.</b>
+
+In Development:
+- It will install all the dependencies you need into your project.
+- It will create all of the boilerplate files you need.
+- It will automatically stand up a local development environment for you based on what you need.
+- It will keep your development environment up to date every time a file changes.
+
+And it will do all that with one command `npx saws dev`
+
+When you're ready to deploy:
+- It will stand up and configure all of your infrastructure in AWS.
+- It will manage all of the required permissions across each service.
+
+And it will do all that with one command `npx saws deploy`
+
+In addition, the libraries packaged into each service of SAWS are built to work both locally and in a deployed environment, with no changes in your code. So if you run `const client = new FileStorage('my-bucket')`, that code will work both locally and deployed.
 
 ## Getting Started <a id='getting-started'>
 
@@ -53,8 +78,8 @@ npm install @saws/remix @saws/postgres
 We'll then want to update our `saws.js` config file
 
 ```
-const { PostgresService } = require('@shichongrui/saws-postgres/postgres-service')
-const { RemixService } = require('@shichongrui/saws-remix/remix-service')
+const { PostgresService } = require('@saws/postgres/postgres-service')
+const { RemixService } = require('@saws/remix/remix-service')
 
 const postgres = new PostgresService({
   name: 'my-postgres-db'

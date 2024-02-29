@@ -1,5 +1,5 @@
 {
-  "name": "@shichongrui/saws-remix-auth",
+  "name": "@saws/remix-auth",
   "version": "1.0.1",
   "description": "",
   "keywords": [],
@@ -12,10 +12,10 @@
     "./dist"
   ],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
-    "@shichongrui/saws-utils": "workspace:^",
-    "@shichongrui/saws-cognito": "workspace:^",
+    "@saws/utils": "workspace:^",
+    "@saws/cognito": "workspace:^",
     "jsonwebtoken": "^9.0.2",
     "jwks-rsa": "^3.1.0"
   },

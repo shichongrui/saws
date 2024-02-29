@@ -1,4 +1,4 @@
-import { STS } from "@shichongrui/saws-aws/sts";
+import { STS } from "@saws/aws/sts";
 
 export const getAwsAccountId = async () => {
   const sts = new STS();

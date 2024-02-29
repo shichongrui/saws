@@ -114,7 +114,7 @@ __export(root_exports, {
   meta: () => meta
 });
 var import_node = require("@remix-run/node"), import_react4 = require("@remix-run/react"), import_react5 = require("@emotion/react"), import_react6 = require("@chakra-ui/react"), import_react7 = require("react");
-var import_cognito_client = require("@shichongrui/saws-cognito/cognito-client"), import_jsx_dev_runtime2 = require("react/jsx-dev-runtime");
+var import_cognito_client = require("@saws/cognito/cognito-client"), import_jsx_dev_runtime2 = require("react/jsx-dev-runtime");
 async function loader({ request }) {
   return (0, import_node.json)({
     ENV: {
@@ -251,22 +251,22 @@ __export(index_exports, {
 var import_node2 = require("@remix-run/node");
 
 // demo-remix/app/utils/prisma.server.ts
-var import_get_prisma_client = require("@shichongrui/saws-postgres/get-prisma-client"), prisma = (0, import_get_prisma_client.getPrismaClient)("demo-db");
+var import_get_prisma_client = require("@saws/postgres/get-prisma-client"), prisma = (0, import_get_prisma_client.getPrismaClient)("demo-db");
 
 // demo-remix/app/routes/_index.tsx
 var import_react8 = require("@remix-run/react");
 
 // demo-remix/app/utils/session.server.ts
-var import_session = require("@shichongrui/saws-remix-auth/session");
+var import_session = require("@saws/remix-auth/session");
 
 // demo-remix/app/routes/_index.tsx
 var import_react9 = require("@chakra-ui/react"), import_session3 = __toESM(require_session());
 
 // demo-remix/app/utils/secrets.server.ts
-var import_secrets_manager = require("@shichongrui/saws-secrets/secrets-manager"), secrets = new import_secrets_manager.SecretsManager("local");
+var import_secrets_manager = require("@saws/secrets/secrets-manager"), secrets = new import_secrets_manager.SecretsManager("local");
 
 // demo-remix/app/utils/functions.server.ts
-var import_functions_client = require("@shichongrui/saws-function/functions-client"), functionsClient = new import_functions_client.FunctionsClient(process.env.STAGE);
+var import_functions_client = require("@saws/function/functions-client"), functionsClient = new import_functions_client.FunctionsClient(process.env.STAGE);
 
 // demo-remix/app/routes/_index.tsx
 var import_jsx_dev_runtime3 = require("react/jsx-dev-runtime"), loader2 = async ({ request }) => {
@@ -348,7 +348,7 @@ __export(email_exports, {
 var import_react10 = require("@chakra-ui/react"), import_node3 = require("@remix-run/node"), import_react11 = require("@remix-run/react");
 
 // demo-remix/app/utils/email.server.ts
-var import_email_library = require("@shichongrui/saws-email/email-library"), email = new import_email_library.Email();
+var import_email_library = require("@saws/email/email-library"), email = new import_email_library.Email();
 
 // demo-remix/app/routes/email.tsx
 var import_jsx_dev_runtime4 = require("react/jsx-dev-runtime"), action = async ({ request }) => {
@@ -457,13 +457,13 @@ __export(files_exports, {
 var import_node4 = require("@remix-run/node");
 
 // demo-remix/app/utils/file-storage.server.ts
-var import_file_storage_library = require("@shichongrui/saws-file-storage/file-storage-library"), files = new import_file_storage_library.FileStorage("demo-files");
+var import_file_storage_library = require("@saws/file-storage/file-storage-library"), files = new import_file_storage_library.FileStorage("demo-files");
 
 // demo-remix/app/routes/files.tsx
 var import_react12 = require("@remix-run/react"), import_react13 = require("@chakra-ui/react");
 
 // demo-remix/app/utils/multipartFormData.server.ts
-var import_multipart_form_data = require("@shichongrui/saws-remix/multipart-form-data");
+var import_multipart_form_data = require("@saws/remix/multipart-form-data");
 
 // demo-remix/app/routes/files.tsx
 var import_path = __toESM(require("path")), import_node_fs = __toESM(require("node:fs")), import_jsx_dev_runtime5 = require("react/jsx-dev-runtime"), loader3 = async () => {
@@ -523,10 +523,10 @@ __export(route_exports, {
   default: () => route_default,
   loader: () => loader4
 });
-var import_AuthenticateRoute = require("@shichongrui/saws-remix-auth/AuthenticateRoute"), import_session4 = __toESM(require_session2());
+var import_AuthenticateRoute = require("@saws/remix-auth/AuthenticateRoute"), import_session4 = __toESM(require_session2());
 
 // demo-remix/app/routes/auth/loader.server.ts
-var import_loader = require("@shichongrui/saws-remix-auth/loader"), loader4 = (0, import_loader.getLoader)("demo-cognito");
+var import_loader = require("@saws/remix-auth/loader"), loader4 = (0, import_loader.getLoader)("demo-cognito");
 
 // demo-remix/app/routes/auth/route.tsx
 var import_jsx_dev_runtime6 = require("react/jsx-dev-runtime"), route_default = () => /* @__PURE__ */ (0, import_jsx_dev_runtime6.jsxDEV)(import_AuthenticateRoute.AuthenticateRoute, { sessionClient: import_session4.sessionClient }, void 0, !1, {

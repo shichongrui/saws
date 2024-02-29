@@ -1,4 +1,4 @@
-import { Lambda } from '@shichongrui/saws-aws/lambda'
+import { Lambda } from '@saws/aws/lambda'
 
 export class FunctionsClient {
   client: Lambda;

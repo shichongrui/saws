@@ -1,4 +1,4 @@
-export const indexTemplate = () => /* ts */`import { RemixApp } from '@shichongrui/saws-remix/remix-app'
+export const indexTemplate = () => /* ts */`import { RemixApp } from '@saws/remix/remix-app'
 
 import * as build from './build'
 

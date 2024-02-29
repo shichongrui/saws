@@ -1,7 +1,7 @@
 import jwksClient from "jwks-rsa";
 import jwt, { GetPublicKeyOrSecret, JwtPayload } from "jsonwebtoken";
-import { CognitoClient } from "@shichongrui/saws-cognito/cognito-client";
-import { parameterizedEnvVarName } from "@shichongrui/saws-utils/parameterized-env-var-name";
+import { CognitoClient } from "@saws/cognito/cognito-client";
+import { parameterizedEnvVarName } from "@saws/utils/parameterized-env-var-name";
 
 export async function getSession(
   name: string,

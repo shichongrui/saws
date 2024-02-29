@@ -1,5 +1,5 @@
-import { SecretsManager } from "@shichongrui/saws-secrets/secrets-manager";
-import { generateToken } from "@shichongrui/saws-utils/generate-token";
+import { SecretsManager } from "@saws/secrets/secrets-manager";
+import { generateToken } from "@saws/utils/generate-token";
 
 export const getDBPasswordParameterName = (name: string, stage: string) =>
   `${stage}-${name}-postgress-user-password`;

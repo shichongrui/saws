@@ -11,15 +11,15 @@ import { getStackName, getTemplate } from "./cloud-formation.template";
 import {
   ServiceDefinition,
   ServiceDefinitionConfig,
-} from "@shichongrui/saws-core";
+} from "@saws/core";
 import { watch } from "chokidar";
-import { CloudFormation } from "@shichongrui/saws-aws/cloudformation";
-import { EC2 } from "@shichongrui/saws-aws/ec2";
-import { SAWS_DIR } from "@shichongrui/saws-utils/constants";
+import { CloudFormation } from "@saws/aws/cloudformation";
+import { EC2 } from "@saws/aws/ec2";
+import { SAWS_DIR } from "@saws/utils/constants";
 import { Client } from "pg";
-import { startContainer } from "@shichongrui/saws-utils/docker";
-import { installMissingDependencies } from '@shichongrui/saws-utils/dependency-management'
-import { createFileIfNotExists } from '@shichongrui/saws-utils/create-file-if-not-exists'
+import { startContainer } from "@saws/utils/docker";
+import { installMissingDependencies } from '@saws/utils/dependency-management'
+import { createFileIfNotExists } from '@saws/utils/create-file-if-not-exists'
 import fs from 'node:fs'
 import { schemaPrismaTemplate } from "./templates/schema-prisma.template";
 import { envTemplate } from "./templates/env.template";

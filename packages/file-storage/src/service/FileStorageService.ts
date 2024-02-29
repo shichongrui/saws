@@ -1,10 +1,10 @@
 import { ChildProcess } from "child_process";
 import * as path from "node:path";
-import { ServiceDefinition } from "@shichongrui/saws-core";
-import { SAWS_DIR } from "@shichongrui/saws-utils/constants";
-import { startContainer } from "@shichongrui/saws-utils/docker";
-import { S3 } from "@shichongrui/saws-aws/s3";
-import { CloudFormation } from "@shichongrui/saws-aws/cloudformation";
+import { ServiceDefinition } from "@saws/core";
+import { SAWS_DIR } from "@saws/utils/constants";
+import { startContainer } from "@saws/utils/docker";
+import { S3 } from "@saws/aws/s3";
+import { CloudFormation } from "@saws/aws/cloudformation";
 import { getStackName, getTemplate } from "./cloud-formation.template";
 
 export class FileStorageService extends ServiceDefinition {

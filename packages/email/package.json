@@ -1,5 +1,5 @@
 {
-  "name": "@shichongrui/saws-email",
+  "name": "@saws/email",
   "version": "1.0.1",
   "description": "",
   "keywords": [],
@@ -11,14 +11,14 @@
     "./dist"
   ],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
-    "@shichongrui/saws-aws": "workspace:^"
+    "@saws/aws": "workspace:^"
   },
   "devDependencies": {
-    "@shichongrui/saws-core": "workspace:^"
+    "@saws/core": "workspace:^"
   },
   "peerDependencies": {
-    "@shichongrui/saws-core": ">=1.0.0"
+    "@saws/core": ">=1.0.0"
   }
 }

@@ -10,7 +10,7 @@ import {
 } from "@chakra-ui/react";
 import { useSearchParams } from "@remix-run/react";
 import * as React from "react";
-import type { SessionClient } from "@shichongrui/saws-cognito/session-client";
+import type { SessionClient } from "@saws/cognito/session-client";
 
 type LoginProps = {
   sessionClient: SessionClient;

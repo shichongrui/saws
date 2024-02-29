@@ -181,7 +181,7 @@ The `GraphQLAPI` library is a class that accepts `typedefs`, `resolvers` and an 
 Example usage:
 
 ```ts
-import { GraphQLAPI } from '@shichongrui/saws-api/graphql-api';
+import { GraphQLAPI } from '@saws/api/graphql-api';
 import { ApolloContext } from 'apollo-server-lambda';
 import { mergeTypeDefs, mergeResolvers } from "@graphql-tools/merge";
 import {

@@ -11,7 +11,7 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { useSearchParams } from "@remix-run/react";
-import type { SessionClient } from "@shichongrui/saws-cognito/session-client";
+import type { SessionClient } from "@saws/cognito/session-client";
 import * as React from "react";
 
 type ResetPasswordProps = {

@@ -1,1 +1,1 @@
-export { getSession } from '@shichongrui/saws-remix-auth/session'
+export { getSession } from '@saws/remix-auth/session'

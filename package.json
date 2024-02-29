@@ -1,5 +1,5 @@
 {
-  "name": "@shichongrui/saws",
+  "name": "saws",
   "private": true,
   "version": "1.0.1",
   "scripts": {
@@ -13,27 +13,27 @@
   "repository": {
     "url": "git@github.com:shichongrui/saws.git"
   },
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.11.19",
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@shichongrui/lambda-server": "workspace:^",
-    "@shichongrui/saws-api": "workspace:^",
-    "@shichongrui/saws-aws": "workspace:^",
-    "@shichongrui/saws-cli": "workspace:^",
-    "@shichongrui/saws-cognito": "workspace:^",
-    "@shichongrui/saws-container": "workspace:^",
-    "@shichongrui/saws-core": "workspace:^",
-    "@shichongrui/saws-email": "workspace:^",
-    "@shichongrui/saws-file-storage": "workspace:^",
-    "@shichongrui/saws-function": "workspace:^",
-    "@shichongrui/saws-postgres": "workspace:^",
-    "@shichongrui/saws-remix": "workspace:^",
-    "@shichongrui/saws-remix-auth": "workspace:^",
-    "@shichongrui/saws-secrets": "workspace:^",
-    "@shichongrui/saws-utils": "workspace:^",
-    "@shichongrui/saws-website": "workspace:^"
+    "@saws/lambda-server": "workspace:^",
+    "@saws/api": "workspace:^",
+    "@saws/aws": "workspace:^",
+    "@saws/cli": "workspace:^",
+    "@saws/cognito": "workspace:^",
+    "@saws/container": "workspace:^",
+    "@saws/core": "workspace:^",
+    "@saws/email": "workspace:^",
+    "@saws/file-storage": "workspace:^",
+    "@saws/function": "workspace:^",
+    "@saws/postgres": "workspace:^",
+    "@saws/remix": "workspace:^",
+    "@saws/remix-auth": "workspace:^",
+    "@saws/secrets": "workspace:^",
+    "@saws/utils": "workspace:^",
+    "@saws/website": "workspace:^"
   }
 }

@@ -4,7 +4,7 @@ import { Login } from "../components/Login";
 import { Register } from "../components/Register";
 import { Confirm } from "../components/Confirm";
 import { CompleteNewPassword } from "../components/CompleteNewPassword";
-import type { SessionClient } from "@shichongrui/saws-cognito/session-client";
+import type { SessionClient } from "@saws/cognito/session-client";
 import { useSearchParams } from "@remix-run/react";
 import { ResetPassword } from "../components/ResetPassword";
 import { useEffect } from "react";

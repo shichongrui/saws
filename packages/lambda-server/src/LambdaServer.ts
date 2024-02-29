@@ -5,7 +5,7 @@ import {
   type Server,
 } from "node:http";
 import { fork, type ChildProcess, spawn } from "child_process";
-import { collectHttpBody } from "@shichongrui/saws-utils/collect-http-body";
+import { collectHttpBody } from "@saws/utils/collect-http-body";
 import * as path from "node:path";
 import { JavascriptFunctionMessage } from "./javascript-function-message-types";
 

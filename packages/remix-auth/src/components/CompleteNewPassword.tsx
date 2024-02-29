@@ -12,7 +12,7 @@ import {
 import { useSearchParams } from "@remix-run/react";
 import * as React from "react";
 import type { CognitoUser } from "amazon-cognito-identity-js";
-import type { SessionClient } from "@shichongrui/saws-cognito/session-client";
+import type { SessionClient } from "@saws/cognito/session-client";
 
 type CompleteNewPasswordProps = {
   user: CognitoUser;

@@ -1,15 +1,15 @@
-import { lambdaServer } from "@shichongrui/lambda-server";
-import { CloudFormation } from "@shichongrui/saws-aws/cloudformation";
-import { S3 } from "@shichongrui/saws-aws/s3";
-import { CognitoService } from "@shichongrui/saws-cognito/cognito-service";
+import { lambdaServer } from "@saws/lambda-server";
+import { CloudFormation } from "@saws/aws/cloudformation";
+import { S3 } from "@saws/aws/s3";
+import { CognitoService } from "@saws/cognito/cognito-service";
 import {
   ServiceDefinition,
   ServiceDefinitionConfig,
-} from "@shichongrui/saws-core";
-import { BUILD_DIR } from "@shichongrui/saws-utils/constants";
-import { buildCodeZip } from "@shichongrui/saws-utils/build-code-zip";
-import { collectHttpBody } from "@shichongrui/saws-utils/collect-http-body";
-import { npmInstallDependency } from "@shichongrui/saws-utils/dependency-management";
+} from "@saws/core";
+import { BUILD_DIR } from "@saws/utils/constants";
+import { buildCodeZip } from "@saws/utils/build-code-zip";
+import { collectHttpBody } from "@saws/utils/collect-http-body";
+import { npmInstallDependency } from "@saws/utils/dependency-management";
 import { watch } from "chokidar";
 import esbuild from "esbuild";
 import fse from "fs-extra";

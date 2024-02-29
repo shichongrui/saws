@@ -14,7 +14,7 @@ import { withEmotionCache } from "@emotion/react";
 import { ChakraProvider } from "@chakra-ui/react";
 import { useContext, useEffect } from "react";
 import { ClientStyleContext, ServerStyleContext } from "./utils/context";
-import { captureAuthEnvVars } from '@shichongrui/saws-cognito/cognito-client';
+import { captureAuthEnvVars } from '@saws/cognito/cognito-client';
 
 export async function loader() {
   return json({

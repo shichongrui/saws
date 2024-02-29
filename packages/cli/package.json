@@ -1,5 +1,5 @@
 {
-  "name": "@shichongrui/saws-cli",
+  "name": "@saws/cli",
   "version": "1.0.1",
   "description": "",
   "bin": {
@@ -7,19 +7,19 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
-    "@shichongrui/saws-secrets": "workspace:^",
-    "@shichongrui/saws-utils": "workspace:^",
+    "@saws/secrets": "workspace:^",
+    "@saws/utils": "workspace:^",
     "commander": "^12.0.0",
     "esbuild": "^0.20.1",
     "find-package-json": "^1.2.0"
   },
   "devDependencies": {
-    "@shichongrui/saws-core": "workspace:^",
+    "@saws/core": "workspace:^",
     "@types/find-package-json": "^1.2.6"
   },
   "peerDependencies": {
-    "@shichongrui/saws-core": ">=1.0.0"
+    "@saws/core": ">=1.0.0"
   }
 }

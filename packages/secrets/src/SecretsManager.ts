@@ -1,5 +1,5 @@
-import { SSM } from "@shichongrui/saws-aws/ssm";
-import { SAWS_DIR } from "@shichongrui/saws-utils/constants";
+import { SSM } from "@saws/aws/ssm";
+import { SAWS_DIR } from "@saws/utils/constants";
 import { resolve } from "node:path";
 import { promises as fs } from "fs";
 

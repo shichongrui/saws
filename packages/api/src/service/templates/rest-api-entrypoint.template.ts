@@ -1,4 +1,4 @@
-export const restApiEntrypointTemplate = () => /* ts */`import { RestAPI } from "@shichongrui/saws-api/rest-api";
+export const restApiEntrypointTemplate = () => /* ts */`import { RestAPI } from "@saws/api/rest-api";
 import express from 'express'
 
 const app = express();

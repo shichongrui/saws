@@ -1,4 +1,4 @@
-import { RemixApp } from '@shichongrui/saws-remix/remix-app'
+import { RemixApp } from '@saws/remix/remix-app'
 // @ts-ignore
 import * as build from './build'
 

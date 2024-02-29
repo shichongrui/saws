@@ -1,5 +1,5 @@
 {
-  "name": "@shichongrui/saws-translate",
+  "name": "@saws/translate",
   "version": "1.0.1",
   "description": "",
   "keywords": [],
@@ -11,14 +11,14 @@
     "./dist"
   ],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "@aws-sdk/client-translate": "^3.515.0"
   },
   "devDependencies": {
-    "@shichongrui/saws-core": "workspace:^"
+    "@saws/core": "workspace:^"
   },
   "peerDependencies": {
-    "@shichongrui/saws-core": ">=1.0.0"
+    "@saws/core": ">=1.0.0"
   }
 }

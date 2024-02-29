@@ -1,5 +1,5 @@
 {
-  "name": "@shichongrui/saws-function",
+  "name": "@saws/function",
   "version": "1.0.1",
   "description": "",
   "keywords": [],
@@ -12,12 +12,12 @@
     "./dist"
   ],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "@aws-sdk/client-serverlessapplicationrepository": "^3.515.0",
-    "@shichongrui/lambda-server": "workspace:^",
-    "@shichongrui/saws-aws": "workspace:^",
-    "@shichongrui/saws-utils": "workspace:^",
+    "@saws/lambda-server": "workspace:^",
+    "@saws/aws": "workspace:^",
+    "@saws/utils": "workspace:^",
     "@types/fs-extra": "^11.0.4",
     "chokidar": "^3.6.0",
     "esbuild": "^0.20.1",
@@ -26,10 +26,10 @@
     "js-yaml": "^4.1.0"
   },
   "devDependencies": {
-    "@shichongrui/saws-core": "workspace:^",
+    "@saws/core": "workspace:^",
     "@types/js-yaml": "^4.0.9"
   },
   "peerDependencies": {
-    "@shichongrui/saws-core": ">=1.0.0"
+    "@saws/core": ">=1.0.0"
   }
 }

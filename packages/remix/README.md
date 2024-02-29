@@ -115,7 +115,7 @@ In addition to these 2 libraries, the (`@saws/remix-auth`)[../remix-auth/README.
 
 The `RemixApp` class helps you in setting up your application entrypoint. When you add a new `RemixService` to your `saws.js` file and run `npx saws dev` for the first time it should automatically create your entrypoint utilizing this class. This is what it looks like:
 ```ts
-import { RemixApp } from '@shichongrui/saws-remix/remix-app'
+import { RemixApp } from '@saws/remix/remix-app'
 
 import * as build from './build'
 

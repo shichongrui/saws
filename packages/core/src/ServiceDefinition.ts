@@ -1,7 +1,7 @@
 import { Readable } from "stream";
-import { writeStageOutputs, type Outputs } from "@shichongrui/saws-utils/stage-outputs";
-import type { AWSPermission } from "@shichongrui/saws-utils/aws-permission";
-import { parameterizedEnvVarName } from "@shichongrui/saws-utils/parameterized-env-var-name"
+import { writeStageOutputs, type Outputs } from "@saws/utils/stage-outputs";
+import type { AWSPermission } from "@saws/utils/aws-permission";
+import { parameterizedEnvVarName } from "@saws/utils/parameterized-env-var-name"
 
 export interface ServiceDefinitionConfig {
   name: string;

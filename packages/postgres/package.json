@@ -1,5 +1,5 @@
 {
-  "name": "@shichongrui/saws-postgres",
+  "name": "@saws/postgres",
   "version": "1.0.1",
   "description": "",
   "exports": {
@@ -11,22 +11,22 @@
     "./dist"
   ],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
-    "@shichongrui/saws-aws": "workspace:^",
-    "@shichongrui/saws-secrets": "workspace:^",
-    "@shichongrui/saws-utils": "workspace:^",
+    "@saws/aws": "workspace:^",
+    "@saws/secrets": "workspace:^",
+    "@saws/utils": "workspace:^",
     "chokidar": "^3.6.0",
     "pg": "^8.11.3"
   },
   "devDependencies": {
     "@prisma/client": "^5.10.2",
-    "@shichongrui/saws-core": "workspace:^",
+    "@saws/core": "workspace:^",
     "@types/pg": "^8.11.0",
     "prisma": "^5.10.2"
   },
   "peerDependencies": {
-    "@shichongrui/saws-core": ">=1.0.0",
+    "@saws/core": ">=1.0.0",
     "@prisma/client": ">=5.0.0",
     "prisma": ">=5.0.0"
   }

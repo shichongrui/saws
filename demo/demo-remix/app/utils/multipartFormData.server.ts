@@ -1,1 +1,1 @@
-export { multipartFormData } from '@shichongrui/saws-remix/multipart-form-data'
+export { multipartFormData } from '@saws/remix/multipart-form-data'

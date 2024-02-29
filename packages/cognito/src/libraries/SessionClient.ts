@@ -1,4 +1,4 @@
-import { parameterizedEnvVarName } from "@shichongrui/saws-utils/parameterized-env-var-name";
+import { parameterizedEnvVarName } from "@saws/utils/parameterized-env-var-name";
 import {
   type ISignUpResult,
   type CognitoUserSession,

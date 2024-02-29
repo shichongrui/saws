@@ -1,11 +1,11 @@
-const { ServiceDefinition } = require('@shichongrui/saws-core')
-const { PostgresService } = require('@shichongrui/saws-postgres/postgres-service')
-const { TypescriptFunctionService } = require('@shichongrui/saws-function/typescript-function-service')
-const { RemixService } = require('@shichongrui/saws-remix/remix-service')
-const { FileStorageService } = require('@shichongrui/saws-file-storage/file-storage-service')
-const { CognitoService } = require('@shichongrui/saws-cognito/cognito-service');
-const { EmailService } = require('@shichongrui/saws-email/email-service')
-const { SecretsService } = require('@shichongrui/saws-secrets/secrets-service')
+const { ServiceDefinition } = require('@saws/core')
+const { PostgresService } = require('@saws/postgres/postgres-service')
+const { TypescriptFunctionService } = require('@saws/function/typescript-function-service')
+const { RemixService } = require('@saws/remix/remix-service')
+const { FileStorageService } = require('@saws/file-storage/file-storage-service')
+const { CognitoService } = require('@saws/cognito/cognito-service');
+const { EmailService } = require('@saws/email/email-service')
+const { SecretsService } = require('@saws/secrets/secrets-service')
 
 const postgres = new PostgresService({
   name: "demo-db",

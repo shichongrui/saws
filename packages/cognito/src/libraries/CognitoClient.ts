@@ -1,5 +1,5 @@
-import { Cognito } from "@shichongrui/saws-aws/cognito";
-import { parameterizedEnvVarName } from "@shichongrui/saws-utils/parameterized-env-var-name";
+import { Cognito } from "@saws/aws/cognito";
+import { parameterizedEnvVarName } from "@saws/utils/parameterized-env-var-name";
 import type {
   DeleteUserCommandOutput,
   AdminCreateUserCommandOutput,

@@ -2,14 +2,14 @@ import path from "path";
 import {
   ServiceDefinition,
   ServiceDefinitionConfig,
-} from "@shichongrui/saws-core";
+} from "@saws/core";
 import {
   CreateCloudFormationTemplateCommand,
   GetApplicationCommand,
   ServerlessApplicationRepositoryClient,
 } from "@aws-sdk/client-serverlessapplicationrepository";
 import yaml from "js-yaml";
-import { uppercase } from "@shichongrui/saws-utils/uppercase";
+import { uppercase } from "@saws/utils/uppercase";
 
 export type FunctionRuntime = "typescript" | "container";
 

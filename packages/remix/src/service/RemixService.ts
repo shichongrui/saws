@@ -1,8 +1,8 @@
-import { buildCodeZip } from "@shichongrui/saws-utils/build-code-zip";
-import { BUILD_DIR } from "@shichongrui/saws-utils/constants";
-import { copyDirectory } from "@shichongrui/saws-utils/copy-directory";
-import { recursivelyReadDir } from "@shichongrui/saws-utils/recursively-read-dir";
-import { transformRequestToLambdaEvent } from "@shichongrui/saws-utils/transform-incoming-message-to-lambda-event";
+import { buildCodeZip } from "@saws/utils/build-code-zip";
+import { BUILD_DIR } from "@saws/utils/constants";
+import { copyDirectory } from "@saws/utils/copy-directory";
+import { recursivelyReadDir } from "@saws/utils/recursively-read-dir";
+import { transformRequestToLambdaEvent } from "@saws/utils/transform-incoming-message-to-lambda-event";
 import { watch } from "chokidar";
 import esbuild from "esbuild";
 import fs from "fs";
@@ -20,17 +20,17 @@ import * as compiler from "@remix-run/dev/dist/compiler/compiler";
 import { createFileWatchCache } from "@remix-run/dev/dist/compiler/fileWatchCache";
 import { readConfig } from "@remix-run/dev/dist/config";
 import { logger } from "@remix-run/dev/dist/tux/logger";
-import { lambdaServer } from "@shichongrui/lambda-server";
-import { CloudFormation } from "@shichongrui/saws-aws/cloudformation";
-import { Cloudfront } from "@shichongrui/saws-aws/cloudfront";
-import { S3 } from "@shichongrui/saws-aws/s3";
+import { lambdaServer } from "@saws/lambda-server";
+import { CloudFormation } from "@saws/aws/cloudformation";
+import { Cloudfront } from "@saws/aws/cloudfront";
+import { S3 } from "@saws/aws/s3";
 import {
   ServiceDefinition,
   ServiceDefinitionConfig,
-} from "@shichongrui/saws-core";
+} from "@saws/core";
 import fse from "fs-extra";
-import { installMissingDependencies } from "@shichongrui/saws-utils/dependency-management";
-import { createFileIfNotExists } from "@shichongrui/saws-utils/create-file-if-not-exists";
+import { installMissingDependencies } from "@saws/utils/dependency-management";
+import { createFileIfNotExists } from "@saws/utils/create-file-if-not-exists";
 import { rootTemplate } from "./templates/root.template";
 import { indexRouteTemplate } from "./templates/index-route.template";
 import { indexTemplate } from "./templates/index.template";

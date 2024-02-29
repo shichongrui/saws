@@ -6,15 +6,15 @@ import {
   getTemplate as getRepositoryTemplate,
   getStackName as getRepositoryStackName,
 } from "./repository-cloud-formation.template";
-import { getAwsAccountId } from "@shichongrui/saws-utils/get-aws-account-id";
+import { getAwsAccountId } from "@saws/utils/get-aws-account-id";
 import { getStackName, getTemplate } from "./cloud-formation.template";
 import {
   ServiceDefinition,
   ServiceDefinitionConfig,
-} from "@shichongrui/saws-core";
-import { CloudFormation } from "@shichongrui/saws-aws/cloudformation";
-import { EC2 } from "@shichongrui/saws-aws/ec2";
-import { loginToAWSDocker, pushImage, tagImage, waitForContainerToBeStopped } from "@shichongrui/saws-utils/docker";
+} from "@saws/core";
+import { CloudFormation } from "@saws/aws/cloudformation";
+import { EC2 } from "@saws/aws/ec2";
+import { loginToAWSDocker, pushImage, tagImage, waitForContainerToBeStopped } from "@saws/utils/docker";
 
 interface ContainerServiceConfig extends ServiceDefinitionConfig {
   port?: number;

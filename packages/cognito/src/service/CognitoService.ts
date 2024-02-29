@@ -1,19 +1,19 @@
-import { Cognito } from "@shichongrui/saws-aws/cognito";
-import { CloudFormation } from "@shichongrui/saws-aws/cloudformation";
+import { Cognito } from "@saws/aws/cognito";
+import { CloudFormation } from "@saws/aws/cloudformation";
 import {
   ServiceDefinition,
   ServiceDefinitionConfig,
-} from "@shichongrui/saws-core";
-import { SecretsManager } from "@shichongrui/saws-secrets/secrets-manager";
+} from "@saws/core";
+import { SecretsManager } from "@saws/secrets/secrets-manager";
 import {
   DEV_USER_PASSWORD_PARAMETER_NAME,
   SAWS_DIR,
-} from "@shichongrui/saws-utils/constants";
-import { generateToken } from "@shichongrui/saws-utils/generate-token";
+} from "@saws/utils/constants";
+import { generateToken } from "@saws/utils/generate-token";
 import { ChildProcess } from "node:child_process";
 import path from "node:path";
 import { getStackName, getTemplate } from "./cloud-formation.template";
-import { startContainer } from "@shichongrui/saws-utils/docker";
+import { startContainer } from "@saws/utils/docker";
 
 interface CognitoServiceConfig extends ServiceDefinitionConfig {
   devUser?: {

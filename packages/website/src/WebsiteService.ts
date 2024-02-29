@@ -1,12 +1,12 @@
-import { CloudFormation } from "@shichongrui/saws-aws/cloudformation";
-import { Cloudfront } from "@shichongrui/saws-aws/cloudfront";
-import { S3 } from "@shichongrui/saws-aws/s3";
+import { CloudFormation } from "@saws/aws/cloudformation";
+import { Cloudfront } from "@saws/aws/cloudfront";
+import { S3 } from "@saws/aws/s3";
 import {
   ServiceDefinition,
   ServiceDefinitionConfig,
-} from "@shichongrui/saws-core";
-import { BUILD_DIR } from "@shichongrui/saws-utils/constants";
-import { recursivelyReadDir } from "@shichongrui/saws-utils/recursively-read-dir";
+} from "@saws/core";
+import { BUILD_DIR } from "@saws/utils/constants";
+import { recursivelyReadDir } from "@saws/utils/recursively-read-dir";
 import getPort from "get-port";
 import path from "path";
 import vite from "vite";
@@ -17,7 +17,7 @@ import {
 } from "./s3-cloud-formation.template";
 import fs from "node:fs";
 import { indexHtmlTemplate } from "./templates/index-html.template";
-import { createFileIfNotExists } from "@shichongrui/saws-utils/create-file-if-not-exists";
+import { createFileIfNotExists } from "@saws/utils/create-file-if-not-exists";
 import { mainCSSTemplate } from "./templates/main-css.template";
 import { mainTSTemplate } from "./templates/main-ts.template";
 

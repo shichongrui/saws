@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { parameterizedEnvVarName } from "@shichongrui/saws-utils/parameterized-env-var-name";
+import { parameterizedEnvVarName } from "@saws/utils/parameterized-env-var-name";
 
 export const getPrismaClient = (name: string): PrismaClient => {
   const {

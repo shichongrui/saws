@@ -1,13 +1,13 @@
 {
-  "name": "@shichongrui/saws-core",
+  "name": "@saws/core",
   "version": "1.0.1",
   "description": "",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
-    "@shichongrui/saws-utils": "workspace:^"
+    "@saws/utils": "workspace:^"
   }
 }

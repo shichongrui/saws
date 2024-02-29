@@ -1,4 +1,4 @@
-import { S3 } from "@shichongrui/saws-aws/s3";
+import { S3 } from "@saws/aws/s3";
 import type { GetObjectCommandOutput, S3ClientConfig } from '@aws-sdk/client-s3'
 
 export class FileStorage {

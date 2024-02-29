@@ -1,3 +1,3 @@
-import { getPrismaClient } from "@shichongrui/saws-postgres/get-prisma-client";
+import { getPrismaClient } from "@saws/postgres/get-prisma-client";
 
 export const prisma = getPrismaClient('demo-db')

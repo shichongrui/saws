@@ -1,5 +1,5 @@
-import { createCacheDir } from "@shichongrui/saws-utils/create-directories";
-import { getSawsConfig } from "@shichongrui/saws-core";
+import { createCacheDir } from "@saws/utils/create-directories";
+import { getSawsConfig } from "@saws/core";
 
 export const deployCommand = async (path: string, { stage }: { stage: string }) => {
   if (stage === "local") {

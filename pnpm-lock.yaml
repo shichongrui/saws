@@ -8,52 +8,52 @@ importers:
 
   .:
     dependencies:
-      '@shichongrui/lambda-server':
-        specifier: workspace:^
-        version: link:packages/lambda-server
-      '@shichongrui/saws-api':
+      '@saws/api':
         specifier: workspace:^
         version: link:packages/api
-      '@shichongrui/saws-aws':
+      '@saws/aws':
         specifier: workspace:^
         version: link:packages/aws
-      '@shichongrui/saws-cli':
+      '@saws/cli':
         specifier: workspace:^
         version: link:packages/cli
-      '@shichongrui/saws-cognito':
+      '@saws/cognito':
         specifier: workspace:^
         version: link:packages/cognito
-      '@shichongrui/saws-container':
+      '@saws/container':
         specifier: workspace:^
         version: link:packages/container
-      '@shichongrui/saws-core':
+      '@saws/core':
         specifier: workspace:^
         version: link:packages/core
-      '@shichongrui/saws-email':
+      '@saws/email':
         specifier: workspace:^
         version: link:packages/email
-      '@shichongrui/saws-file-storage':
+      '@saws/file-storage':
         specifier: workspace:^
         version: link:packages/file-storage
-      '@shichongrui/saws-function':
+      '@saws/function':
         specifier: workspace:^
         version: link:packages/function
-      '@shichongrui/saws-postgres':
+      '@saws/lambda-server':
+        specifier: workspace:^
+        version: link:packages/lambda-server
+      '@saws/postgres':
         specifier: workspace:^
         version: link:packages/postgres
-      '@shichongrui/saws-remix':
+      '@saws/remix':
         specifier: workspace:^
         version: link:packages/remix
-      '@shichongrui/saws-remix-auth':
+      '@saws/remix-auth':
         specifier: workspace:^
         version: link:packages/remix-auth
-      '@shichongrui/saws-secrets':
+      '@saws/secrets':
         specifier: workspace:^
         version: link:packages/secrets
-      '@shichongrui/saws-utils':
+      '@saws/utils':
         specifier: workspace:^
         version: link:packages/utils
-      '@shichongrui/saws-website':
+      '@saws/website':
         specifier: workspace:^
         version: link:packages/website
     devDependencies:
@@ -90,37 +90,37 @@ importers:
       '@remix-run/react':
         specifier: ^2.7.2
         version: 2.7.2(react-dom@18.2.0)(react@18.2.0)(typescript@5.3.3)
-      '@shichongrui/saws-aws':
+      '@saws/aws':
         specifier: workspace:^
         version: link:../packages/aws
-      '@shichongrui/saws-cli':
+      '@saws/cli':
         specifier: workspace:^
         version: link:../packages/cli
-      '@shichongrui/saws-cognito':
+      '@saws/cognito':
         specifier: workspace:^
         version: link:../packages/cognito
-      '@shichongrui/saws-core':
+      '@saws/core':
         specifier: workspace:^
         version: link:../packages/core
-      '@shichongrui/saws-file-storage':
+      '@saws/file-storage':
         specifier: workspace:^
         version: link:../packages/file-storage
-      '@shichongrui/saws-function':
+      '@saws/function':
         specifier: workspace:^
         version: link:../packages/function
-      '@shichongrui/saws-postgres':
+      '@saws/postgres':
         specifier: workspace:^
         version: link:../packages/postgres
-      '@shichongrui/saws-remix':
+      '@saws/remix':
         specifier: workspace:^
         version: link:../packages/remix
-      '@shichongrui/saws-remix-auth':
+      '@saws/remix-auth':
         specifier: workspace:^
         version: link:../packages/remix-auth
-      '@shichongrui/saws-secrets':
+      '@saws/secrets':
         specifier: workspace:^
         version: link:../packages/secrets
-      '@shichongrui/saws-utils':
+      '@saws/utils':
         specifier: workspace:^
         version: link:../packages/utils
       aws-lambda:
@@ -160,16 +160,16 @@ importers:
       '@graphql-tools/schema':
         specifier: ^10.0.3
         version: 10.0.3(graphql@16.8.1)
-      '@shichongrui/lambda-server':
-        specifier: workspace:^
-        version: link:../lambda-server
-      '@shichongrui/saws-aws':
+      '@saws/aws':
         specifier: workspace:^
         version: link:../aws
-      '@shichongrui/saws-cognito':
+      '@saws/cognito':
         specifier: workspace:^
         version: link:../cognito
-      '@shichongrui/saws-utils':
+      '@saws/lambda-server':
+        specifier: workspace:^
+        version: link:../lambda-server
+      '@saws/utils':
         specifier: workspace:^
         version: link:../utils
       apollo-server-lambda:
@@ -206,7 +206,7 @@ importers:
         specifier: ^3.2.0
         version: 3.2.0
     devDependencies:
-      '@shichongrui/saws-core':
+      '@saws/core':
         specifier: workspace:^
         version: link:../core
       '@types/aws-lambda':
@@ -264,10 +264,10 @@ importers:
 
   packages/cli:
     dependencies:
-      '@shichongrui/saws-secrets':
+      '@saws/secrets':
         specifier: workspace:^
         version: link:../secrets
-      '@shichongrui/saws-utils':
+      '@saws/utils':
         specifier: workspace:^
         version: link:../utils
       commander:
@@ -280,7 +280,7 @@ importers:
         specifier: ^1.2.0
         version: 1.2.0
     devDependencies:
-      '@shichongrui/saws-core':
+      '@saws/core':
         specifier: workspace:^
         version: link:../core
       '@types/find-package-json':
@@ -289,13 +289,13 @@ importers:
 
   packages/cognito:
     dependencies:
-      '@shichongrui/saws-aws':
+      '@saws/aws':
         specifier: workspace:^
         version: link:../aws
-      '@shichongrui/saws-secrets':
+      '@saws/secrets':
         specifier: workspace:^
         version: link:../secrets
-      '@shichongrui/saws-utils':
+      '@saws/utils':
         specifier: workspace:^
         version: link:../utils
       amazon-cognito-identity-js:
@@ -305,7 +305,7 @@ importers:
       '@aws-sdk/client-cognito-identity-provider':
         specifier: ^3.515.0
         version: 3.515.0
-      '@shichongrui/saws-core':
+      '@saws/core':
         specifier: workspace:^
         version: link:../core
 
@@ -314,10 +314,10 @@ importers:
       '@aws-sdk/client-lambda':
         specifier: ^3.518.0
         version: 3.518.0
-      '@shichongrui/saws-aws':
+      '@saws/aws':
         specifier: workspace:^
         version: link:../aws
-      '@shichongrui/saws-utils':
+      '@saws/utils':
         specifier: workspace:^
         version: link:../utils
       '@types/fs-extra':
@@ -330,7 +330,7 @@ importers:
         specifier: ^5.1.1
         version: 5.1.1
     devDependencies:
-      '@shichongrui/saws-core':
+      '@saws/core':
         specifier: workspace:^
         version: link:../core
       '@types/js-yaml':
@@ -339,33 +339,33 @@ importers:
 
   packages/core:
     dependencies:
-      '@shichongrui/saws-utils':
+      '@saws/utils':
         specifier: workspace:^
         version: link:../utils
 
   packages/email:
     dependencies:
-      '@shichongrui/saws-aws':
+      '@saws/aws':
         specifier: workspace:^
         version: link:../aws
     devDependencies:
-      '@shichongrui/saws-core':
+      '@saws/core':
         specifier: workspace:^
         version: link:../core
 
   packages/file-storage:
     dependencies:
-      '@shichongrui/saws-aws':
+      '@saws/aws':
         specifier: workspace:^
         version: link:../aws
-      '@shichongrui/saws-utils':
+      '@saws/utils':
         specifier: workspace:^
         version: link:../utils
     devDependencies:
       '@aws-sdk/client-s3':
         specifier: ^3.515.0
         version: 3.515.0
-      '@shichongrui/saws-core':
+      '@saws/core':
         specifier: workspace:^
         version: link:../core
 
@@ -374,13 +374,13 @@ importers:
       '@aws-sdk/client-serverlessapplicationrepository':
         specifier: ^3.515.0
         version: 3.515.0
-      '@shichongrui/lambda-server':
-        specifier: workspace:^
-        version: link:../lambda-server
-      '@shichongrui/saws-aws':
+      '@saws/aws':
         specifier: workspace:^
         version: link:../aws
-      '@shichongrui/saws-utils':
+      '@saws/lambda-server':
+        specifier: workspace:^
+        version: link:../lambda-server
+      '@saws/utils':
         specifier: workspace:^
         version: link:../utils
       '@types/fs-extra':
@@ -402,7 +402,7 @@ importers:
         specifier: ^4.1.0
         version: 4.1.0
     devDependencies:
-      '@shichongrui/saws-core':
+      '@saws/core':
         specifier: workspace:^
         version: link:../core
       '@types/js-yaml':
@@ -411,19 +411,19 @@ importers:
 
   packages/lambda-server:
     dependencies:
-      '@shichongrui/saws-utils':
+      '@saws/utils':
         specifier: workspace:^
         version: link:../utils
 
   packages/postgres:
     dependencies:
-      '@shichongrui/saws-aws':
+      '@saws/aws':
         specifier: workspace:^
         version: link:../aws
-      '@shichongrui/saws-secrets':
+      '@saws/secrets':
         specifier: workspace:^
         version: link:../secrets
-      '@shichongrui/saws-utils':
+      '@saws/utils':
         specifier: workspace:^
         version: link:../utils
       chokidar:
@@ -436,7 +436,7 @@ importers:
       '@prisma/client':
         specifier: ^5.10.2
         version: 5.10.2(prisma@5.10.2)
-      '@shichongrui/saws-core':
+      '@saws/core':
         specifier: workspace:^
         version: link:../core
       '@types/pg':
@@ -451,13 +451,13 @@ importers:
       '@remix-run/react':
         specifier: '>=2'
         version: 2.7.2(react-dom@18.2.0)(react@18.2.0)(typescript@5.3.3)
-      '@shichongrui/lambda-server':
-        specifier: workspace:^
-        version: link:../lambda-server
-      '@shichongrui/saws-aws':
+      '@saws/aws':
         specifier: workspace:^
         version: link:../aws
-      '@shichongrui/saws-utils':
+      '@saws/lambda-server':
+        specifier: workspace:^
+        version: link:../lambda-server
+      '@saws/utils':
         specifier: workspace:^
         version: link:../utils
       chokidar:
@@ -488,7 +488,7 @@ importers:
       '@remix-run/server-runtime':
         specifier: ^2.7.2
         version: 2.7.2(typescript@5.3.3)
-      '@shichongrui/saws-core':
+      '@saws/core':
         specifier: workspace:^
         version: link:../core
       '@types/aws-lambda':
@@ -509,10 +509,10 @@ importers:
 
   packages/remix-auth:
     dependencies:
-      '@shichongrui/saws-cognito':
+      '@saws/cognito':
         specifier: workspace:^
         version: link:../cognito
-      '@shichongrui/saws-utils':
+      '@saws/utils':
         specifier: workspace:^
         version: link:../utils
       jsonwebtoken:
@@ -561,10 +561,10 @@ importers:
 
   packages/secrets:
     dependencies:
-      '@shichongrui/saws-aws':
+      '@saws/aws':
         specifier: workspace:^
         version: link:../aws
-      '@shichongrui/saws-utils':
+      '@saws/utils':
         specifier: workspace:^
         version: link:../utils
       chokidar:
@@ -577,7 +577,7 @@ importers:
         specifier: ^8.11.3
         version: 8.11.3
     devDependencies:
-      '@shichongrui/saws-core':
+      '@saws/core':
         specifier: workspace:^
         version: link:../core
       '@types/pg':
@@ -590,13 +590,13 @@ importers:
         specifier: ^3.515.0
         version: 3.515.0
     devDependencies:
-      '@shichongrui/saws-core':
+      '@saws/core':
         specifier: workspace:^
         version: link:../core
 
   packages/utils:
     dependencies:
-      '@shichongrui/saws-aws':
+      '@saws/aws':
         specifier: workspace:^
         version: link:../aws
       adm-zip:
@@ -621,13 +621,13 @@ importers:
 
   packages/website:
     dependencies:
-      '@shichongrui/saws-aws':
+      '@saws/aws':
         specifier: workspace:^
         version: link:../aws
-      '@shichongrui/saws-core':
+      '@saws/core':
         specifier: workspace:^
         version: link:../core
-      '@shichongrui/saws-utils':
+      '@saws/utils':
         specifier: workspace:^
         version: link:../utils
       get-port:
@@ -636,79 +636,6 @@ importers:
       vite:
         specifier: ^5.1.4
         version: 5.1.4(@types/node@20.11.19)
-
-  test:
-    dependencies:
-      '@graphql-tools/merge':
-        specifier: ^9.0.3
-        version: 9.0.3(graphql@16.8.1)
-      '@graphql-tools/schema':
-        specifier: ^10.0.3
-        version: 10.0.3(graphql@16.8.1)
-      '@prisma/client':
-        specifier: ^5.10.2
-        version: 5.10.2(prisma@5.10.2)
-      '@remix-run/node':
-        specifier: ^2.7.2
-        version: 2.7.2(typescript@5.3.3)
-      '@remix-run/react':
-        specifier: ^2.7.2
-        version: 2.7.2(react-dom@18.2.0)(react@18.2.0)(typescript@5.3.3)
-      '@shichongrui/saws-api':
-        specifier: workspace:^
-        version: link:../packages/api
-      '@shichongrui/saws-function':
-        specifier: workspace:^
-        version: link:../packages/function
-      '@shichongrui/saws-postgres':
-        specifier: workspace:^
-        version: link:../packages/postgres
-      '@shichongrui/saws-website':
-        specifier: workspace:^
-        version: link:../packages/website
-      apollo-server-lambda:
-        specifier: ^3.13.0
-        version: 3.13.0(graphql@16.8.1)
-      express:
-        specifier: ^4.18.2
-        version: 4.18.2
-      graphql:
-        specifier: ^16.8.1
-        version: 16.8.1
-      isbot:
-        specifier: ^4.4.0
-        version: 4.4.0
-      react:
-        specifier: ^18.2.0
-        version: 18.2.0
-      react-dom:
-        specifier: ^18.2.0
-        version: 18.2.0(react@18.2.0)
-      typescript:
-        specifier: ^5.3.3
-        version: 5.3.3
-    devDependencies:
-      '@remix-run/dev':
-        specifier: ^2.7.2
-        version: 2.7.2(@types/node@20.11.19)(typescript@5.3.3)
-      '@shichongrui/saws-cli':
-        specifier: workspace:^
-        version: link:../packages/cli
-      '@types/aws-lambda':
-        specifier: ^8.10.134
-        version: 8.10.134
-      '@types/react':
-        specifier: ^18.2.59
-        version: 18.2.59
-      '@types/react-dom':
-        specifier: ^18.2.19
-        version: 18.2.19
-      aws-lambda:
-        specifier: ^1.0.7
-        version: 1.0.7
-      prisma:
-        specifier: ^5.10.2
-        version: 5.10.2
 
 packages:
 
@@ -5254,14 +5181,6 @@ packages:
       '@types/prop-types': 15.7.11
       '@types/scheduler': 0.16.8
       csstype: 3.1.3
-
-  /@types/react@18.2.59:
-    resolution: {integrity: sha512-DE+F6BYEC8VtajY85Qr7mmhTd/79rJKIHCg99MU9SWPB4xvLb6D1za2vYflgZfmPqQVEr6UqJTnLXEwzpVPuOg==}
-    dependencies:
-      '@types/prop-types': 15.7.11
-      '@types/scheduler': 0.16.8
-      csstype: 3.1.3
-    dev: true
 
   /@types/scheduler@0.16.8:
     resolution: {integrity: sha512-WZLiwShhwLRmeV6zH+GkbOFT6Z6VklCItrDioxUnv+u4Ll+8vKeFySoFyK/0ctcRpOmwAicELfmys1sDc/Rw+A==}

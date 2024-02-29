@@ -1,5 +1,5 @@
 {
-  "name": "@shichongrui/saws-utils",
+  "name": "@saws/utils",
   "version": "1.0.1",
   "description": "",
   "keywords": [],
@@ -29,14 +29,14 @@
     "./dist"
   ],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "@types/adm-zip": "^0.5.5",
     "@types/find-package-json": "^1.2.6",
     "@types/node": "^20.11.19"
   },
   "dependencies": {
-    "@shichongrui/saws-aws": "workspace:^",
+    "@saws/aws": "workspace:^",
     "adm-zip": "^0.5.10",
     "docker-cli-js": "^2.10.0",
     "find-package-json": "^1.2.0"

@@ -1,4 +1,4 @@
-import { SecretsManager } from "@shichongrui/saws-secrets/secrets-manager"
+import { SecretsManager } from "@saws/secrets/secrets-manager"
 
 export const secretCommand = async (name: string, { stage, set, get }: { stage: string, set: string, get: boolean }) => {
   const secretsManager = new SecretsManager(stage)

@@ -1,4 +1,4 @@
-import { ServiceDefinition } from "@shichongrui/saws-core";
+import { ServiceDefinition } from "@saws/core";
 
 export class EmailService extends ServiceDefinition {
   getPermissions() {

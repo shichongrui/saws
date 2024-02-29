@@ -1,6 +1,6 @@
-import { getSawsConfig } from "@shichongrui/saws-core";
-import { BUILD_DIR } from "@shichongrui/saws-utils/constants";
-import { getStageOutputs } from "@shichongrui/saws-utils/stage-outputs";
+import { getSawsConfig } from "@saws/core";
+import { BUILD_DIR } from "@saws/utils/constants";
+import { getStageOutputs } from "@saws/utils/stage-outputs";
 import { fork } from "child_process";
 import esbuild from "esbuild";
 import path from "path";

@@ -1,5 +1,5 @@
 {
-  "name": "@shichongrui/saws-cognito",
+  "name": "@saws/cognito",
   "version": "1.0.1",
   "description": "",
   "keywords": [],
@@ -12,18 +12,18 @@
     "./dist"
   ],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
-    "@shichongrui/saws-aws": "workspace:^",
-    "@shichongrui/saws-utils": "workspace:^",
-    "@shichongrui/saws-secrets": "workspace:^",
+    "@saws/aws": "workspace:^",
+    "@saws/utils": "workspace:^",
+    "@saws/secrets": "workspace:^",
     "amazon-cognito-identity-js": "^6.3.7"
   },
   "devDependencies": {
-    "@shichongrui/saws-core": "workspace:^",
+    "@saws/core": "workspace:^",
     "@aws-sdk/client-cognito-identity-provider": "^3.515.0"
   },
   "peerDependencies": {
-    "@shichongrui/saws-core": ">=1.0.0"
+    "@saws/core": ">=1.0.0"
   }
 }

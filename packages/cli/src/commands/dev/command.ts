@@ -1,6 +1,6 @@
-import { createCacheDir } from "@shichongrui/saws-utils/create-directories";
-import { onProcessExit } from "@shichongrui/saws-utils/on-exit";
-import { getSawsConfig } from "@shichongrui/saws-core";
+import { createCacheDir } from "@saws/utils/create-directories";
+import { onProcessExit } from "@saws/utils/on-exit";
+import { getSawsConfig } from "@saws/core";
 
 export const devCommand = async (path: string) => {
   process.env.NODE_ENV = "development";
