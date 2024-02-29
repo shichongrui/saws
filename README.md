@@ -91,7 +91,7 @@ SAWS uses the idea of stages for deployed environments. So changing the `--stage
 - [GraphQLApiService](./packages/api/README.md#graphql-api-service)
 - [CognitoService](./packages/cognito/README.md#cognito-service)
 - [ContainerService](./packages/container/README.md#container-service)
-- [EmailService](./packages/email/README.md#emailservice)
+- [EmailService](./packages/email/README.md#email-service)
 - [FileStorageService](./packages/file-storage/README.md#file-storage-service)
 - [TypescriptFunctionService](./packages/function/README.md#typescript-function-service)
 - [ContainerFunctionService](./packages/function/README.md#container-function-service)

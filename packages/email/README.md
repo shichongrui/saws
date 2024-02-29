@@ -1,6 +1,6 @@
 <div align='center'>
 
-# Email Services
+# Email
 
 Service and library for sending email in your application.
 
