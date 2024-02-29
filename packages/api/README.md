@@ -31,6 +31,8 @@ Then add one of the included services ([`RestAPIService`](#rest-api-service) or 
 
 In development, API services will build your API from the entrypoint file and register it with the local Lambda server. It will then start up an HTTP server that will behave similarly to API Gateway and route calls to your API server. Anytime any files change in your API service, it will rebuild the code automatically.
 
+In development, the HTTP server that is started for your `GraphQLApiService` will also expose an endpoint to access a Graphiql IDE to explore your GraphQL server. You can access it at `http://localhost:PORT/graphiql`
+
 If your API service depends on the `@saws/cognito` `CognitoService`. It will also authenticate all HTTP requests against the `CognitoService`'s user pool.
 
 The first time you run `npx saws dev` after adding a new API service to your `saws.js` file, it will install any missing dependencies and create a folder with a hello world lambda function entrypoint.

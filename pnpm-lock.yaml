@@ -570,6 +570,9 @@ importers:
       chokidar:
         specifier: ^3.6.0
         version: 3.6.0
+      commander:
+        specifier: ^12.0.0
+        version: 12.0.0
       envfile:
         specifier: ^6.20.0
         version: 6.22.0

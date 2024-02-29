@@ -15,6 +15,7 @@ Service and library managing Secrets in AWS SSM Parameter store.
 - [When used as a dependency](#when-used-as-a-dependency)
 - [Libraries](#libraries)
   - [SecretsManager](#secrets-manager)
+- [Commands](#commands)
 
 ## Installation <a id='installation'>
 
@@ -84,3 +85,38 @@ This function will get a secret value from either your `.secrets` file when runn
 
 #### `set(name: string, value: string): Promise<void>`
 This function will set a secret value either in your `.secrets` file when running locally, or to SSM Parameter Store when running in a production environment. The secret will be set as an encrypted string in Parameter Store.
+
+## Commands <a id='commands'>
+
+When you have a `SecretsService` in your `saw.js` config file, it will add the following commands to the `saws` cli command:
+
+### `secrets`
+
+The `saws secrets` command is used for managing secrets within the application. It requires a secret name and supports various operations such as setting and getting secrets.
+
+#### Usage
+
+```bash
+saws secrets [options] <name>
+```
+**Arguments**
+<name>: The name of the secret. This is a required argument.
+
+**Options**
+--stage <string>: Specifies the stage environment (e.g., local, dev, prod). Default is local.
+--set <string>: Sets the secret to the specified value.
+--get: Retrieves the current value of the secret.
+
+**Examples**
+
+Set a secret:
+This command sets the value of mySecret in the prod stage to mySecretValue.
+```bash
+saws secrets --stage prod --set "mySecretValue" mySecret
+```
+
+Get a secret:
+This command retrieves the value of mySecret in the dev stage.
+```bash
+saws secrets --stage dev --get mySecret
+```

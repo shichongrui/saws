@@ -21,6 +21,8 @@ Then run `npx saws init` to initialize your SAWS application in your current dir
 
 ## Commands <a id='commands'>
 
+These commands are the base commands that come with the `saws` cli. But other services in your `saws.js` can add additional commands to the `saws` cli. For example: [`secrets` command](../secrets/README.md#commands).
+
 ### `init`
 
 ```bash
