@@ -4,4 +4,5 @@ export const gitignoreTemplate = () => `node_modules
 .saws/saws-*-local-output.json
 .saws/cache
 .saws/build
-.saws/.secrets`
+.saws/.secrets
+.DS_Store`

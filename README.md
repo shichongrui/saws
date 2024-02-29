@@ -86,7 +86,7 @@ npx saws deploy --stage production
 
 SAWS uses the idea of stages for deployed environments. So changing the `--stage` option allows you to release multiple environments of an app.
 
-## Services <a id='servies'>
+## Services <a id='services'>
 - [RestApiService](./packages/api/README.md#rest-api-service)
 - [GraphQLApiService](./packages/api/README.md#graphql-api-service)
 - [CognitoService](./packages/cognito/README.md#cognito-service)
@@ -114,7 +114,7 @@ SAWS uses the idea of stages for deployed environments. So changing the `--stage
 - [SecretsManager](./packages/secrets/README.md#Secrets-manager)
 - [TranslateClient](./packages/translate/README.md#translate-library)
 
-## Philosophy <a href='#philosophy'>
+## Philosophy <a id='philosophy'>
 
 SAWS aims to make it as easy as possible and as cheap as possible to develop and deploy applications to AWS. As such all infrastructure primitives attempt to rely on services that are part of the AWS free tier. As such some of the choices made may not be the "best practice" for larger or enterprise applications, but are perfectly fine for smaller apps and experiments.
 
