@@ -82,7 +82,7 @@ class ParameterStoreSecretsManager implements SecretsManagerInterface {
 export class SecretsManager implements SecretsManagerInterface {
   manager: SecretsManagerInterface;
 
-  constructor(stage: string) {
+  constructor(stage: string = String(process.env.STAGE)) {
     this.manager =
       stage === "local"
         ? new LocalSecretsManager()

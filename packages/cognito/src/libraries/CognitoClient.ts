@@ -56,7 +56,7 @@ export class CognitoClient {
   }
 }
 
-export const capturecognitoEnvVars = (name: string) => {
+export const captureCognitoEnvVars = (name: string) => {
   const userPoolId = parameterizedEnvVarName(name, "USER_POOL_ID");
   const userPoolClientId = parameterizedEnvVarName(name, "USER_POOL_CLIENT_ID");
   return {

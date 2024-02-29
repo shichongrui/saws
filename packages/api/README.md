@@ -29,7 +29,7 @@ Then add one of the included services ([`RestAPIService`](#rest-api-service) or 
 
 ## Development <a id='development'>
 
-In development, API services will build your API from the entrypoint file and register it with the local Lambda server. It will then start up an HTTP server that will behave similarly to API Gateway and route calls to your API server.
+In development, API services will build your API from the entrypoint file and register it with the local Lambda server. It will then start up an HTTP server that will behave similarly to API Gateway and route calls to your API server. Anytime any files change in your API service, it will rebuild the code automatically.
 
 If your API service depends on the `@saws/cognito` `CognitoService`. It will also authenticate all HTTP requests against the `CognitoService`'s user pool.
 
@@ -62,10 +62,10 @@ module.exports = restApi
 
 The `RestAPIService` constructor accepts the following options:
 
-### `name: string`
+#### `name: string`
 The name of your service. This should be unique across all of your services.
 
-### `dependencies: ServiceDefinition[]`
+#### `dependencies: ServiceDefinition[]`
 An array of all of the other services this service depends on. This will ensure that permissions, environment variables, and execution order are all set up.
 
 #### `handler: string`
@@ -110,10 +110,10 @@ module.exports = graphqlApi
 
 The `GraphQLAPIService` constructor accepts the following options:
 
-### `name: string`
+#### `name: string`
 The name of your service. This should be unique across all of your services.
 
-### `dependencies: ServiceDefinition[]`
+#### `dependencies: ServiceDefinition[]`
 An array of all of the other services this service depends on. This will ensure that permissions, environment variables, and execution order are all set up.
 
 #### `handler: string`

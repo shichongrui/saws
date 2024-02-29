@@ -19,7 +19,7 @@ export class FileStorage {
     this.client = new S3(config);
   }
 
-  getBucketName() {
+  private getBucketName() {
     return `${process.env.STAGE}-${this.name}`;
   }
 

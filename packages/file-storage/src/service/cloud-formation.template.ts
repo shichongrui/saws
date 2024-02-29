@@ -10,7 +10,7 @@ export const getTemplate = ({ name, bucketName }: TemplateParameters) => {
 
   return JSON.stringify({
     AWSTemplateFormatVersion: "2010-09-09",
-    Description: "AWS Cloudformation for Saws Remix File Storage S3 Bucket",
+    Description: "AWS Cloudformation for Saws File Storage S3 Bucket",
     Resources: {
       [`Saws${uppercasedName}Bucket`]: {
         Type: "AWS::S3::Bucket",

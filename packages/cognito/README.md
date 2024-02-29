@@ -59,10 +59,10 @@ const auth = new CognitoService({
 
 The `CognitoService` constructor accepts the following options:
 
-### `name: string`
+#### `name: string`
 The name of your service. This should be unique across all of your services.
 
-### `dependencies: ServiceDefinition[]`
+#### `dependencies: ServiceDefinition[]`
 An array of all of the other services this service depends on. This will ensure that permissions, environment variables, and execution order are all set up.
 
 #### `devUser: { email: string, password: string }`

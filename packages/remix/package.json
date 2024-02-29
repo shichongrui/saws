@@ -6,7 +6,6 @@
   "exports": {
     "./remix-service": "./dist/src/service/RemixService.js",
     "./remix-app": "./dist/src/libraries/remix-app.js",
-    "./session": "./dist/src/libraries/session.js",
     "./multipart-form-data": "./dist/src/libraries/multipart-form-data.js"
   },
   "files": [
