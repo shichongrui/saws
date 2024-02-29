@@ -86,6 +86,10 @@ npx saws deploy --stage production
 
 SAWS uses the idea of stages for deployed environments. So changing the `--stage` option allows you to release multiple environments of an app.
 
+## SAWS CLI
+
+To see more about the CLI see the [documentation on the SAW CLI](./packages/cli/README.md)
+
 ## Services <a id='services'>
 - [RestApiService](./packages/api/README.md#rest-api-service)
 - [GraphQLApiService](./packages/api/README.md#graphql-api-service)
@@ -111,6 +115,8 @@ SAWS uses the idea of stages for deployed environments. So changing the `--stage
 - [FunctionClient](./packages/function/README.md#functions-client)
 - [getPrismaClient](./packages/postgres/README.md#get-prisma-client)
 - [Remix Auth](./packages/remix-auth/README.md)
+- [RemixApp](./packages/remix/README.md#remix-app)
+- [multipartFormData](./packages/remix/README.md#multi-part-form-data)
 - [SecretsManager](./packages/secrets/README.md#Secrets-manager)
 - [TranslateClient](./packages/translate/README.md#translate-library)
 

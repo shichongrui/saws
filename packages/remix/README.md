@@ -11,7 +11,7 @@ Service and functions for developing and deploying a [Remix](https://remix.run) 
 - [Development](#development)
 - [Deployment](#deployment)
 - [Services](#services)
-  - [RemixService](#postgres-service)
+  - [RemixService](#remix-service)
 - [When used as a dependency](#when-used-as-a-dependency)
 - [Libraries](#libraries)
   - [RemixApp](#remix-app)
@@ -126,7 +126,7 @@ export const handler = app.createLambdaHandler({ build })
 
 The `build` variable is the output of the Remix build process, which will exist after the first time you run `npx saws dev`
 
-### `multipartFormData(request: Request): Promise<FormData>`
+### `multipartFormData(request: Request): Promise<FormData>` <a id='multipart-form-data'>
 
 To help support file uploads this function can be used in place of `await request.formData()`.
 

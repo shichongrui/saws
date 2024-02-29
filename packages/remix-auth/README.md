@@ -72,7 +72,7 @@ To set this up follow these steps:
 
 With all that in place you should now be able to navigate to `/authenticate` and you'll have a user registration and login flow.
 
-## `getSession(name: string, request: Request): Promise<JWTPayload>
+## `getSession(name: string, request: Request): Promise<JWTPayload>`
 
 After someone has gone through the authentication flow, this function can be used inside of your `loader` and `action` functions to get the contents of the payload of the JWT for the currently logged in user.
 

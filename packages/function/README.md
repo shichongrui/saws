@@ -101,7 +101,7 @@ So make sure your path handling logic will still work when your code is bundled.
 
 Your function entrypoint should be named `index.ts` inside of your service's directory. It should export a `handler` function that will be called whenever your function is invoked.
 
-### `ContainerFunctionService`
+### `ContainerFunctionService` <a id='container-function-service'>
 
 ⚠️ This is one of the lesser used services in SAWS and thus may not be complete. ⚠️
 
