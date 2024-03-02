@@ -55,9 +55,9 @@ And it will do all that with one command `npx saws deploy`
 
 In addition, the libraries packaged into each service of SAWS are built to work both locally and in a deployed environment, with no changes in your code. So if you run `const client = new FileStorage('my-bucket')`, that code will work both locally and deployed.
 
-⚠️ This release of SAWS is probably still BETA-ish. I've released production applications using it but it's current userbase is 1 so please report any bugs and consider helping out if you desire ⚠️
-
 ## Getting Started <a id='getting-started'>
+
+⚠️ This release of SAWS is probably still BETA-ish. I've released production applications using it but it's current userbase is 1 so please report any bugs and consider helping out if you desire ⚠️
 
 If you'd prefer the full tutorial instead of the quick start guide, check out the [Tutorial](./Tutorial.md)
 
