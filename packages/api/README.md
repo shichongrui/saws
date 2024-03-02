@@ -25,7 +25,7 @@ From the command line run:
 npm install @saws/api
 ```
 
-Then add one of the included services ([`RestAPIService`](#rest-api-service) or [[`GraphQLApiService`](#graphql-api-service)]) to your `saws.js` file.
+Then add one of the included services ([`RestAPIService`](#rest-api-service) or [`GraphQLApiService`](#graphql-api-service)) to your `saws.js` file.
 
 ## Development <a id='development'>
 

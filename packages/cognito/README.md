@@ -70,7 +70,7 @@ Allows you to configure the user that is provisioned when running `npx saws dev`
 
 ## When used as a dependency <a id='when-used-as-a-dependency'>
 
-Some services have special handling for when `CognitoService` is used as a dependency, such as (API services)[../packages/api/README.md].
+Some services have special handling for when `CognitoService` is used as a dependency, such as [API services](../packages/api/README.md).
 
 When a `CognitoService` is used as a dependency to other services, it will automatically attach (where applicable) the following environment variables into the dependent services:
  - `SERVICE_NAME_USER_POOL_ID: string` - The id of the configured user pool
@@ -79,7 +79,7 @@ When a `CognitoService` is used as a dependency to other services, it will autom
 
 ## Libraries <a id='libraries'>
 
-`@saws/cognito` includes 2 libraries to help with interacting with your `CognitoService`. `CognitoClient` for `RestAPIService` backend interactions and `SessionClient` for front end interactions.
+`@saws/cognito` includes 2 libraries to help with interacting with your `CognitoService`. `CognitoClient` for backend interactions and `SessionClient` for front end interactions.
 
 ### `CognitoClient` <a id='cognito-client'>
 
