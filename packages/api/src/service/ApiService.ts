@@ -139,6 +139,12 @@ export class ApiService extends ServiceDefinition {
             const authToken =
               req.headers.authorization?.replace("Bearer ", "") ?? "";
             if (authDependency != null) {
+              if (authToken.length === 0) {
+                res.writeHead(401)
+                res.end('Unauthorized');
+                return
+              }
+
               await new Promise((resolve, reject) => {
                 jwt.verify(authToken, getJwksKey, {}, (err, decoded) => {
                   if (err) return reject(err);
@@ -174,7 +180,8 @@ export class ApiService extends ServiceDefinition {
                   Authorization: authToken,
                 },
                 requestContext: {},
-                body,
+                // for remix apps we need the base64 encoded string
+                body: Buffer.from(body || "", "base64").toString(),
               },
               context
             );

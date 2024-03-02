@@ -2,9 +2,11 @@
 
 # 🪚 SAWS 🪚
 
-SAWS is a tool for rapid development and deployment of applications to AWS.
+SAWS is an opinionated tool for rapid development and deployment of Typescript applications to AWS.
 
-SAWS gives you infrastructure primitives that know how to run local versions of themselves for development, as well as stand up and configure all required infrastructure in AWS.
+SAWS gives you infrastructure primitives that make it eash to build all kinds of applications.
+
+Out of the box these services know how to run themselves locally, deploy themselves to AWS, and connect themselves to other services.
 
 </div>
 
@@ -16,6 +18,7 @@ SAWS gives you infrastructure primitives that know how to run local versions of 
   - [Add a service](#add-a-service)
   - [Start developing](#develop)
   - [Deploy](#deploy)
+- [SAWS CLI](#saws-cli)
 - [Services](#services)
 - [Libraries](#libraries)
 - [Philosophy](#philosophy)
@@ -52,7 +55,11 @@ And it will do all that with one command `npx saws deploy`
 
 In addition, the libraries packaged into each service of SAWS are built to work both locally and in a deployed environment, with no changes in your code. So if you run `const client = new FileStorage('my-bucket')`, that code will work both locally and deployed.
 
+⚠️ This release of SAWS is probably still BETA-ish. I've released production applications using it but it's current userbase is 1 so please report any bugs and consider helping out if you desire ⚠️
+
 ## Getting Started <a id='getting-started'>
+
+If you'd prefer the full tutorial instead of the quick start guide, check out the [Tutorial](./Tutorial.md)
 
 ### Installation <a id='installation'>
 Install the SAWS cli and initialize your saws project:
@@ -111,7 +118,11 @@ npx saws deploy --stage production
 
 SAWS uses the idea of stages for deployed environments. So changing the `--stage` option allows you to release multiple environments of an app.
 
-## SAWS CLI
+## Tutorial <a id='tutorial'>
+
+To see a more in depth example of going from zero all the way to production, check out the [Tutoria](./Tutorial.md)
+
+## SAWS CLI <a id='saws-cli'>
 
 To see more about the CLI see the [documentation on the SAW CLI](./packages/cli/README.md)
 

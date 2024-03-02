@@ -1,6 +1,6 @@
 {
   "name": "@saws/aws",
-  "version": "1.0.0",
+  "version": "1.0.6",
   "description": "",
   "exports": {
     "./cloudformation": "./dist/src/cloudformation.js",
@@ -13,6 +13,9 @@
     "./ssm": "./dist/src/ssm.js",
     "./sts": "./dist/src/sts.js"
   },
+  "files": [
+    "./dist"
+  ],
   "keywords": [],
   "author": "",
   "license": "MIT",

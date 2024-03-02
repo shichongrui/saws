@@ -54,6 +54,17 @@ export class CognitoClient {
 
     return response.AuthenticationResult?.AccessToken;
   }
+
+  async initiateAuth(username: string, password: string) {
+    const response = await this.client.initiateAuth(
+      this.userPoolId,
+      this.userPoolClientId,
+      username,
+      password,
+    )
+
+    return response
+  }
 }
 
 export const captureCognitoEnvVars = (name: string) => {

@@ -26,14 +26,18 @@ program.addCommand(createExecuteCommand());
 program.addCommand(createInitCommand());
 
 (async () => {
-  const service = await getSawsConfig()
+  try {
+    const service = await getSawsConfig()
 
-  const allServices = [...new Set(service.getAllDependencies().map(service => service.constructor))]
+    const allServices = [...new Set(service.getAllDependencies().map(service => service.constructor))]
 
-  for (const serviceClass of allServices) {
-    // @ts-expect-error Not all classes will define a getCommands static method
-    serviceClass.getCommands?.()?.forEach(command => program.addCommand(command))
+    for (const serviceClass of allServices) {
+      // @ts-expect-error Not all classes will define a getCommands static method
+      serviceClass.getCommands?.()?.forEach(command => program.addCommand(command))
+    }
+  } catch (_err) {
+    // It's possible for there not to be a saws.js file yet and thus this will fail
+  } finally {
+    program.parse(process.argv);
   }
-
-  program.parse(process.argv);
 })()

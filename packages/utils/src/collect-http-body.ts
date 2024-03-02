@@ -13,8 +13,7 @@ export const collectHttpBody = async (req: IncomingMessage): Promise<string | un
 
     req.on("end", function () {
       let buffer = Buffer.concat(dataChunks);
-      let base64EncodedData = buffer.toString('base64');
-      resolve(Buffer.from(base64EncodedData || "", "base64").toString());
+      resolve(buffer.toString('base64'));
     });
   });
 };

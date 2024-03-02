@@ -169,7 +169,7 @@ export class CognitoService extends ServiceDefinition {
       );
       userConfirmed = results.UserStatus !== "UNCONFIRMED";
     } catch (err: any) {
-      if (err.code !== "CognitoLocal#UserNotFoundException") {
+      if (err.name !== 'UserNotFoundException' && err.code !== "CognitoLocal#UserNotFoundException") {
         throw err;
       }
       const results = await cognitoClient.signUpUser(

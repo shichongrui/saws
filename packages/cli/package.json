@@ -1,10 +1,13 @@
 {
   "name": "@saws/cli",
-  "version": "1.0.0",
+  "version": "1.0.6",
   "description": "",
   "bin": {
     "saws": "./dist/bin/saws.js"
   },
+  "files": [
+    "./dist"
+  ],
   "keywords": [],
   "author": "",
   "license": "MIT",
