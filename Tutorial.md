@@ -15,12 +15,11 @@ In order to do this tutorial, you'll need to have a few tools typical of working
 - `node.js` version 20 or higher
 - `npm`
 - `docker`
-
-# Table of Contents
+- `aws` command line tool that is configured already with credentials to your AWS account
 
 # Initializing
 
-Lets get started. The first thing we'll want to do is create a new directory on your computer for your new project, and run `npm init` inside of it.
+Lets get started. The first thing we'll want to do is create a new directory on our computer for our new project, and run `npm init` inside of it.
 
 ```bash
 mkdir saws-tutorial
@@ -34,20 +33,20 @@ With that done, we'll want to install the `saws` cli tool from npm.
 npm install -D @saws/cli
 ```
 
-The `saws` cli comes with an `init` command that can be used to set up your project with all the necessary dependencies and files you will need.
+The `saws` cli comes with an `init` command that can be used to set up our project with all the necessary dependencies and files you will need.
 
 ```bash
 npx saws init
 ```
 
-After running `init` you will see a few changes happened in your project.
+After running `init` you will see a few changes happened in our project.
 
-1. It installed `@saws/core` and `typescript` into your project.
+1. It installed `@saws/core` and `typescript` into our project.
 2. It wrote a `.gitignore`.
 3. It wrote a `tsconfig.json`.
 4. And it wrote a `saws.js` file.
 
-Most important here is the `saws.js` file. This is your config file where you will define all of the various services that you need or are creating. For now all you will have in there is a blank `ServiceDefinition`. This is the base class that all services extend and can be used to configure multiple services in your `saws.js` as we'll see later.
+Most important here is the `saws.js` file. This is our config file where you will define all of the various services that you need or are creating. For now all you will have in there is a blank `ServiceDefinition`. This is the base class that all services extend and can be used to configure multiple services in our `saws.js` as we'll see later.
 
 # Adding services
 
@@ -88,14 +87,14 @@ npx saws dev
 
 You will notice a few things happen when you run the `dev` command.
 
-If this is the first time you have run `dev` since adding a new service to your `saws.js` file, your service might perform some initialization steps.
+Because this is the first time you have run `dev` since adding a new service to our `saws.js` file, our service might perform some initialization steps.
 
 In our case, `RestApiService` has done the following:
 
 - Installed express into our project.
 - Written our API's entrypoint file at `saws-api/index.ts` with a hello world express app.
 
-You will notice in your terminal's output that the endpoint that your API is running at has been logged and that a local Lambda server was started. In SAWS, many services choose to deploy to AWS Lambda and thus, in development are run in a local Lambda like environment.
+You will notice in our terminal's output that the endpoint that our API is running at has been logged and that a local Lambda server was started. In SAWS, many services choose to deploy to AWS Lambda and thus, in development are run in a local Lambda like environment.
 
 Lets try hitting our API:
 
@@ -105,7 +104,7 @@ curl http://localhost:3000/hello-world
 
 You should see Hello world printed in your terminal! Fantastic.
 
-Now lets try changing our api and seeing what happens. In your `saws-api/index.ts` file change the `/hello-world` route to send `res.send('Hello Universe!')`.
+Now lets try changing our api and seeing what happens. In our `saws-api/index.ts` file change the `/hello-world` route to send `res.send('Hello Universe!')`.
 
 ```ts
 app.get("/hello-world", async (req, res) => {
@@ -114,7 +113,7 @@ app.get("/hello-world", async (req, res) => {
 });
 ```
 
-Save your file and notice in your terminal you'll see a log line indicating that SAWS has automatically detected the change and rebuilt your entrypoint. This will also re-register your code with the local Lambda server.
+Save your file and notice in your terminal you'll see a log line indicating that SAWS has automatically detected the change and rebuilt our entrypoint. This will also re-register our code with the local Lambda server.
 
 Lets now try hitting our API again:
 
@@ -190,9 +189,9 @@ model Posts {
 }
 ```
 
-When you save this file, you'll notice that the `PostgresService` automatically detected the change in your schema file and rebuilt your Prisma client.
+When you save this file, you'll notice that the `PostgresService` automatically detected the change in our schema file and rebuilt our Prisma client.
 
-At the moment, the `PostgresService` can't automatically create migrations, or push schema changes to your database. So we'll rely on the `prisma` cli tool to do that for us.
+At the moment, the `PostgresService` can't automatically create migrations, or push schema changes to our database. So we'll rely on the `prisma` cli tool to do that for us.
 
 ```bash
 npx prisma migrate dev
@@ -353,7 +352,7 @@ curl -H "Authorization: Bearer <paste-access-token>" http://localhost:3000/posts
 
 The next great part about SAWS, is that not only does each service know how to run itself locally and talk to other services, they each know how to deploy themselves and set up permissions with their dependencies.
 
-Assuming you've configured your AWS credentials via the AWS clie, deploying your project is done with a single command.
+Assuming you've configured your AWS credentials via the AWS cli, deploying our project is done with a single command.
 
 ```bash
 npx saws deploy --stage production

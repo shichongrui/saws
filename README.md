@@ -23,9 +23,9 @@ Out of the box these services know how to run themselves locally, deploy themsel
 - [Libraries](#libraries)
 - [Philosophy](#philosophy)
 
-## Overview
+## 💡 Overview 💡
 
-💡 Ever have an idea for a project and think to yourself, "I'm going to need a web app, a database, authentication, and file storage." 💡
+Ever have an idea for a project and think to yourself, "I'm going to need a web app, a database, authentication, and file storage." 
 
 So you feverishly get started. You find some docker containers for postgres and a local equivalent of S3. You happen across another project that emulates cognito locally, then you decide to create a Remix app. Great we're off to the races.
 
