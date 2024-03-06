@@ -4,7 +4,7 @@
 
 SAWS is an opinionated tool for rapid development and deployment of Typescript applications to AWS.
 
-SAWS gives you infrastructure primitives that make it eash to build all kinds of applications.
+SAWS gives you infrastructure primitives that make it easier to build all kinds of applications.
 
 Out of the box these services know how to run themselves locally, deploy themselves to AWS, and connect themselves to other services.
 
