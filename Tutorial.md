@@ -231,7 +231,7 @@ This route will create a new post from our input.
 Lets go ahead and create a post.
 
 ```bash
-curl -X POST -H "Content-Type: application/json" -d '{"title":"Saws rules!", "content":"This is great!?"}' http://localhost:3000/posts
+curl -X POST -H "Content-Type: application/json" -d '{"title":"SAWS rules!", "content":"This is great!!"}' http://localhost:3000/posts
 ```
 
 We should see that `post` record returned from the curl command.
@@ -315,7 +315,7 @@ So lets get ourselves a token for our dev user using another aspect of the `saws
 
 # Scripts
 
-Let's create a new script in `scripts/get-token.ts` that uses the `CognitoClient` provides by `@saws/cognito` to get ourselves a token.
+Let's create a new script in `scripts/get-token.ts` that uses the `CognitoClient` provided by `@saws/cognito` to get ourselves a token.
 
 That script will look like this:
 
