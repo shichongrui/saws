@@ -18,6 +18,7 @@ Out of the box these services know how to run themselves locally, deploy themsel
   - [Add a service](#add-a-service)
   - [Start developing](#develop)
   - [Deploy](#deploy)
+- [Tutorial](#tutorial)
 - [SAWS CLI](#saws-cli)
 - [Services](#services)
 - [Libraries](#libraries)
@@ -120,7 +121,7 @@ SAWS uses the idea of stages for deployed environments. So changing the `--stage
 
 ## Tutorial <a id='tutorial'>
 
-To see a more in depth example of going from zero all the way to production, check out the [Tutoria](./Tutorial.md)
+To see a more in depth example of going from zero all the way to production, check out the [Tutorial](./Tutorial.md)
 
 ## SAWS CLI <a id='saws-cli'>
 
