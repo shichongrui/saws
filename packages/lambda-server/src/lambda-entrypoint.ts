@@ -34,11 +34,13 @@ process.on("message", async (message: JavascriptFunctionMessage) => {
         process.send?.({
           type: "response",
           response: result,
+          id: message.id,
         });
       } catch (err) {
         process.send?.({
           type: "error",
           error: (err as Error).message,
+          id: message.id,
         });
       }
       break;

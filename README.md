@@ -110,6 +110,10 @@ npx saws dev
 
 This will initialize any new service in your `saws.js` config file as well as stand up local infrastructure to begin development.
 
+### Using libraries <a id='using-libraries'>
+
+Most SAWS services also come with libraries that make it quick and easy to connect to your SAWS services. 
+
 ### Deploy my app <a id='deploy'>
 
 Once your ready to deploy to AWS, make sure your AWS config is set up and run:

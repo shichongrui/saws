@@ -8,6 +8,7 @@ import { fork, type ChildProcess, spawn } from "child_process";
 import { collectHttpBody } from "@saws/utils/collect-http-body";
 import * as path from "node:path";
 import { JavascriptFunctionMessage } from "./javascript-function-message-types";
+import { randomUUID } from "node:crypto";
 
 type ContainerFunctionDefinition = {
   type: "container";
@@ -91,23 +92,30 @@ export class LambdaServer {
       const responseText = await response.text();
       return responseText;
     } else if (definition.type === "javascript") {
+      let id = randomUUID()
+      let listener = function (resolve: any, reject: any, message: JavascriptFunctionMessage) {
+        if (message.type === "response" && message.id === id) {
+          resolve(JSON.stringify(message.response));
+        } else if (message.type === "error" && message.id === id) {
+          reject(new Error(message.error));
+        }
+      }
       const promise = new Promise<string>((resolve, reject) => {
-        process.once("message", (message: JavascriptFunctionMessage) => {
-          if (message.type === "response") {
-            resolve(JSON.stringify(message.response));
-          } else if (message.type === "error") {
-            reject(new Error(message.error));
-          }
-        });
+        process.on("message", (listener as any).bind(null, resolve, reject));
       });
 
       process.send({
         type: "invoke",
         event,
         context,
+        id,
       });
 
-      return promise;
+      let response = await promise
+
+      process.removeListener('message', listener)
+
+      return response;
     }
 
     throw new Error("Unsupported function type");
