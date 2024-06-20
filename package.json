@@ -1,7 +1,7 @@
 {
   "name": "saws",
   "private": true,
-  "version": "1.0.7",
+  "version": "1.0.8",
   "scripts": {
     "dev": "tsc -b -w",
     "build": "./scripts/build.sh",

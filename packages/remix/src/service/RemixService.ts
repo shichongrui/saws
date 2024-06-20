@@ -39,6 +39,7 @@ import { remixConfig } from "./templates/remix-config.template";
 interface RemixServiceConfig extends ServiceDefinitionConfig {
   rootDir?: string;
   port?: number;
+  liveReloadPort?: number;
   include?: string[];
 }
 
@@ -48,6 +49,7 @@ export class RemixService extends ServiceDefinition {
   handlerRef?: any;
   configPort?: number;
   port?: number;
+  liveReloadPort?: number;
   buildContext?: esbuild.BuildContext;
   entryPointPath: string;
   remixCompiler: any;
@@ -195,7 +197,7 @@ export class RemixService extends ServiceDefinition {
 
     console.log("Building remix app", this.name);
 
-    let wss = new WebSocket.Server({ port: 8002 });
+    let wss = new WebSocket.Server({ port: await this.getLiveReloadPort() });
     function broadcast(event: { type: string } & Record<string, unknown>) {
       setTimeout(() => {
         wss.clients.forEach((client) => {
@@ -330,6 +332,12 @@ export class RemixService extends ServiceDefinition {
     if (this.port != null) return this.port;
     this.port = await getPort({ port: this.configPort });
     return this.port;
+  }
+
+  async getLiveReloadPort() {
+    if (this.liveReloadPort != null) return this.liveReloadPort;
+    this.liveReloadPort = await getPort({ port: this.configPort });
+    return this.liveReloadPort;
   }
 
   async deploy(stage: string) {
