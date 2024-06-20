@@ -49,6 +49,7 @@ export class RemixService extends ServiceDefinition {
   handlerRef?: any;
   configPort?: number;
   port?: number;
+  configLiveReloadPort?: number;
   liveReloadPort?: number;
   buildContext?: esbuild.BuildContext;
   entryPointPath: string;
@@ -61,6 +62,7 @@ export class RemixService extends ServiceDefinition {
     this.buildFilePath = path.resolve(BUILD_DIR, this.name, "index.js");
     this.entryPointPath = path.resolve(this.rootDir, "index.ts");
     this.configPort = config.port;
+    this.configLiveReloadPort = config.liveReloadPort ?? 8002;
     this.include = config.include ?? [];
   }
 
@@ -336,7 +338,7 @@ export class RemixService extends ServiceDefinition {
 
   async getLiveReloadPort() {
     if (this.liveReloadPort != null) return this.liveReloadPort;
-    this.liveReloadPort = await getPort({ port: this.configPort });
+    this.liveReloadPort = await getPort({ port: this.configLiveReloadPort });
     return this.liveReloadPort;
   }
 

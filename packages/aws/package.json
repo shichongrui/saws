@@ -1,6 +1,6 @@
 {
   "name": "@saws/aws",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "",
   "exports": {
     "./cloudformation": "./dist/src/cloudformation.js",
