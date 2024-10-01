@@ -39,7 +39,7 @@ export const getTemplate = ({
           OriginAccessControlConfig: {
             Description:
               "origin access control(OAC) for allowing cloudfront to access S3 bucket",
-            Name: "static-hosting-OAC",
+            Name: `${name}-static-hosting-OAC-${stage}`,
             OriginAccessControlOriginType: "s3",
             SigningBehavior: "always",
             SigningProtocol: "sigv4",
