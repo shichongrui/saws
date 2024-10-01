@@ -2,10 +2,7 @@ import { lambdaServer } from "@saws/lambda-server";
 import { CloudFormation } from "@saws/aws/cloudformation";
 import { S3 } from "@saws/aws/s3";
 import { CognitoService } from "@saws/cognito/cognito-service";
-import {
-  ServiceDefinition,
-  ServiceDefinitionConfig,
-} from "@saws/core";
+import { ServiceDefinition, ServiceDefinitionConfig } from "@saws/core";
 import { BUILD_DIR } from "@saws/utils/constants";
 import { buildCodeZip } from "@saws/utils/build-code-zip";
 import { collectHttpBody } from "@saws/utils/collect-http-body";
@@ -47,7 +44,7 @@ export class ApiService extends ServiceDefinition {
     this.rootDir = path.resolve(".", config.handler ?? this.name);
     this.entryPointPath = path.resolve(this.rootDir, "index.ts");
     this.buildFilePath = path.resolve(BUILD_DIR, this.name, "index.js");
-    this.configPort = config.port
+    this.configPort = config.port;
     this.externalPackages = config.externalPackages ?? [];
     this.include = config.include ?? [];
   }
@@ -140,9 +137,9 @@ export class ApiService extends ServiceDefinition {
               req.headers.authorization?.replace("Bearer ", "") ?? "";
             if (authDependency != null) {
               if (authToken.length === 0) {
-                res.writeHead(401)
-                res.end('Unauthorized');
-                return
+                res.writeHead(401);
+                res.end("Unauthorized");
+                return;
               }
 
               await new Promise((resolve, reject) => {
@@ -251,6 +248,9 @@ export class ApiService extends ServiceDefinition {
       name: this.name,
       include: this.include,
       hasExternalModules: this.externalPackages.length > 0,
+      includePrisma: this.dependencies.some(
+        (dep) => dep.constructor.name === "PostgresService"
+      ),
     });
     const key = path.parse(zipPath).base;
     const fileExists = await s3Client.doesFileExist(bucketName, key);

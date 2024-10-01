@@ -10,10 +10,12 @@ export const buildCodeZip = async (
     name,
     include = [],
     hasExternalModules = false,
+    includePrisma = false,
   }: {
     name: string;
     include: string[];
     hasExternalModules: boolean;
+    includePrisma: boolean;
   }
 ) => {
   const zip = new AdmZip();
@@ -37,37 +39,33 @@ export const buildCodeZip = async (
 
   if (include.length > 0) {
     for (const filePath of include) {
-      const fullPath = path.resolve(parsedModulePath.dir, filePath)
-      const stat = await fs.stat(fullPath)
+      const fullPath = path.resolve(parsedModulePath.dir, filePath);
+      const stat = await fs.stat(fullPath);
       if (stat.isDirectory()) {
-        zip.addLocalFolder(
-          fullPath,
-          filePath,
-        )
+        zip.addLocalFolder(fullPath, filePath);
       } else {
-        const directory = path.parse(filePath).dir
-        zip.addLocalFile(
-          fullPath,
-          directory,
-        )
+        const directory = path.parse(filePath).dir;
+        zip.addLocalFile(fullPath, directory);
       }
     }
   }
 
-  zip.addLocalFile(
-    path.resolve(
-      "node_modules",
-      ".prisma",
-      "client",
-      "libquery_engine-rhel-openssl-3.0.x.so.node",
-    ),
-    "node_modules/.prisma/client"
-  );
+  if (includePrisma) {
+    zip.addLocalFile(
+      path.resolve(
+        "node_modules",
+        ".prisma",
+        "client",
+        "libquery_engine-rhel-openssl-3.0.x.so.node"
+      ),
+      "node_modules/.prisma/client"
+    );
 
-  zip.addLocalFile(
-    path.resolve("prisma", "schema.prisma"),
-    "node_modules/.prisma/client"
-  );
+    zip.addLocalFile(
+      path.resolve("prisma", "schema.prisma"),
+      "node_modules/.prisma/client"
+    );
+  }
 
   // If we don't clear the dates on each entry, then we get a different hash each time
   // even if all of the file contents are the same

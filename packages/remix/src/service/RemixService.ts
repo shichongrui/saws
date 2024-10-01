@@ -369,6 +369,7 @@ export class RemixService extends ServiceDefinition {
       name: this.name,
       include: this.include,
       hasExternalModules: false,
+      includePrisma: this.dependencies.some(dep => dep.constructor.name === 'PostgresService')
     });
     const key = path.parse(zipPath).base;
     const fileExists = await s3Client.doesFileExist(bucketName, key);

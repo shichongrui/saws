@@ -18,7 +18,7 @@ import { CloudFormation } from "@saws/aws/cloudformation";
 import { S3 } from "@saws/aws/s3";
 import fse from "fs-extra";
 import fs from "node:fs";
-import { createFileIfNotExists } from '@saws/utils/create-file-if-not-exists'
+import { createFileIfNotExists } from "@saws/utils/create-file-if-not-exists";
 import { entrypointTemplate } from "./entrypoint.template";
 
 export interface TypescriptFunctionServiceConfig extends FunctionServiceConfig {
@@ -56,11 +56,16 @@ export class TypescriptFunctionService extends FunctionService {
 
   async init() {
     await installMissingDependencies(["aws-lambda"]);
-    await installMissingDependencies(["@types/aws-lambda"], { development: true })
+    await installMissingDependencies(["@types/aws-lambda"], {
+      development: true,
+    });
 
     fs.mkdirSync(path.resolve(this.name), { recursive: true });
 
-    await createFileIfNotExists(path.resolve(this.name, 'index.ts'), entrypointTemplate())
+    await createFileIfNotExists(
+      path.resolve(this.name, "index.ts"),
+      entrypointTemplate()
+    );
   }
 
   async build() {
@@ -156,6 +161,9 @@ export class TypescriptFunctionService extends FunctionService {
       name: this.name,
       include: this.include,
       hasExternalModules: this.externalPackages.length > 0,
+      includePrisma: this.dependencies.some(
+        (dep) => dep.constructor.name === "PostgresService"
+      ),
     });
     const key = path.parse(zipPath).base;
     const fileExists = await s3Client.doesFileExist(bucketName, key);
