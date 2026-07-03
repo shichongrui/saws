@@ -1,6 +1,6 @@
 {
   "name": "@saws/docker",
-  "version": "0.0.0",
+  "version": "2.0.0-beta.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/shichongrui/saws.git",
@@ -15,7 +15,9 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "prebuild": "node -e \"fs.rmSync('dist', { recursive: true, force: true })\"",
     "build": "tsc -p tsconfig.json",
@@ -23,9 +25,9 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@saws/core": "0.0.0",
-    "@saws/host": "0.0.0",
-    "@saws/secrets": "0.0.0"
+    "@saws/core": "2.0.0-beta.0",
+    "@saws/host": "2.0.0-beta.0",
+    "@saws/secrets": "2.0.0-beta.0"
   },
   "devDependencies": {
     "@types/node": "^20.11.19",

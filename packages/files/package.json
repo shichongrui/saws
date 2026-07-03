@@ -1,6 +1,6 @@
 {
   "name": "@saws/files",
-  "version": "0.0.0",
+  "version": "2.0.0-beta.0",
   "description": "RustFS service and S3-compatible file client for SAWS",
   "repository": {
     "type": "git",
@@ -16,7 +16,10 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist", "README.md"],
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
     "prebuild": "node -e \"fs.rmSync('dist', { recursive: true, force: true })\"",
     "build": "tsc -p tsconfig.json",
@@ -27,12 +30,12 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.848.0",
     "@aws-sdk/s3-request-presigner": "^3.848.0",
-    "@saws/core": "0.0.0",
-    "@saws/docker": "0.0.0",
-    "@saws/secrets": "0.0.0"
+    "@saws/core": "2.0.0-beta.0",
+    "@saws/docker": "2.0.0-beta.0",
+    "@saws/secrets": "2.0.0-beta.0"
   },
   "devDependencies": {
-    "@saws/host": "0.0.0",
+    "@saws/host": "2.0.0-beta.0",
     "@types/node": "^24.0.0",
     "typescript": "^5.9.0"
   }

@@ -1,6 +1,6 @@
 {
   "name": "@saws/hono",
-  "version": "0.0.0",
+  "version": "2.0.0-beta.0",
   "description": "Hono HTTP service and RPC client for SAWS",
   "repository": {
     "type": "git",
@@ -16,7 +16,10 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist", "README.md"],
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
     "prebuild": "node -e \"fs.rmSync('dist', { recursive: true, force: true })\"",
     "build": "tsc -p tsconfig.json",
@@ -25,13 +28,13 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@saws/core": "0.0.0",
-    "@saws/docker": "0.0.0",
+    "@saws/core": "2.0.0-beta.0",
+    "@saws/docker": "2.0.0-beta.0",
     "hono": "^4.12.0"
   },
   "devDependencies": {
-    "@saws/host": "0.0.0",
-    "@saws/secrets": "0.0.0",
+    "@saws/host": "2.0.0-beta.0",
+    "@saws/secrets": "2.0.0-beta.0",
     "@types/node": "^24.0.0",
     "typescript": "^5.9.0"
   }

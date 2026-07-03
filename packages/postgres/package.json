@@ -1,6 +1,6 @@
 {
   "name": "@saws/postgres",
-  "version": "0.0.0",
+  "version": "2.0.0-beta.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/shichongrui/saws.git",
@@ -15,7 +15,10 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist", "README.md"],
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
     "prebuild": "node -e \"fs.rmSync('dist', { recursive: true, force: true })\"",
     "build": "tsc -p tsconfig.json",
@@ -23,15 +26,15 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@saws/core": "0.0.0",
-    "@saws/docker": "0.0.0",
-    "@saws/secrets": "0.0.0",
+    "@saws/core": "2.0.0-beta.0",
+    "@saws/docker": "2.0.0-beta.0",
+    "@saws/secrets": "2.0.0-beta.0",
     "@types/pg": "^8.15.5",
     "commander": "^14.0.3",
     "pg": "^8.16.3"
   },
   "devDependencies": {
-    "@saws/host": "0.0.0",
+    "@saws/host": "2.0.0-beta.0",
     "@types/node": "^20.11.19",
     "typescript": "^5.3.3"
   }

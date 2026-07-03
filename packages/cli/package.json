@@ -1,6 +1,6 @@
 {
   "name": "@saws/cli",
-  "version": "0.0.0",
+  "version": "2.0.0-beta.0",
   "description": "Command-line interface for SAWS",
   "repository": {
     "type": "git",
@@ -22,9 +22,9 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@saws/core": "0.0.0",
-    "@saws/host": "0.0.0",
-    "@saws/secrets": "0.0.0",
+    "@saws/core": "2.0.0-beta.0",
+    "@saws/host": "2.0.0-beta.0",
+    "@saws/secrets": "2.0.0-beta.0",
     "commander": "^14.0.3"
   },
   "devDependencies": {
