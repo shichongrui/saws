@@ -14,22 +14,28 @@ type CommandRunner = (
   options: { cwd: string; env: NodeJS.ProcessEnv }
 ) => Promise<void>;
 
-export const createMigrateCommand = () =>
+export const createMigrateCommand = (
+  run: CommandRunner = runToCompletion
+) =>
   new Command("migrate")
-    .description("create a new Postgres migration")
-    .argument("<name>", "migration name")
+    .description("run dbmate commands")
+    .argument("[dbmateArgs...]", "arguments passed to dbmate")
     .option("--root-dir <string>", "project root containing db/migrations")
     .option("--config <string>", "path to service definition")
     .option("--dry-run", "print the dbmate command without running it")
-    .action(migrateCommand);
+    .helpOption(false)
+    .allowUnknownOption()
+    .action((dbmateArgs: string[], options: MigrateCommandOptions) =>
+      migrateCommand(dbmateArgs, options, run)
+    );
 
 export async function migrateCommand(
-  name: string,
+  dbmateArgs: string[],
   options: MigrateCommandOptions,
   run: CommandRunner = runToCompletion
 ) {
   const rootDir = path.resolve(options.rootDir ?? process.cwd());
-  const args = ["exec", "--", "dbmate", "new", name];
+  const args = ["exec", "--", "dbmate", ...dbmateArgs];
 
   if (options.dryRun) {
     process.stdout.write(

@@ -12,6 +12,7 @@ import test from "node:test";
 import { DeployContext, DevContext, InitContext } from "@saws/core";
 import { DockerProvider } from "@saws/docker";
 import { Host, type HostExecOptions } from "@saws/host";
+import { SecretsManager } from "@saws/secrets";
 import { PostgresDockerService } from "./postgres-docker-service.js";
 
 class TestPostgresDockerService extends PostgresDockerService {
@@ -123,6 +124,35 @@ test("reports the published host port while container connections use port 5432"
     postgresDBName: "app",
     databaseUrl: "postgresql://app-user:secret@localhost:15432/app",
   });
+});
+
+test("creates the configured database and user with a secret-backed password", async () => {
+  const rootDir = await mkdtemp(path.join(os.tmpdir(), "saws-postgres-secret-"));
+  await new SecretsManager({
+    stage: "production",
+    rootDir,
+  }).set("database-password", "secret from manager");
+  const service = new TestPostgresDockerService({
+    name: "db",
+    docker: createProvider(),
+    database: "application",
+    username: "application-user",
+    password: SecretsManager.reference("database-password"),
+  });
+  const context = new DevContext({
+    stage: "production",
+    rootDir,
+  });
+
+  assert.deepEqual((await service.getRunConfig(context)).env, {
+    POSTGRES_USER: "application-user",
+    POSTGRES_PASSWORD: "secret from manager",
+    POSTGRES_DB: "application",
+  });
+  assert.equal(
+    (await service.getEnvironmentVariables(context)).DB_DATABASE_URL,
+    "postgresql://application-user:secret%20from%20manager@localhost:5432/application"
+  );
 });
 
 test("defines a pg_isready health check that can be overridden", async () => {

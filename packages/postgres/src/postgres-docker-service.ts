@@ -23,7 +23,7 @@ import {
   DockerService,
   type DockerServiceConfig,
 } from "@saws/docker";
-import { SecretsManager } from "@saws/secrets";
+import { SecretReference, SecretsManager } from "@saws/secrets";
 import { createMigrateCommand } from "./migrate-command.js";
 
 export interface PostgresDockerServiceConfig
@@ -34,9 +34,12 @@ export interface PostgresDockerServiceConfig
   image?: string;
   /** Host port to expose Postgres on. Omit to keep it private to the Docker network. */
   port?: number;
+  /** Database created by the Postgres image and used in generated connection URLs. */
   database?: string;
+  /** Postgres superuser created by the Postgres image. Defaults to "postgres". */
   username?: string;
-  password?: string;
+  /** Plaintext password or a stage-aware SAWS secret reference. */
+  password?: string | SecretReference;
   /** Override the Docker volume name. By default SAWS derives a stable stage/service volume. */
   volume?: string;
   dataDirectory?: string;
@@ -60,7 +63,7 @@ export class PostgresDockerService extends DockerService {
   readonly port?: number;
   readonly database?: string;
   readonly username: string;
-  readonly password?: string;
+  readonly password?: string | SecretReference;
   readonly volume?: string;
   readonly dataDirectory: string;
   readonly migrationImage: string;
@@ -68,7 +71,7 @@ export class PostgresDockerService extends DockerService {
   constructor(config: PostgresDockerServiceConfig) {
     super({
       ...config,
-      image: config.image ?? "postgres:16",
+      image: config.image ?? "postgres:18",
       healthCheck: config.healthCheck ?? {
         command: 'pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB"',
         interval: "10s",
@@ -256,7 +259,9 @@ export class PostgresDockerService extends DockerService {
     context: RuntimeContext,
     target: EnvironmentVariableTarget = "host"
   ): Promise<PostgresConnectionInfo> {
-    const password = this.password ?? await this.getOrCreatePassword(context);
+    const password = this.password instanceof SecretReference
+      ? await this.password.resolve(context)
+      : this.password ?? await this.getOrCreatePassword(context);
     const containerName = this.getContainerName(context);
 
     return {
