@@ -1,28 +1,34 @@
 {
   "name": "@saws/cli",
-  "version": "1.0.11",
-  "description": "",
+  "version": "0.0.0",
+  "description": "Command-line interface for SAWS",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shichongrui/saws.git",
+    "directory": "packages/cli"
+  },
+  "type": "module",
   "bin": {
-    "saws": "./dist/bin/saws.js"
+    "saws": "dist/bin/saws.js"
   },
   "files": [
-    "./dist"
+    "dist"
   ],
-  "keywords": [],
-  "author": "",
-  "license": "MIT",
+  "scripts": {
+    "prebuild": "node -e \"fs.rmSync('dist', { recursive: true, force: true })\"",
+    "build": "tsc -p tsconfig.json",
+    "postbuild": "chmod +x dist/bin/saws.js",
+    "test": "npm run build && node --test dist/commands/**/*.test.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
   "dependencies": {
-    "@saws/secrets": "workspace:^",
-    "@saws/utils": "workspace:^",
-    "commander": "^12.0.0",
-    "esbuild": "^0.20.1",
-    "find-package-json": "^1.2.0"
+    "@saws/core": "0.0.0",
+    "@saws/host": "0.0.0",
+    "@saws/secrets": "0.0.0",
+    "commander": "^14.0.3"
   },
   "devDependencies": {
-    "@saws/core": "workspace:^",
-    "@types/find-package-json": "^1.2.6"
-  },
-  "peerDependencies": {
-    "@saws/core": ">=1.0.0"
+    "@types/node": "^20.11.19",
+    "typescript": "^5.3.3"
   }
 }

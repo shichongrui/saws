@@ -1,18 +1,33 @@
-import path from 'node:path'
-import { installMissingDependencies } from '@saws/utils/dependency-management'
-import { tsconfigJsonTemplate } from './templates/tsconfig-json.template'
-import { sawsJsTemplate } from './templates/saws-js.template'
-import { createFileIfNotExists } from '@saws/utils/create-file-if-not-exists'
-import { gitignoreTemplate } from './templates/gitignore.template'
+import {
+  findServiceDefinition,
+  getSawsConfig,
+  InitContext,
+} from "@saws/core";
 
-export const initCommand = async () => {
-  const name = path.parse(path.resolve('.')).name
+export interface InitCommandOptions {
+  rootDir?: string;
+  config?: string;
+  dryRun?: boolean;
+}
 
-  // not used for now
-  await installMissingDependencies([])
-  await installMissingDependencies(['@saws/core', 'typescript'], { development: true })
-  
-  createFileIfNotExists('./tsconfig.json', tsconfigJsonTemplate())
-  createFileIfNotExists('./saws.js', sawsJsTemplate({ name }))
-  createFileIfNotExists('./.gitignore', gitignoreTemplate())
+export async function initCommand(
+  serviceName: string,
+  path: string | undefined,
+  options: InitCommandOptions
+) {
+  const rootDir = options.rootDir ?? process.cwd();
+  const rootService = await getSawsConfig(options.config ?? path);
+  const service = findServiceDefinition(rootService, serviceName);
+
+  await service.init(
+    new InitContext({
+      stage: "local",
+      rootDir,
+      dryRun: options.dryRun ?? false,
+      env: process.env as Record<string, string>,
+      logSink: ({ stream, chunk }) => {
+        (stream === "stderr" ? process.stderr : process.stdout).write(chunk);
+      },
+    })
+  );
 }

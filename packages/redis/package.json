@@ -1,0 +1,36 @@
+{
+  "name": "@saws/redis",
+  "version": "0.0.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shichongrui/saws.git",
+    "directory": "packages/redis"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "prebuild": "node -e \"fs.rmSync('dist', { recursive: true, force: true })\"",
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run build && node --test dist/*.test.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@saws/core": "0.0.0",
+    "@saws/docker": "0.0.0",
+    "@saws/secrets": "0.0.0",
+    "ioredis": "^5.4.1"
+  },
+  "devDependencies": {
+    "@saws/host": "0.0.0",
+    "@types/node": "^20.11.19",
+    "typescript": "^5.3.3"
+  }
+}

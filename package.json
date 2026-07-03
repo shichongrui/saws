@@ -2,12 +2,16 @@
   "name": "saws",
   "private": true,
   "version": "1.0.11",
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "tsc -b -w",
-    "build": "./scripts/build.sh",
-    "bump:patch": "./scripts/increment-version.sh patch",
-    "bump:minor": "./scripts/increment-version.sh minor",
-    "bump:major": "./scripts/increment-version.sh major"
+    "build": "tsc -b",
+    "clean": "tsc -b --clean",
+    "release:publish": "node scripts/publish-packages.mjs",
+    "test": "npm run test --workspaces --if-present",
+    "typecheck": "tsc -b",
+    "version:bump": "node scripts/version-packages.mjs"
   },
   "repository": {
     "url": "git@github.com:shichongrui/saws.git"
@@ -17,22 +21,5 @@
     "@types/node": "^20.11.19",
     "typescript": "^5.3.3"
   },
-  "dependencies": {
-    "@saws/lambda-server": "workspace:^",
-    "@saws/api": "workspace:^",
-    "@saws/aws": "workspace:^",
-    "@saws/cli": "workspace:^",
-    "@saws/cognito": "workspace:^",
-    "@saws/container": "workspace:^",
-    "@saws/core": "workspace:^",
-    "@saws/email": "workspace:^",
-    "@saws/file-storage": "workspace:^",
-    "@saws/function": "workspace:^",
-    "@saws/postgres": "workspace:^",
-    "@saws/remix": "workspace:^",
-    "@saws/remix-auth": "workspace:^",
-    "@saws/secrets": "workspace:^",
-    "@saws/utils": "workspace:^",
-    "@saws/website": "workspace:^"
-  }
+  "dependencies": {}
 }

@@ -1,0 +1,22 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./packages/api" },
+    { "path": "./packages/aws" },
+    { "path": "./packages/cli" },
+    { "path": "./packages/cognito" },
+    { "path": "./packages/container" },
+    { "path": "./packages/core" },
+    { "path": "./packages/email" },
+    { "path": "./packages/file-storage" },
+    { "path": "./packages/function" },
+    { "path": "./packages/lambda-server" },
+    { "path": "./packages/postgres" },
+    { "path": "./packages/remix" },
+    { "path": "./packages/remix-auth" },
+    { "path": "./packages/secrets" },
+    { "path": "./packages/translate" },
+    { "path": "./packages/utils" },
+    { "path": "./packages/website" }
+  ]
+}

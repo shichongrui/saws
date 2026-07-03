@@ -1,0 +1,16 @@
+{
+  "name": "@saws/core",
+  "version": "1.0.11",
+  "description": "",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "files": [
+    "./dist"
+  ],
+  "dependencies": {
+    "@saws/utils": "workspace:^"
+  }
+}

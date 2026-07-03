@@ -1,168 +1,65 @@
-<div align='center'>
+# Concrete Service SAWS Prototype
 
-# 🪚 SAWS 🪚
+This package prototypes a concrete-service SAWS architecture. It keeps the
+dependency-graph configuration used by the original SAWS implementation while
+making each service's runtime implementation explicit.
 
-SAWS is an opinionated tool for rapid development and deployment of Typescript applications to AWS.
+## Documentation
 
-SAWS gives you infrastructure primitives that make it easier to build all kinds of applications.
+The documentation is organized as a navigable wiki:
 
-Out of the box these services know how to run themselves locally, deploy themselves to AWS, and connect themselves to other services.
+- [Wiki home](./docs/README.md)
+- [Getting started](./docs/getting-started.md)
+- [CLI reference](./docs/cli.md)
+- [Service lifecycle](./docs/service-lifecycle.md)
+- [`DockerService`](./docs/docker-service.md)
+- [`HonoHTTPService` and `HonoClient`](./docs/hono-http-service.md)
+- [`PostgresDockerService`](./docs/postgres-docker-service.md)
+- [`RustFSService` and `Files`](./packages/files/README.md)
+- [Supporting APIs](./docs/supporting-apis.md)
+- [Current limitations](./docs/limitations.md)
 
-</div>
+The prototype includes `DockerService` for general-purpose containers,
+`HonoHTTPService` for TypeScript HTTP applications,
+`PostgresDockerService` for persistent PostgreSQL containers, and
+`RustFSService` with an S3-compatible `Files` adapter.
 
-## Table of Contents
-- [Overview](#overview)
-- [Getting Started](#getting-started)
-  - [Installation](#installation)
-  - [saws.js](#saws-js)
-  - [Add a service](#add-a-service)
-  - [Start developing](#develop)
-  - [Deploy](#deploy)
-- [Tutorial](#tutorial)
-- [SAWS CLI](#saws-cli)
-- [Services](#services)
-- [Libraries](#libraries)
-- [Philosophy](#philosophy)
+## Releasing packages
 
-## 💡 Overview 💡
+All `@saws/*` packages use one synchronized version. The version command also
+updates exact internal `@saws/*` dependency pins and `package-lock.json`.
 
-Ever have an idea for a project and think to yourself, "I'm going to need a web app, a database, authentication, and file storage." 
+```sh
+# Set an exact version.
+npm run version:bump -- 1.0.0
 
-So you feverishly get started. You find some docker containers for postgres and a local equivalent of S3. You happen across another project that emulates cognito locally, then you decide to create a Remix app. Great we're off to the races.
+# Use a stable SemVer increment.
+npm run version:bump -- patch
 
-But then you realize, "Well I need an ORM...", "Oh I need to download AWS SDKs for Cognito and S3...", "Wait I can't ever remember what the names of things in the AWS SDK are, guess I'll live in the docs..."
-
-But you finally have your app running locally and your feeling great about it. But now you need to deploy it...
-
-"Well lets go look up Cloudformation docs for RDS...", "Man why doesn't this work..." "Well there goes my evening...", "Yes it deployed but there's an error..." "Oh I didn't add the right permission..." "Oh my clients are all configured for local, I need to go change everything to work for local infrastructure and deployed infrastructure..."
-
-This is the pain of starting a new project, and the pain that SAWS fixes.
-
-<b>With SAWS all you have to do is say, I want Remix, Postgres, file storage, and authentication. And it handles the rest.</b>
-
-In Development:
-- It will install all the dependencies you need into your project.
-- It will create all of the boilerplate files you need.
-- It will automatically stand up a local development environment for you based on what you need.
-- It will keep your development environment up to date every time a file changes.
-
-And it will do all that with one command `npx saws dev`
-
-When you're ready to deploy:
-- It will stand up and configure all of your infrastructure in AWS.
-- It will manage all of the required permissions across each service.
-
-And it will do all that with one command `npx saws deploy`
-
-In addition, the libraries packaged into each service of SAWS are built to work both locally and in a deployed environment, with no changes in your code. So if you run `const client = new FileStorage('my-bucket')`, that code will work both locally and deployed.
-
-## Getting Started <a id='getting-started'>
-
-⚠️ This release of SAWS is probably still BETA-ish. I've released production applications using it but it's current userbase is 1 so please report any bugs and consider helping out if you desire ⚠️
-
-If you'd prefer the full tutorial instead of the quick start guide, check out the [Tutorial](./Tutorial.md)
-
-### Installation <a id='installation'>
-Install the SAWS cli and initialize your saws project:
-```bash
-npm install -D @saws/cli
-npx saws init
+# Start the next patch beta, then increment subsequent betas.
+npm run version:bump -- beta
 ```
 
-This will install other required dependencies, write your `.gitignore`, `tsconfig.json`, and `saws.js` configuration file.
+`premajor`, `preminor`, `prepatch`, and `prerelease` are also supported. Pass
+`--preid rc` (or another identifier) to use a prerelease tag other than
+`beta`.
 
-### `saws.js` <a id='saws-js'>
+After reviewing and committing the version changes, push a matching tag:
 
-Your `saws.js` configuration file is where you will add the services that your application uses. SAWS will use this file to stand up your development environment as well as deploy the infrastructure your application needs.
-
-### Add a service <a id='add-a-service'>
-
-Once you've run the `init` command in your project, you can now add your first service. As an example, lets add a `RemixService` that depends on a `PostgresService`
-
-```bash
-npm install @saws/remix @saws/postgres
+```sh
+git tag v1.0.0-beta.0
+git push origin v1.0.0-beta.0
 ```
 
-We'll then want to update our `saws.js` config file
+The publish workflow tests and builds the repository, then publishes every
+package in dependency order. Stable versions use the npm `latest` dist-tag.
+Prerelease versions use their prerelease identifier, so `1.0.0-beta.0` is
+published with the npm `beta` dist-tag.
 
-```
-const { PostgresService } = require('@saws/postgres/postgres-service')
-const { RemixService } = require('@saws/remix/remix-service')
+To inspect the packages and publish order without releasing anything, run
+`npm run release:publish -- v1.0.0-beta.0 --dry-run`.
 
-const postgres = new PostgresService({
-  name: 'my-postgres-db'
-})
-
-const remix = new RemixService({
-  name: 'my-remix-app',
-  dependencies: [postgres]
-})
-
-module.exports = remix
-```
-
-### Start developing <a id='develop'>
-
-To have SAWS create your development environment for you simply run:
-```bash
-npx saws dev
-```
-
-This will initialize any new service in your `saws.js` config file as well as stand up local infrastructure to begin development.
-
-### Using libraries <a id='using-libraries'>
-
-Most SAWS services also come with libraries that make it quick and easy to connect to your SAWS services. 
-
-### Deploy my app <a id='deploy'>
-
-Once your ready to deploy to AWS, make sure your AWS config is set up and run:
-```bash
-npx saws deploy --stage production
-```
-
-SAWS uses the idea of stages for deployed environments. So changing the `--stage` option allows you to release multiple environments of an app.
-
-## Tutorial <a id='tutorial'>
-
-To see a more in depth example of going from zero all the way to production, check out the [Tutorial](./Tutorial.md)
-
-## SAWS CLI <a id='saws-cli'>
-
-To see more about the CLI see the [documentation on the SAW CLI](./packages/cli/README.md)
-
-## Services <a id='services'>
-- [RestApiService](./packages/api/README.md#rest-api-service)
-- [GraphQLApiService](./packages/api/README.md#graphql-api-service)
-- [CognitoService](./packages/cognito/README.md#cognito-service)
-- [ContainerService](./packages/container/README.md#container-service)
-- [EmailService](./packages/email/README.md#email-service)
-- [FileStorageService](./packages/file-storage/README.md#file-storage-service)
-- [TypescriptFunctionService](./packages/function/README.md#typescript-function-service)
-- [ContainerFunctionService](./packages/function/README.md#container-function-service)
-- [PostgresService](./packages/postgres/README.md#postgres-service)
-- [RemixService](./packages/remix/README.md#remix-service)
-- [SecretsService](./packages/secrets/README.md#secrets-service)
-- [TranslateService](./packages/translate/README.md#translate-service)
-- [WebsiteService](./packages/website/README.md#website-service)
-
-## Libraries <a id='libraries'>
-- [RestAPI](./packages/api/README.md#rest-api)
-- [GraphQLApi](./packages/api/README.md#graphql-api)
-- [CognitoClient](./packages/cognito/README.md#cognito-client)
-- [SessionClient](./packages/cognito/README.md#session-client)
-- [Email](./packages/email/README.md#email-library)
-- [FileStorage](./packages/file-storage/README.md#file-storage-library)
-- [FunctionClient](./packages/function/README.md#functions-client)
-- [getPrismaClient](./packages/postgres/README.md#get-prisma-client)
-- [Remix Auth](./packages/remix-auth/README.md)
-- [RemixApp](./packages/remix/README.md#remix-app)
-- [multipartFormData](./packages/remix/README.md#multi-part-form-data)
-- [SecretsManager](./packages/secrets/README.md#Secrets-manager)
-- [TranslateClient](./packages/translate/README.md#translate-library)
-
-## Philosophy <a id='philosophy'>
-
-SAWS aims to make it as easy as possible and as cheap as possible to develop and deploy applications to AWS. As such all infrastructure primitives attempt to rely on services that are part of the AWS free tier. As such some of the choices made may not be the "best practice" for larger or enterprise applications, but are perfectly fine for smaller apps and experiments.
-
-If an app using SAWS ever requires a change to this philosphy because of scaling or security concerns, I'll try to accomodate a path to using AWS infrastructure differently.
+For tokenless publishing, configure `.github/workflows/publish.yml` as the
+trusted GitHub Actions publisher for each package on npm. A repository
+`NPM_TOKEN` secret can be used instead, including to bootstrap packages that
+have not yet been published.
