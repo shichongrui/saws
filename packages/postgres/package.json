@@ -1,6 +1,6 @@
 {
   "name": "@saws/postgres",
-  "version": "2.0.0-beta.1",
+  "version": "2.0.0-beta.2",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/shichongrui/saws.git",
@@ -26,15 +26,15 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@saws/core": "2.0.0-beta.1",
-    "@saws/docker": "2.0.0-beta.1",
-    "@saws/secrets": "2.0.0-beta.1",
+    "@saws/core": "2.0.0-beta.2",
+    "@saws/docker": "2.0.0-beta.2",
+    "@saws/secrets": "2.0.0-beta.2",
     "@types/pg": "^8.15.5",
     "commander": "^14.0.3",
     "pg": "^8.16.3"
   },
   "devDependencies": {
-    "@saws/host": "2.0.0-beta.1",
+    "@saws/host": "2.0.0-beta.2",
     "@types/node": "^20.11.19",
     "typescript": "^5.3.3"
   }

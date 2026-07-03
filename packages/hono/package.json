@@ -1,6 +1,6 @@
 {
   "name": "@saws/hono",
-  "version": "2.0.0-beta.1",
+  "version": "2.0.0-beta.2",
   "description": "Hono HTTP service and RPC client for SAWS",
   "repository": {
     "type": "git",
@@ -28,13 +28,13 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@saws/core": "2.0.0-beta.1",
-    "@saws/docker": "2.0.0-beta.1",
+    "@saws/core": "2.0.0-beta.2",
+    "@saws/docker": "2.0.0-beta.2",
     "hono": "^4.12.0"
   },
   "devDependencies": {
-    "@saws/host": "2.0.0-beta.1",
-    "@saws/secrets": "2.0.0-beta.1",
+    "@saws/host": "2.0.0-beta.2",
+    "@saws/secrets": "2.0.0-beta.2",
     "@types/node": "^24.0.0",
     "typescript": "^5.9.0"
   }

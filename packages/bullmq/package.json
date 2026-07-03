@@ -1,6 +1,6 @@
 {
   "name": "@saws/bullmq",
-  "version": "2.0.0-beta.1",
+  "version": "2.0.0-beta.2",
   "description": "BullMQ worker/queue service and type-safe client for SAWS",
   "repository": {
     "type": "git",
@@ -26,13 +26,13 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@saws/core": "2.0.0-beta.1",
-    "@saws/docker": "2.0.0-beta.1",
+    "@saws/core": "2.0.0-beta.2",
+    "@saws/docker": "2.0.0-beta.2",
     "bullmq": "^5.71.0"
   },
   "devDependencies": {
-    "@saws/host": "2.0.0-beta.1",
-    "@saws/secrets": "2.0.0-beta.1",
+    "@saws/host": "2.0.0-beta.2",
+    "@saws/secrets": "2.0.0-beta.2",
     "@types/node": "^20.11.19",
     "typescript": "^5.3.3"
   }

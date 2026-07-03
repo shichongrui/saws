@@ -1,6 +1,6 @@
 {
   "name": "@saws/docker",
-  "version": "2.0.0-beta.1",
+  "version": "2.0.0-beta.2",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/shichongrui/saws.git",
@@ -25,9 +25,9 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@saws/core": "2.0.0-beta.1",
-    "@saws/host": "2.0.0-beta.1",
-    "@saws/secrets": "2.0.0-beta.1"
+    "@saws/core": "2.0.0-beta.2",
+    "@saws/host": "2.0.0-beta.2",
+    "@saws/secrets": "2.0.0-beta.2"
   },
   "devDependencies": {
     "@types/node": "^20.11.19",
