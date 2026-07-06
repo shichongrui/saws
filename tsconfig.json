@@ -1,15 +1,12 @@
 {
+  "extends": "@tsconfig/node26/tsconfig.json",
   "files": [],
+  "compilerOptions": {
+    "types": ["node"]
+  },
   "references": [
-    { "path": "./packages/cli" },
-    { "path": "./packages/core" },
-    { "path": "./packages/docker" },
-    { "path": "./packages/files" },
-    { "path": "./packages/hono" },
-    { "path": "./packages/host" },
-    { "path": "./packages/postgres" },
-    { "path": "./packages/redis" },
-    { "path": "./packages/secrets" },
-    { "path": "./packages/bullmq" }
+    { "path": "./packages/core/tsconfig.json" },
+    { "path": "./packages/cli/tsconfig.json" },
+    { "path": "./packages/docker-service/tsconfig.json" }
   ]
 }

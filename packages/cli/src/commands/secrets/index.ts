@@ -3,9 +3,11 @@ import { secretsCommand } from "./command.js";
 
 export const createCommand = () =>
   new Command("secrets")
-    .argument("<string>", "secret name")
-    .option("--stage <string>", "stage", "local")
-    .option("--set <string>", "set secret value")
-    .option("--get", "get secret value")
-    .option("--root-dir <string>", "project root used for local secrets")
+    .description("get or set encrypted project secrets")
+    .argument("<name>", "secret name")
+    .option("--stage <string>", "stage for a stage-scoped secret", "local")
+    .option("--global", "use the global secret scope")
+    .option("--set <string>", "set the secret value")
+    .option("--get", "get the secret value")
+    .option("--config <string>", "path to service definition")
     .action(secretsCommand);

@@ -1,0 +1,15 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./packages/cli" },
+    { "path": "./packages/core" },
+    { "path": "./packages/docker" },
+    { "path": "./packages/files" },
+    { "path": "./packages/hono" },
+    { "path": "./packages/host" },
+    { "path": "./packages/postgres" },
+    { "path": "./packages/redis" },
+    { "path": "./packages/secrets" },
+    { "path": "./packages/bullmq" }
+  ]
+}

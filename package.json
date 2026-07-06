@@ -1,25 +1,35 @@
 {
   "name": "saws",
-  "private": true,
-  "version": "1.0.11",
-  "workspaces": [
-    "packages/*"
-  ],
-  "scripts": {
-    "build": "tsc -b",
-    "clean": "tsc -b --clean",
-    "release:publish": "node scripts/publish-packages.mjs",
-    "test": "npm run test --workspaces --if-present",
-    "typecheck": "tsc -b",
-    "version:bump": "node scripts/version-packages.mjs"
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/shichongrui/saws#readme",
+  "bugs": {
+    "url": "https://github.com/shichongrui/saws/issues"
   },
+  "author": "",
   "repository": {
-    "url": "git@github.com:shichongrui/saws.git"
+    "type": "git",
+    "url": "git+https://github.com/shichongrui/saws.git"
   },
-  "license": "MIT",
+  "workspaces": [
+    "./packages/*"
+  ],
+  "type": "module",
+  "scripts": {
+    "dev": "tsc -b --watch --force & chokidar 'dist/bin/saws.js' -c 'chmod +x dist/bin/saws.js'",
+    "build": "tsc -b",
+    "lint": "oxlint",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check",
+    "tsc": "tsc --noEmit",
+    "check": "npm run lint && npm run fmt && npm run tsc"
+  },
   "devDependencies": {
-    "@types/node": "^20.11.19",
-    "typescript": "^5.3.3"
-  },
-  "dependencies": {}
+    "@tsconfig/node26": "^26.0.0",
+    "@types/node": "^26.1.0",
+    "chokidar-cli": "^3.0.0",
+    "oxfmt": "^0.57.0",
+    "oxlint": "^1.72.0",
+    "typescript": "^6.0.3"
+  }
 }

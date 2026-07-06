@@ -1,0 +1,34 @@
+{
+  "name": "@saws/cli",
+  "version": "2.0.0-beta.2",
+  "description": "Command-line interface for SAWS",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shichongrui/saws.git",
+    "directory": "packages/cli"
+  },
+  "type": "module",
+  "bin": {
+    "saws": "dist/bin/saws.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "prebuild": "node -e \"fs.rmSync('dist', { recursive: true, force: true })\"",
+    "build": "tsc -p tsconfig.json",
+    "postbuild": "chmod +x dist/bin/saws.js",
+    "test": "npm run build && node --test dist/commands/**/*.test.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@saws/core": "2.0.0-beta.2",
+    "@saws/host": "2.0.0-beta.2",
+    "@saws/secrets": "2.0.0-beta.2",
+    "commander": "^14.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.19",
+    "typescript": "^5.3.3"
+  }
+}

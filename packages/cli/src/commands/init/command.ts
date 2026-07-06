@@ -1,33 +1,21 @@
-import {
-  findServiceDefinition,
-  getSawsConfig,
-  InitContext,
-} from "@saws/core";
+import path from "node:path";
+import fs from "node:fs/promises";
+import { installDependencies } from "@saws/core/utils/dependency-management";
+import { createFileIfNotExists } from "@saws/core/utils/create-file-if-not-exists";
+import { sawsTsTemplate } from "./templates/saws-ts.template.js";
+import { tsconfigJsonTemplate } from "./templates/tsconfig-json.template.js";
+import { gitignoreTemplate } from "./templates/gitignore.template.js";
 
-export interface InitCommandOptions {
-  rootDir?: string;
-  config?: string;
-  dryRun?: boolean;
-}
+export const initCommand = async () => {
+  const name = path.parse(path.resolve(".")).name;
 
-export async function initCommand(
-  serviceName: string,
-  path: string | undefined,
-  options: InitCommandOptions
-) {
-  const rootDir = options.rootDir ?? process.cwd();
-  const rootService = await getSawsConfig(options.config ?? path);
-  const service = findServiceDefinition(rootService, serviceName);
+  // not used for now
+  await installDependencies([]);
+  await installDependencies(["@saws/core", "typescript", "@tsconfig/node26"], {
+    development: true,
+  });
 
-  await service.init(
-    new InitContext({
-      stage: "local",
-      rootDir,
-      dryRun: options.dryRun ?? false,
-      env: process.env as Record<string, string>,
-      logSink: ({ stream, chunk }) => {
-        (stream === "stderr" ? process.stderr : process.stdout).write(chunk);
-      },
-    })
-  );
-}
+  await fs.writeFile("./tsconfig.json", tsconfigJsonTemplate(), {});
+  await createFileIfNotExists("./saws.ts", sawsTsTemplate({ name }));
+  await createFileIfNotExists("./.gitignore", gitignoreTemplate());
+};

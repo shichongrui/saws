@@ -1,0 +1,7 @@
+{
+  "extends": "@tsconfig/node26/tsconfig.json",
+  "compilerOptions": {
+    "composite": true,
+    "types": ["node", "find-package-json"]
+  }
+}

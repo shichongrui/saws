@@ -1,20 +1,19 @@
-import { Host } from "@saws/host";
-import type { ServiceDefinition } from "@saws/core";
+import { Host, type ServiceDefinition } from "@saws/core";
 
 export function findConfiguredHosts(root: ServiceDefinition) {
   const hosts = new Set<Host>();
-  const visited = new Set<ServiceDefinition>();
+  const visited = new WeakSet<object>();
 
-  const visit = (service: ServiceDefinition) => {
-    if (visited.has(service)) return;
-    visited.add(service);
+  const visit = (value: unknown) => {
+    if (value == null || typeof value !== "object" || visited.has(value)) return;
+    visited.add(value);
 
-    const host = (
-      service as ServiceDefinition & { docker?: { host?: unknown } }
-    ).docker?.host;
-    if (host instanceof Host) hosts.add(host);
+    if (value instanceof Host) {
+      hosts.add(value);
+      return;
+    }
 
-    for (const dependency of service.dependencies) visit(dependency);
+    for (const child of Object.values(value)) visit(child);
   };
 
   visit(root);

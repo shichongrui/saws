@@ -1,40 +1,20 @@
-import { DeployContext, getSawsConfig } from "@saws/core";
-import { findConfiguredHosts } from "../../hosts.js";
+// import { createCacheDir } from "@saws/utils/create-directories";
+import { getSawsConfig } from "@saws/core";
 
-export interface DeployCommandOptions {
-  stage: string;
-  dryRun?: boolean;
-  rootDir?: string;
-  config?: string;
-}
-
-export async function deployCommand(
-  path: string | undefined,
-  options: DeployCommandOptions
-) {
-  if (options.stage == null || options.stage.length === 0) {
-    throw new Error("deploy requires --stage <stage>");
+export const deployCommand = async (path: string, { stage }: { stage: string }) => {
+  if (stage == null || stage.length === 0) {
+    throw new Error("deploy requires --stage <string>");
+  }
+  if (stage === "local") {
+    console.warn("Can not deploy to local stage");
+    process.exit();
   }
 
-  if (options.stage === "local") {
-    throw new Error("Can not deploy to local stage");
-  }
+  process.env.STAGE = stage;
 
-  const serviceDefinition = await getSawsConfig(
-    options.config ?? path
-  );
-  const dryRun = options.dryRun ?? false;
+  // await createCacheDir();
 
-  for (const host of findConfiguredHosts(serviceDefinition)) {
-    await host.assertReady({ dryRun });
-  }
+  const serviceDefinition = await getSawsConfig(path);
 
-  await serviceDefinition.deploy(
-    new DeployContext({
-      stage: options.stage,
-      rootDir: options.rootDir ?? process.cwd(),
-      dryRun,
-      env: process.env as Record<string, string>,
-    })
-  );
-}
+  await serviceDefinition.deploy(stage);
+};

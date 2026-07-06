@@ -6,9 +6,13 @@ export const createCommand = () =>
     .description("configure deployment hosts")
     .addCommand(
       new Command("configure")
-        .description("install Docker and apply the configured security policy")
+        .description("bootstrap a deployment user and apply host security policy")
         .argument("[name]", "host name; optional when exactly one host exists")
-        .option("--config <string>", "path to service definition")
-        .option("--dry-run", "print the remote configuration command")
-        .action(configureHostCommand)
+        .requiredOption(
+          "--user <bootstrap-user>",
+          "existing SSH account used for initial configuration",
+        )
+        .option("--config <path>", "path to saws.ts")
+        .option("--dry-run", "describe configuration without making changes")
+        .action(configureHostCommand),
     );

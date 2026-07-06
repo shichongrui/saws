@@ -1,34 +1,39 @@
 {
   "name": "@saws/core",
-  "version": "2.0.0-beta.2",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/shichongrui/saws.git",
-    "directory": "packages/core"
-  },
-  "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    }
-  },
+  "version": "1.0.11",
+  "description": "",
+  "keywords": [],
+  "license": "MIT",
+  "author": "",
   "files": [
-    "dist"
+    "./dist"
   ],
-  "scripts": {
-    "prebuild": "node -e \"fs.rmSync('dist', { recursive: true, force: true })\"",
-    "build": "tsc -p tsconfig.json",
-    "test": "npm run build && node --test dist/*.test.js",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+  "type": "module",
+  "exports": {
+    ".": "./dist/index.js",
+    "./ServiceDefinition": "./dist/ServiceDefinition.js",
+    "./get-saws-config": "./dist/get-saws-config.js",
+    "./Host": "./dist/Host.js",
+    "./host-readiness": "./dist/host-readiness.js",
+    "./secrets-manager": "./dist/secrets-manager.js",
+    "./utils/constants": "./dist/utils/constants.js",
+    "./utils/create-directories": "./dist/utils/create-directories.js",
+    "./utils/generate-token": "./dist/utils/generate-token.js",
+    "./utils/get-project-name": "./dist/utils/get-project-name.js",
+    "./utils/on-exit": "./dist/utils/on-exit.js",
+    "./utils/parameterized-env-var-name": "./dist/utils/parameterized-env-var-name.js",
+    "./utils/recursively-read-dir": "./dist/utils/recursively-read-dir.js",
+    "./utils/retry-until": "./dist/utils/retry-until.js",
+    "./utils/stage-outputs": "./dist/utils/stage-outputs.js",
+    "./utils/uppercase": "./dist/utils/uppercase.js",
+    "./utils/create-file-if-not-exists": "./dist/utils/create-file-if-not-exists.js",
+    "./utils/dependency-management": "./dist/utils/dependency-management.js",
+    "./utils/run-local": "./dist/utils/run-local.js"
   },
   "dependencies": {
-    "commander": "^14.0.3",
-    "typescript": "^5.3.3"
+    "find-package-json": "^1.2.0"
   },
   "devDependencies": {
-    "@types/node": "^20.11.19"
+    "@types/find-package-json": "^1.2.7"
   }
 }
