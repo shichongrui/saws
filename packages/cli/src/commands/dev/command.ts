@@ -1,6 +1,7 @@
 import { createCacheDir } from "@saws/core/utils/create-directories";
 import { onProcessExit } from "@saws/core/utils/on-exit";
-import { getSawsConfig } from "@saws/core";
+import { getSawsConfig, type ServiceDefinition } from "@saws/core";
+import { DevTui } from "./tui/dev-tui.js";
 
 export const devCommand = async (path: string) => {
   process.env.NODE_ENV = "development";
@@ -10,14 +11,61 @@ export const devCommand = async (path: string) => {
   await createCacheDir();
 
   const serviceDefinition = await getSawsConfig(path);
+  const services = collectServices(serviceDefinition);
+  const useTui = process.stdout.isTTY && process.stdin.isTTY;
+  const tui = new DevTui(services.map((service) => service.name));
 
-  onProcessExit(() => {
-    serviceDefinition.exit();
+  const shutdown = () => {
+    try {
+      serviceDefinition.exit();
+    } finally {
+      tui.stop();
+    }
+  };
+
+  onProcessExit(shutdown);
+  process.once("SIGTERM", () => {
+    shutdown();
+    process.exit();
   });
 
-  await serviceDefinition.dev();
+  try {
+    await serviceDefinition.dev();
 
-  serviceDefinition.forEachDependency(async (dependency) => {
-    dependency.getStdOut()?.pipe(process.stdout);
-  });
+    if (useTui) {
+      tui.start();
+      for (const service of services) {
+        service.getStdOut()?.on("data", (chunk: Buffer) => {
+          tui.logSink({
+            serviceName: service.name,
+            stream: "stdout",
+            chunk: chunk.toString("utf8"),
+            timestamp: new Date(),
+          });
+        });
+        service.getStdErr()?.on("data", (chunk: Buffer) => {
+          tui.logSink({
+            serviceName: service.name,
+            stream: "stderr",
+            chunk: chunk.toString("utf8"),
+            timestamp: new Date(),
+          });
+        });
+      }
+    } else {
+      for (const service of services) {
+        service.getStdOut()?.pipe(process.stdout);
+        service.getStdErr()?.pipe(process.stderr);
+      }
+    }
+  } catch (error) {
+    if (useTui) {
+      tui.writeSystemLog((error as Error).stack ?? String(error), "stderr");
+    }
+    throw error;
+  }
 };
+
+function collectServices(root: ServiceDefinition) {
+  return [...new Set(root.getAllDependencies())];
+}

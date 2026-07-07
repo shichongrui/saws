@@ -406,7 +406,7 @@ export class DockerService extends ServiceDefinition {
       ...(config.command ?? []),
     ];
 
-    return spawn("docker", args, { stdio: "inherit" });
+    return spawn("docker", args, { stdio: ["ignore", "pipe", "pipe"] });
   }
 
   private async runRemoteContainer(stage: string, config: DockerRunConfig) {
@@ -633,6 +633,9 @@ export class DockerService extends ServiceDefinition {
   }
 
   private observeDevProcess(process: ChildProcess) {
+    process.once("error", (error) => {
+      console.error(error.stack ?? error.message);
+    });
     process.once("exit", (code, signal) => {
       if (this.devProcess === process) this.devProcess = undefined;
       if (code !== 0 && signal !== "SIGTERM" && signal !== "SIGINT") {
@@ -641,6 +644,14 @@ export class DockerService extends ServiceDefinition {
         );
       }
     });
+  }
+
+  override getStdOut() {
+    return this.devProcess?.stdout;
+  }
+
+  override getStdErr() {
+    return this.devProcess?.stderr;
   }
 
   private async removeDevEnvironmentFile() {

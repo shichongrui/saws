@@ -11,9 +11,10 @@ export interface HostReadinessConfig {
   allowedTcpPorts: number[];
 }
 
-const READINESS_VERSION = 2;
+const READINESS_VERSION = 4;
 const READINESS_DIRECTORY = "/etc/saws";
 const READINESS_FILE = `${READINESS_DIRECTORY}/host-readiness`;
+const DEFAULT_APP_DIRECTORY = "/opt/saws";
 
 export function getReadinessHash(config: HostReadinessConfig) {
   return createHash("sha256")
@@ -54,6 +55,12 @@ if [ -z "$deployment_home" ] ||
   )} >&2
   exit 78
 fi
+if [ ! -d ${shellQuote(DEFAULT_APP_DIRECTORY)} ] || [ ! -w ${shellQuote(DEFAULT_APP_DIRECTORY)} ]; then
+  echo ${shellQuote(
+    `Deployment directory ${DEFAULT_APP_DIRECTORY} is not writable on host "${config.name}". Run: ${configureCommand}`,
+  )} >&2
+  exit 78
+fi
 if ! command -v docker >/dev/null 2>&1 || ! docker info >/dev/null 2>&1; then
   echo ${shellQuote(`Docker is not ready on host "${config.name}". Run: ${configureCommand}`)} >&2
   exit 78
@@ -61,9 +68,11 @@ fi
 if ! systemctl is-active --quiet docker ||
    ! systemctl is-active --quiet fail2ban ||
    ! systemctl is-active --quiet ufw ||
+   ! systemctl is-active --quiet saws-docker-firewall ||
    [ ! -r /etc/ssh/sshd_config.d/00-saws-hardening.conf ] ||
    [ ! -r /etc/sysctl.d/60-saws-hardening.conf ] ||
-   [ ! -r /etc/apt/apt.conf.d/20auto-upgrades ]; then
+   [ ! -r /etc/apt/apt.conf.d/20auto-upgrades ] ||
+   [ ! -x /usr/local/sbin/saws-docker-firewall ]; then
   echo ${shellQuote(
     `Host "${config.name}" has drifted from the required security baseline. Run: ${configureCommand}`,
   )} >&2
@@ -99,7 +108,7 @@ case "\${ID:-}" in
 esac
 
 apt-get update
-apt-get install -y ca-certificates fail2ban ufw unattended-upgrades iptables-persistent
+apt-get install -y ca-certificates fail2ban ufw unattended-upgrades
 if ! command -v docker >/dev/null 2>&1; then
   apt-get install -y docker.io
 fi
@@ -121,6 +130,7 @@ if [ -z "$deployment_home" ] || [ ! -d "$deployment_home" ]; then
 fi
 chown "$deployment_user:$deployment_group" "$deployment_home"
 install -d -m 0700 -o "$deployment_user" -g "$deployment_group" "$deployment_home/.ssh"
+install -d -m 0755 -o "$deployment_user" -g "$deployment_group" ${shellQuote(DEFAULT_APP_DIRECTORY)}
 authorized_keys="$deployment_home/.ssh/authorized_keys"
 touch "$authorized_keys"
 chown "$deployment_user:$deployment_group" "$authorized_keys"
@@ -183,37 +193,60 @@ for port in ${firewallPorts}; do
 done
 ufw --force enable
 
-external_interface=$(ip -4 route list default | awk 'NR == 1 { print $5 }')
-if [ -z "$external_interface" ]; then
+cat > /usr/local/sbin/saws-docker-firewall <<EOF
+#!/bin/sh
+set -eu
+application_ports="${applicationPorts}"
+
+external_interface=\\$(ip -4 route list default | awk 'NR == 1 { print \\$5 }')
+if [ -z "\\$external_interface" ]; then
   echo "Could not determine the host's external network interface" >&2
   exit 1
 fi
 iptables -N DOCKER-USER 2>/dev/null || true
 iptables -N SAWS-DOCKER 2>/dev/null || true
 iptables -F SAWS-DOCKER
-iptables -A SAWS-DOCKER -i "$external_interface" -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
-for port in ${applicationPorts}; do
-  iptables -A SAWS-DOCKER -i "$external_interface" -p tcp -m conntrack --ctorigdstport "$port" -j ACCEPT
+iptables -A SAWS-DOCKER -i "\\$external_interface" -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+for port in \\$application_ports; do
+  iptables -A SAWS-DOCKER -i "\\$external_interface" -p tcp -m conntrack --ctorigdstport "\\$port" -j ACCEPT
 done
-iptables -A SAWS-DOCKER -i "$external_interface" -j DROP
+iptables -A SAWS-DOCKER -i "\\$external_interface" -j DROP
 iptables -A SAWS-DOCKER -j RETURN
 iptables -C DOCKER-USER -j SAWS-DOCKER 2>/dev/null || iptables -I DOCKER-USER 1 -j SAWS-DOCKER
 
 if ip6tables -nL DOCKER-USER >/dev/null 2>&1; then
-  external_interface6=$(ip -6 route list default | awk 'NR == 1 { print $5 }')
-  if [ -n "$external_interface6" ]; then
+  external_interface6=\\$(ip -6 route list default | awk 'NR == 1 { print \\$5 }')
+  if [ -n "\\$external_interface6" ]; then
     ip6tables -N SAWS-DOCKER 2>/dev/null || true
     ip6tables -F SAWS-DOCKER
-    ip6tables -A SAWS-DOCKER -i "$external_interface6" -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
-    for port in ${applicationPorts}; do
-      ip6tables -A SAWS-DOCKER -i "$external_interface6" -p tcp -m conntrack --ctorigdstport "$port" -j ACCEPT
+    ip6tables -A SAWS-DOCKER -i "\\$external_interface6" -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+    for port in \\$application_ports; do
+      ip6tables -A SAWS-DOCKER -i "\\$external_interface6" -p tcp -m conntrack --ctorigdstport "\\$port" -j ACCEPT
     done
-    ip6tables -A SAWS-DOCKER -i "$external_interface6" -j DROP
+    ip6tables -A SAWS-DOCKER -i "\\$external_interface6" -j DROP
     ip6tables -A SAWS-DOCKER -j RETURN
     ip6tables -C DOCKER-USER -j SAWS-DOCKER 2>/dev/null || ip6tables -I DOCKER-USER 1 -j SAWS-DOCKER
   fi
 fi
-netfilter-persistent save
+EOF
+chmod 0755 /usr/local/sbin/saws-docker-firewall
+cat > /etc/systemd/system/saws-docker-firewall.service <<'EOF'
+[Unit]
+Description=SAWS Docker firewall rules
+After=network-online.target docker.service ufw.service
+Wants=network-online.target docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/sbin/saws-docker-firewall
+
+[Install]
+WantedBy=multi-user.target
+EOF
+systemctl daemon-reload
+systemctl enable saws-docker-firewall
+systemctl restart saws-docker-firewall
 
 systemctl reload ssh 2>/dev/null || systemctl reload sshd
 install -d -m 0755 ${shellQuote(READINESS_DIRECTORY)}

@@ -9,7 +9,6 @@ import {
   SecretsManager,
   ServiceDefinition,
   getSawsConfigModule,
-  hostSshPrivateKeySecretName,
   hostSshPublicKeyEnvName,
 } from "@saws/core";
 import { findConfiguredHosts } from "../../hosts.js";
@@ -93,10 +92,6 @@ function validatePrivateKeyReference(host: Host, manager: SecretsManager) {
     );
   }
 
-  const expectedName = hostSshPrivateKeySecretName(host.name);
-  if (host.sshPrivateKey.name !== expectedName) {
-    throw new Error(`Host "${host.name}" SSH private-key secret must be named "${expectedName}"`);
-  }
   if (!host.sshPrivateKey.isManagedBy(manager)) {
     throw new Error(
       `Host "${host.name}" sshPrivateKey must use the SecretsManager exported as "secrets"`,

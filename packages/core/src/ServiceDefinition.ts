@@ -106,4 +106,8 @@ export class ServiceDefinition {
   getStdOut(): Readable | null | undefined {
     return null;
   }
+
+  getStdErr(): Readable | null | undefined {
+    return null;
+  }
 }

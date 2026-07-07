@@ -69,7 +69,7 @@ const host = new Host({
   name: "main",
   address: "203.0.113.10",
   user: "deploy",
-  sshPrivateKey: secrets.global.reference("host-main-ssh-private-key"),
+  sshPrivateKey: secrets.global.reference("main-deployment-ssh-private-key"),
 });
 ```
 
@@ -82,7 +82,8 @@ npx saws host configure main --user ubuntu
 `ubuntu` is used only for initial SSH and interactive `sudo`. SAWS creates and
 configures `deploy`, then uses `deploy` for subsequent host operations. The
 private key is encrypted in `.saws/secrets/global.env`; the public key is stored
-as `SAWS_HOST_MAIN_SSH_PUBLIC_KEY` in the project-root `.env`.
+as `SAWS_HOST_MAIN_SSH_PUBLIC_KEY` in the project-root `.env`. The private-key
+secret can use any global secret name.
 
 ### `execute`
 
