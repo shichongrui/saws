@@ -97,7 +97,7 @@ export class DockerService extends ServiceDefinition {
   readonly labels: Record<string, string>;
   readonly restart?: RestartConfig;
   readonly healthCheck?: DockerHealthCheckConfig | false;
-  protected readonly serviceType = "docker";
+  protected readonly serviceType: string = "docker";
   protected devProcess?: ChildProcess;
   private devEnvironmentFile?: string;
   private localRegistryAuthenticated = false;

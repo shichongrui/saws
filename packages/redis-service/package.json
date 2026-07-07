@@ -1,5 +1,5 @@
 {
-  "name": "@saws/docker-service",
+  "name": "@saws/redis-service",
   "version": "1.0.0",
   "description": "",
   "license": "ISC",
@@ -13,6 +13,7 @@
     }
   },
   "dependencies": {
-    "@saws/core": "^1.0.11"
+    "@saws/core": "^1.0.11",
+    "@saws/docker-service": "^1.0.0"
   }
 }
