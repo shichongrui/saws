@@ -38,7 +38,7 @@ export class RedisService extends DockerService {
   constructor(config: RedisServiceConfig) {
     super({
       ...config,
-      image: config.image ?? "redis:7",
+      image: config.image ?? "redis:8",
       healthCheck: config.healthCheck ?? {
         command: 'redis-cli -a "$REDIS_PASSWORD" ping',
         interval: "10s",

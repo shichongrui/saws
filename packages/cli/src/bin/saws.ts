@@ -30,7 +30,7 @@ program.addCommand(createHostCommand());
 program.addCommand(createSecretsCommand());
 
 type ServiceConstructor = typeof ServiceDefinition & {
-  getCommands?: () => Command[];
+  getCommands?: (services?: ServiceDefinition[]) => Command[];
 };
 
 const isInitCommand = process.argv[2] === "init";
@@ -39,14 +39,17 @@ if (!isInitCommand) {
   try {
     const service = await getSawsConfig();
 
-    const allServices = [
-      ...new Set(
-        service.getAllDependencies().map((service) => service.constructor as ServiceConstructor),
-      ),
-    ];
+    const servicesByClass = new Map<ServiceConstructor, ServiceDefinition[]>();
+    for (const serviceDefinition of service.getAllDependencies()) {
+      const serviceClass = serviceDefinition.constructor as ServiceConstructor;
+      servicesByClass.set(serviceClass, [
+        ...(servicesByClass.get(serviceClass) ?? []),
+        serviceDefinition,
+      ]);
+    }
 
-    for (const serviceClass of allServices) {
-      serviceClass.getCommands?.()?.forEach((command) => program.addCommand(command));
+    for (const [serviceClass, services] of servicesByClass) {
+      serviceClass.getCommands?.(services)?.forEach((command) => program.addCommand(command));
     }
   } catch {
     // Project commands are unavailable until a saws.ts file exists.

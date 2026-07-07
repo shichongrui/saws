@@ -1,0 +1,20 @@
+{
+  "name": "@saws/postgres-service",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "dependencies": {
+    "@saws/core": "^1.0.11",
+    "@saws/docker-service": "^1.0.0",
+    "commander": "^15.0.0"
+  }
+}
