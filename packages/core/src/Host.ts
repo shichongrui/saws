@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
 import type { SecretReference } from "./secrets-manager.js";
+import { shellQuote as quoteShell } from "./utils/shell-quote.js";
 import {
   type HostExposure,
   readinessCheckScript,
@@ -106,7 +107,7 @@ export class Host {
   }
 
   shellQuote(value: string) {
-    return `'${value.replaceAll("'", "'\\''")}'`;
+    return quoteShell(value);
   }
 
   async assertReady(options: { dryRun?: boolean } = {}) {

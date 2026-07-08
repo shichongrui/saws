@@ -37,20 +37,16 @@ export class DevTui {
   private readonly logScrollOffsets = new Map<string, number>();
   private selectedIndex = 0;
   private isStarted = false;
+  private isSelectionMode = false;
   private previousRawMode = false;
   private readonly maxLines = 2000;
 
   constructor(services: string[]) {
-    this.services = services.length === 0 ? ["system"] : services;
+    this.services = [...new Set(services)];
 
     for (const service of this.services) {
       this.logs.set(service, { lines: [], partial: "" });
       this.logScrollOffsets.set(service, 0);
-    }
-
-    if (!this.logs.has("system")) {
-      this.logs.set("system", { lines: [], partial: "" });
-      this.logScrollOffsets.set("system", 0);
     }
   }
 
@@ -79,21 +75,30 @@ export class DevTui {
     process.stdin.off("data", this.handleInput);
     process.stdin.off("keypress", this.handleKeypress);
     process.stdout.off("resize", this.render);
+    this.isSelectionMode = false;
     process.stdin.setRawMode(this.previousRawMode);
     process.stdout.write(`${DISABLE_MOUSE}${SHOW_CURSOR}${EXIT_ALT_SCREEN}${RESET}`);
     this.isStarted = false;
   }
 
-  writeSystemLog(message: string, stream: "stdout" | "stderr" = "stdout") {
-    this.addLog({
-      serviceName: "system",
-      stream,
-      chunk: message.endsWith("\n") ? message : `${message}\n`,
-      timestamp: new Date(),
-    });
-  }
-
   private handleKeypress = (_input: string, key: readline.Key) => {
+    if (key.ctrl && key.name === "c") {
+      process.kill(process.pid, "SIGINT");
+      return;
+    }
+
+    if (this.isSelectionMode) {
+      if (key.name === "escape" || key.name === "c") {
+        this.exitSelectionMode();
+      }
+      return;
+    }
+
+    if (key.name === "c") {
+      this.enterSelectionMode();
+      return;
+    }
+
     if (key.name === "up" || key.name === "k") {
       this.selectedIndex = Math.max(0, this.selectedIndex - 1);
       this.render();
@@ -127,17 +132,14 @@ export class DevTui {
       return;
     }
 
-    if (key.ctrl && key.name === "c") {
-      process.kill(process.pid, "SIGINT");
-      return;
-    }
-
     if (key.name === "q") {
       process.kill(process.pid, "SIGTERM");
     }
   };
 
   private handleInput = (chunk: Buffer | string) => {
+    if (this.isSelectionMode) return;
+
     const input = chunk.toString();
     for (const event of parseMouseEvents(input)) {
       if (event.type === "wheel-up") {
@@ -157,7 +159,16 @@ export class DevTui {
   };
 
   private addLog(entry: RuntimeLogEntry) {
-    const serviceName = this.logs.has(entry.serviceName) ? entry.serviceName : "system";
+    if (entry.serviceName === "system") return;
+
+    const serviceName = entry.serviceName;
+    if (!this.logs.has(serviceName)) {
+      this.services.push(serviceName);
+      this.logs.set(serviceName, { lines: [], partial: "" });
+      this.logScrollOffsets.set(serviceName, 0);
+      this.selectedIndex = this.services.length - 1;
+    }
+
     const log = this.logs.get(serviceName) ?? { lines: [], partial: "" };
     const pieces = `${log.partial}${sanitizeLogChunk(entry.chunk)}`.split("\n");
     log.partial = pieces.pop() ?? "";
@@ -177,8 +188,8 @@ export class DevTui {
     this.render();
   }
 
-  private render = () => {
-    if (!this.isStarted || !process.stdout.isTTY) return;
+  private render = (force = false) => {
+    if (!this.isStarted || !process.stdout.isTTY || (this.isSelectionMode && !force)) return;
 
     const width = process.stdout.columns ?? 80;
     const navWidth = getNavWidth(width);
@@ -195,11 +206,7 @@ export class DevTui {
     const logLines = wrappedLogLines.slice(logStart, logEnd);
 
     const rows: string[] = [];
-    rows.push(
-      `${CYAN}SAWS dev${RESET}${DIM}  up/down select, pgup/pgdn scroll, q quit${RESET}`.padEnd(
-        width,
-      ),
-    );
+    rows.push(`${CYAN}SAWS dev${RESET}${DIM}  ${this.getHelpText()}${RESET}`.padEnd(width));
     rows.push(
       `${"Services".padEnd(navWidth)} ${logHeading(selectedService, logScrollOffset).padEnd(logWidth)}`,
     );
@@ -216,8 +223,25 @@ export class DevTui {
     process.stdout.write(renderRows(rows, width, process.stdout.rows ?? 24));
   };
 
+  private enterSelectionMode() {
+    this.isSelectionMode = true;
+    process.stdout.write(`${DISABLE_MOUSE}${SHOW_CURSOR}`);
+    this.render(true);
+  }
+
+  private exitSelectionMode() {
+    this.isSelectionMode = false;
+    process.stdout.write(`${HIDE_CURSOR}${ENABLE_MOUSE}`);
+    this.render(true);
+  }
+
+  private getHelpText() {
+    if (this.isSelectionMode) return "select/copy text with terminal, esc resume";
+    return "up/down select, pgup/pgdn scroll, c copy/select, q quit";
+  }
+
   private getSelectedService() {
-    return this.services[this.selectedIndex] ?? "system";
+    return this.services[this.selectedIndex] ?? "";
   }
 
   private getBodyHeight() {

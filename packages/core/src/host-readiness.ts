@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { shellQuote } from "./utils/shell-quote.js";
 
 export type HostExposure = "tunnel" | "public";
 
@@ -253,8 +254,4 @@ install -d -m 0755 ${shellQuote(READINESS_DIRECTORY)}
 printf '%s\\n' ${shellQuote(hash)} > ${shellQuote(READINESS_FILE)}
 chmod 0644 ${shellQuote(READINESS_FILE)}
 echo "SAWS host configuration complete"`;
-}
-
-function shellQuote(value: string) {
-  return `'${value.replaceAll("'", "'\\''")}'`;
 }

@@ -2,6 +2,15 @@ import { Readable } from "node:stream";
 import { writeStageOutputs, type Outputs } from "./utils/stage-outputs.js";
 import { parameterizedEnvVarName } from "./utils/parameterized-env-var-name.js";
 
+export interface RuntimeLogEntry {
+  serviceName: string;
+  stream: "stdout" | "stderr";
+  chunk: string;
+  timestamp: Date;
+}
+
+export type RuntimeLogSink = (entry: RuntimeLogEntry) => void;
+
 export interface ServiceDefinitionConfig {
   name: string;
   dependencies?: ServiceDefinition[];
@@ -13,6 +22,7 @@ export class ServiceDefinition {
   outputs: Outputs = {};
   deved: boolean = false;
   deployed: boolean = false;
+  private runtimeLogSink?: RuntimeLogSink;
 
   constructor(config: ServiceDefinitionConfig) {
     this.name = config.name;
@@ -24,8 +34,7 @@ export class ServiceDefinition {
   }
 
   async dev() {
-    console.log("Start dev", this.name);
-    await this.init();
+    this.writeRuntimeLog(`Start dev ${this.name}\n`);
     await this.forEachDependencyAsync(async (dependency) => {
       if (dependency.deved) return;
       await dependency.dev();
@@ -40,6 +49,30 @@ export class ServiceDefinition {
       await dependency.deploy(stage);
       dependency.deployed = true;
     });
+  }
+
+  setRuntimeLogSink(sink: RuntimeLogSink | undefined) {
+    this.runtimeLogSink = sink;
+    this.forEachDependency((dependency) => dependency.setRuntimeLogSink(sink));
+  }
+
+  protected writeRuntimeLog(chunk: string, stream: "stdout" | "stderr" = "stdout") {
+    if (this.runtimeLogSink == null) {
+      const output = stream === "stderr" ? process.stderr : process.stdout;
+      output.write(chunk);
+      return;
+    }
+
+    this.runtimeLogSink({
+      serviceName: this.name,
+      stream,
+      chunk,
+      timestamp: new Date(),
+    });
+  }
+
+  protected getRuntimeLogSink() {
+    return this.runtimeLogSink;
   }
 
   getOutputs() {

@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { spawn, type ChildProcess } from "node:child_process";
+import { spawn, spawnSync, type ChildProcess } from "node:child_process";
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import {
@@ -9,6 +9,7 @@ import {
   type ServiceDefinitionConfig,
 } from "@saws/core";
 import { runLocal } from "@saws/core/utils/run-local";
+import { shellQuote } from "@saws/core/utils/shell-quote";
 
 export type DockerHealthCheckConfig = {
   /** Command executed by Docker inside the container using CMD-SHELL. */
@@ -61,13 +62,13 @@ export type DockerRunConfig = {
   configHash?: string;
 };
 
-type RuntimeFile = {
+export type RuntimeFile = {
   localPath: string;
   remotePath: string;
 };
 
 export type DockerServiceConfig = (ImageConfig | DockerFileConfig | DefaultDockerFileConfig) & {
-  host?: Host;
+  host: Host;
   appDirectory?: string;
   network?: string;
   registry?: string;
@@ -82,7 +83,7 @@ export type DockerServiceConfig = (ImageConfig | DockerFileConfig | DefaultDocke
 } & ServiceDefinitionConfig;
 
 export class DockerService extends ServiceDefinition {
-  readonly host?: Host;
+  readonly host: Host;
   readonly appDirectory: string;
   readonly network: string;
   readonly registry?: string;
@@ -100,6 +101,8 @@ export class DockerService extends ServiceDefinition {
   protected readonly serviceType: string = "docker";
   protected devProcess?: ChildProcess;
   private devEnvironmentFile?: string;
+  private readonly localRunAbortController = new AbortController();
+  private readonly activeEphemeralContainers = new Set<string>();
   private localRegistryAuthenticated = false;
   private remoteRegistryAuthenticated = false;
 
@@ -193,8 +196,10 @@ export class DockerService extends ServiceDefinition {
 
   override exit() {
     super.exit();
+    this.localRunAbortController.abort();
     this.devProcess?.kill();
     this.devProcess = undefined;
+    this.removeActiveEphemeralContainers();
     void this.removeDevEnvironmentFile();
   }
 
@@ -249,15 +254,15 @@ export class DockerService extends ServiceDefinition {
     await this.pushImage(stage, this.getImage(stage, true));
   }
 
-  private getNetwork(stage: string) {
+  protected getNetwork(stage: string) {
     return `${this.network}-${stage}`;
   }
 
-  private getAppDirectory(stage: string) {
+  protected getAppDirectory(stage: string) {
     return path.posix.join(this.appDirectory, stage);
   }
 
-  private getBuiltImageName(stage: string, deploy: boolean) {
+  protected getBuiltImageName(stage: string, deploy: boolean) {
     const repository = `${stage}-${this.name}`
       .toLowerCase()
       .replace(/[^a-z0-9._-]+/g, "-")
@@ -289,12 +294,13 @@ export class DockerService extends ServiceDefinition {
         `-t ${shellQuote(image)}`,
         shellQuote(buildContext),
       ].join(" "),
+      this.getLocalRunOptions(),
     );
   }
 
-  private async pushImage(stage: string, image: string) {
+  protected async pushImage(stage: string, image: string) {
     await this.authenticateLocalRegistry(stage);
-    await runLocal(`docker push ${shellQuote(image)}`);
+    await runLocal(`docker push ${shellQuote(image)}`, this.getLocalRunOptions());
   }
 
   private async authenticateLocalRegistry(stage: string) {
@@ -306,7 +312,7 @@ export class DockerService extends ServiceDefinition {
         `--username ${shellQuote(this.auth.username)}`,
         "--password-stdin",
       ].join(" "),
-      { input: `${await this.resolveRegistryPassword(stage)}\n` },
+      this.getLocalRunOptions({ input: `${await this.resolveRegistryPassword(stage)}\n` }),
     );
     this.localRegistryAuthenticated = true;
   }
@@ -335,31 +341,41 @@ export class DockerService extends ServiceDefinition {
     return this.registry!.split("/", 1)[0]!;
   }
 
-  private async prepareLocalNetwork(network: string) {
+  private async prepareLocalNetwork(
+    network: string,
+    options: { dryRun?: boolean; serviceName?: string } = {},
+  ) {
     await runLocal(
       `docker network inspect ${shellQuote(network)} >/dev/null 2>&1 || docker network create ${shellQuote(network)}`,
+      this.getLocalRunOptions(options),
     );
   }
 
-  private async prepareRemote(stage: string, network: string) {
-    await this.authenticateRemoteRegistry(stage);
-    await this.host!.exec(`mkdir -p ${shellQuote(this.getAppDirectory(stage))}`);
+  protected async prepareRemote(stage: string, network: string, dryRun?: boolean) {
+    if (!dryRun) {
+      await this.authenticateRemoteRegistry(stage);
+    }
+    await this.host!.exec(`mkdir -p ${shellQuote(this.getAppDirectory(stage))}`, { dryRun });
     await this.host!.exec(
       `docker network inspect ${shellQuote(network)} >/dev/null 2>&1 || docker network create ${shellQuote(network)}`,
+      { dryRun },
     );
   }
 
-  private async assertRemoteHostReady() {
-    await this.host!.assertReady();
+  protected async assertRemoteHostReady(dryRun?: boolean) {
+    await this.host!.assertReady({ dryRun });
   }
 
-  private async runLocalDetachedContainer(stage: string, config: DockerRunConfig) {
+  protected async runLocalDetachedContainer(stage: string, config: DockerRunConfig) {
     await this.prepareLocalNetwork(config.network);
     if (config.pull !== false) {
-      await runLocal(`docker pull ${shellQuote(config.image)}`);
+      await runLocal(`docker pull ${shellQuote(config.image)}`, this.getLocalRunOptions());
     }
     await this.withLocalEnvironmentFile(stage, config, async () => {
-      await runLocal(`docker rm -f ${shellQuote(config.name)} >/dev/null 2>&1 || true`);
+      await runLocal(
+        `docker rm -f ${shellQuote(config.name)} >/dev/null 2>&1 || true`,
+        this.getLocalRunOptions(),
+      );
       await runLocal(
         this.getDockerRunCommand(
           {
@@ -371,17 +387,88 @@ export class DockerService extends ServiceDefinition {
           },
           true,
         ),
+        this.getLocalRunOptions(),
       );
     });
+  }
+
+  protected async runEphemeralContainer(
+    stage: string,
+    config: DockerRunConfig,
+    options: { dryRun?: boolean; logServiceName?: string } = {},
+  ) {
+    if (stage === "local" || this.host == null) {
+      await this.prepareLocalNetwork(config.network, {
+        dryRun: options.dryRun,
+        serviceName: options.logServiceName,
+      });
+      if (config.pull !== false) {
+        await runLocal(
+          `docker pull ${shellQuote(config.image)}`,
+          this.getLocalRunOptions({
+            dryRun: options.dryRun,
+            serviceName: options.logServiceName,
+          }),
+        );
+      }
+      await this.withLocalEnvironmentFile(stage, config, async () => {
+        await runLocal(
+          `docker rm -f ${shellQuote(config.name)} >/dev/null 2>&1 || true`,
+          this.getLocalRunOptions({
+            dryRun: options.dryRun,
+            serviceName: options.logServiceName,
+          }),
+        );
+        if (!options.dryRun) this.activeEphemeralContainers.add(config.name);
+        try {
+          await runLocal(
+            this.getDockerRunCommand(config, false, { remove: true, includeRestart: false }),
+            this.getLocalRunOptions({
+              dryRun: options.dryRun,
+              serviceName: options.logServiceName,
+            }),
+          );
+        } finally {
+          this.activeEphemeralContainers.delete(config.name);
+        }
+      });
+      return;
+    }
+
+    await this.assertRemoteHostReady(options.dryRun);
+    await this.prepareRemote(stage, config.network, options.dryRun);
+
+    if (config.pull !== false) {
+      await this.host.exec(`docker pull ${shellQuote(config.image)}`, { dryRun: options.dryRun });
+    }
+
+    let environmentFile: RuntimeFile | undefined;
+    try {
+      environmentFile = await this.writeRemoteEnvironmentFile(stage, config, options.dryRun);
+      await this.host.exec(`docker rm -f ${shellQuote(config.name)} >/dev/null 2>&1 || true`, {
+        dryRun: options.dryRun,
+      });
+      await this.host.exec(
+        this.getDockerRunCommand(config, false, { remove: true, includeRestart: false }),
+        { dryRun: options.dryRun },
+      );
+    } finally {
+      if (environmentFile != null) {
+        await this.removeRemoteRuntimeFile(environmentFile, options.dryRun);
+      }
+    }
   }
 
   private async startLocalContainer(config: DockerRunConfig): Promise<ChildProcess> {
     await this.prepareLocalNetwork(config.network);
 
     if (config.pull !== false) {
-      await runLocal(`docker pull ${shellQuote(config.image)}`);
+      await runLocal(`docker pull ${shellQuote(config.image)}`, this.getLocalRunOptions());
     }
-    await runLocal(`docker rm -f ${shellQuote(config.name)} >/dev/null 2>&1 || true`);
+    await runLocal(
+      `docker rm -f ${shellQuote(config.name)} >/dev/null 2>&1 || true`,
+      this.getLocalRunOptions(),
+    );
 
     const args = [
       "run",
@@ -409,7 +496,19 @@ export class DockerService extends ServiceDefinition {
     return spawn("docker", args, { stdio: ["ignore", "pipe", "pipe"] });
   }
 
-  private async runRemoteContainer(stage: string, config: DockerRunConfig) {
+  private getLocalRunOptions(
+    options: { dryRun?: boolean; input?: string; serviceName?: string } = {},
+  ) {
+    const { serviceName, ...runOptions } = options;
+    return {
+      ...runOptions,
+      logSink: this.getRuntimeLogSink(),
+      serviceName: serviceName ?? this.name,
+      signal: this.localRunAbortController.signal,
+    };
+  }
+
+  protected async runRemoteContainer(stage: string, config: DockerRunConfig) {
     await this.prepareRemote(stage, config.network);
 
     if (config.pull !== false) {
@@ -449,7 +548,11 @@ export class DockerService extends ServiceDefinition {
     );
   }
 
-  private getDockerRunCommand(config: DockerRunConfig, detached: boolean) {
+  protected getDockerRunCommand(
+    config: DockerRunConfig,
+    detached: boolean,
+    options: { remove?: boolean; includeRestart?: boolean } = {},
+  ) {
     const envArgs = Object.entries(config.env ?? {})
       .map(([key, value]) => `-e ${shellQuote(`${key}=${value}`)}`)
       .join(" ");
@@ -470,10 +573,13 @@ export class DockerService extends ServiceDefinition {
 
     return [
       "docker run",
+      options.remove ? "--rm" : "",
       detached ? "-d" : "",
       `--name ${shellQuote(config.name)}`,
       `--network ${shellQuote(config.network)}`,
-      `--restart ${shellQuote(config.restart ?? "unless-stopped")}`,
+      options.includeRestart === false
+        ? ""
+        : `--restart ${shellQuote(config.restart ?? "unless-stopped")}`,
       envArgs,
       envFileArgs,
       volumeArgs,
@@ -525,7 +631,7 @@ export class DockerService extends ServiceDefinition {
     return args;
   }
 
-  private getContainerConfigHash(config: DockerRunConfig) {
+  protected getContainerConfigHash(config: DockerRunConfig) {
     const labels = { ...config.labels };
     delete labels["saws.configHash"];
 
@@ -559,7 +665,11 @@ export class DockerService extends ServiceDefinition {
       .digest("hex");
   }
 
-  private async writeRemoteEnvironmentFile(stage: string, config: DockerRunConfig) {
+  protected async writeRemoteEnvironmentFile(
+    stage: string,
+    config: DockerRunConfig,
+    dryRun?: boolean,
+  ) {
     const contents = serializeEnvironment(config.env);
     if (contents == null) return undefined;
 
@@ -567,13 +677,14 @@ export class DockerService extends ServiceDefinition {
       stage,
       `${this.name}/container.env`,
       contents,
+      dryRun,
     );
     config.env = undefined;
     config.envFiles = [...(config.envFiles ?? []), runtimeFile.remotePath];
     return runtimeFile;
   }
 
-  private async writeLocalEnvironmentFile(stage: string, config: DockerRunConfig) {
+  protected async writeLocalEnvironmentFile(stage: string, config: DockerRunConfig) {
     const contents = serializeEnvironment(config.env);
     if (contents == null) return undefined;
 
@@ -602,10 +713,11 @@ export class DockerService extends ServiceDefinition {
     }
   }
 
-  private async writeRemoteRuntimeFile(
+  protected async writeRemoteRuntimeFile(
     stage: string,
     relativePath: string,
     contents: string,
+    dryRun?: boolean,
   ): Promise<RuntimeFile> {
     const localDir = path.resolve(".saws", "hosts", this.host!.name, stage);
     await mkdir(localDir, { recursive: true });
@@ -615,14 +727,14 @@ export class DockerService extends ServiceDefinition {
     await writeFile(localPath, contents, { mode: 0o600 });
 
     const remotePath = path.posix.join(this.getAppDirectory(stage), relativePath);
-    await this.host!.exec(`mkdir -p ${shellQuote(path.posix.dirname(remotePath))}`);
-    await this.host!.copyFile(localPath, remotePath);
+    await this.host!.exec(`mkdir -p ${shellQuote(path.posix.dirname(remotePath))}`, { dryRun });
+    await this.host!.copyFile(localPath, remotePath, { dryRun });
     return { localPath, remotePath };
   }
 
-  private async removeRemoteRuntimeFile(runtimeFile: RuntimeFile) {
+  protected async removeRemoteRuntimeFile(runtimeFile: RuntimeFile, dryRun?: boolean) {
     await rm(runtimeFile.localPath, { force: true });
-    await this.host!.exec(`rm -f ${shellQuote(runtimeFile.remotePath)}`);
+    await this.host!.exec(`rm -f ${shellQuote(runtimeFile.remotePath)}`, { dryRun });
   }
 
   private async writeLocalRuntimeFile(stage: string, relativePath: string, contents: string) {
@@ -633,25 +745,32 @@ export class DockerService extends ServiceDefinition {
   }
 
   private observeDevProcess(process: ChildProcess) {
+    process.stdout?.on("data", (chunk: Buffer) => {
+      this.writeRuntimeLog(chunk.toString("utf8"), "stdout");
+    });
+    process.stderr?.on("data", (chunk: Buffer) => {
+      this.writeRuntimeLog(chunk.toString("utf8"), "stderr");
+    });
     process.once("error", (error) => {
-      console.error(error.stack ?? error.message);
+      this.writeRuntimeLog(`${error.stack ?? error.message}\n`, "stderr");
     });
     process.once("exit", (code, signal) => {
       if (this.devProcess === process) this.devProcess = undefined;
       if (code !== 0 && signal !== "SIGTERM" && signal !== "SIGINT") {
-        console.error(
-          `Docker container exited with code ${code ?? "unknown"}${signal == null ? "" : ` (${signal})`}`,
+        this.writeRuntimeLog(
+          `Docker container exited with code ${code ?? "unknown"}${signal == null ? "" : ` (${signal})`}\n`,
+          "stderr",
         );
       }
     });
   }
 
   override getStdOut() {
-    return this.devProcess?.stdout;
+    return null;
   }
 
   override getStdErr() {
-    return this.devProcess?.stderr;
+    return null;
   }
 
   private async removeDevEnvironmentFile() {
@@ -659,6 +778,13 @@ export class DockerService extends ServiceDefinition {
     const localPath = this.devEnvironmentFile;
     this.devEnvironmentFile = undefined;
     await rm(localPath, { force: true });
+  }
+
+  private removeActiveEphemeralContainers() {
+    for (const container of this.activeEphemeralContainers) {
+      spawnSync("docker", ["rm", "-f", container], { stdio: "ignore" });
+    }
+    this.activeEphemeralContainers.clear();
   }
 }
 
@@ -689,8 +815,4 @@ function isDockerDuration(value: string) {
   return [...value.matchAll(/(\d+(?:\.\d+)?)(?:ns|us|µs|ms|s|m|h)/g)].some(
     (match) => Number(match[1]) > 0,
   );
-}
-
-function shellQuote(value: string) {
-  return `'${value.replaceAll("'", "'\\''")}'`;
 }

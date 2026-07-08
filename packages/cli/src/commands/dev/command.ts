@@ -29,40 +29,37 @@ export const devCommand = async (path: string) => {
     process.exit();
   });
 
-  try {
-    await serviceDefinition.dev();
+  if (useTui) {
+    serviceDefinition.setRuntimeLogSink(tui.logSink);
+    tui.start();
+  }
 
-    if (useTui) {
-      tui.start();
-      for (const service of services) {
-        service.getStdOut()?.on("data", (chunk: Buffer) => {
-          tui.logSink({
-            serviceName: service.name,
-            stream: "stdout",
-            chunk: chunk.toString("utf8"),
-            timestamp: new Date(),
-          });
+  await serviceDefinition.dev();
+
+  if (useTui) {
+    for (const service of services) {
+      service.getStdOut()?.on("data", (chunk: Buffer) => {
+        tui.logSink({
+          serviceName: service.name,
+          stream: "stdout",
+          chunk: chunk.toString("utf8"),
+          timestamp: new Date(),
         });
-        service.getStdErr()?.on("data", (chunk: Buffer) => {
-          tui.logSink({
-            serviceName: service.name,
-            stream: "stderr",
-            chunk: chunk.toString("utf8"),
-            timestamp: new Date(),
-          });
+      });
+      service.getStdErr()?.on("data", (chunk: Buffer) => {
+        tui.logSink({
+          serviceName: service.name,
+          stream: "stderr",
+          chunk: chunk.toString("utf8"),
+          timestamp: new Date(),
         });
-      }
-    } else {
-      for (const service of services) {
-        service.getStdOut()?.pipe(process.stdout);
-        service.getStdErr()?.pipe(process.stderr);
-      }
+      });
     }
-  } catch (error) {
-    if (useTui) {
-      tui.writeSystemLog((error as Error).stack ?? String(error), "stderr");
+  } else {
+    for (const service of services) {
+      service.getStdOut()?.pipe(process.stdout);
+      service.getStdErr()?.pipe(process.stderr);
     }
-    throw error;
   }
 };
 

@@ -1,6 +1,8 @@
 import { spawn } from "node:child_process";
-import { access, readFile } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import path from "node:path";
+import type { RuntimeLogSink } from "../ServiceDefinition.js";
+import { fileExists } from "./file-exists.js";
 
 type PackageManager = "npm" | "pnpm" | "yarn" | "bun";
 
@@ -14,6 +16,8 @@ export interface InstallDependenciesOptions {
    */
   workspace?: string;
   development?: boolean;
+  logSink?: RuntimeLogSink;
+  serviceName?: string;
 }
 
 export async function installDependencies(
@@ -29,10 +33,29 @@ export async function installDependencies(
   const args = installArguments(packageManager, dependencies, options.development ?? false);
 
   await new Promise<void>((resolve, reject) => {
+    const captureOutput = options.logSink != null;
+    const serviceName = options.serviceName ?? "system";
     const child = spawn(packageManager, args, {
       cwd: installDirectory,
       env: process.env,
-      stdio: "inherit",
+      stdio: captureOutput ? ["ignore", "pipe", "pipe"] : "inherit",
+    });
+
+    child.stdout?.on("data", (chunk: Buffer) => {
+      options.logSink?.({
+        serviceName,
+        stream: "stdout",
+        chunk: chunk.toString("utf8"),
+        timestamp: new Date(),
+      });
+    });
+    child.stderr?.on("data", (chunk: Buffer) => {
+      options.logSink?.({
+        serviceName,
+        stream: "stderr",
+        chunk: chunk.toString("utf8"),
+        timestamp: new Date(),
+      });
     });
 
     child.once("error", (error) => {
@@ -51,13 +74,31 @@ export async function installDependencies(
   });
 }
 
+export async function hasDependency(dependency: string, cwd = process.cwd()) {
+  try {
+    const contents = await readFile(path.resolve(cwd, "package.json"), "utf8");
+    const packageJson = JSON.parse(contents) as {
+      dependencies?: Record<string, unknown>;
+      devDependencies?: Record<string, unknown>;
+    };
+
+    return (
+      packageJson.dependencies?.[dependency] != null ||
+      packageJson.devDependencies?.[dependency] != null
+    );
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return false;
+    throw error;
+  }
+}
+
 async function detectPackageManager(cwd: string): Promise<PackageManager> {
   for (let directory = cwd; ; directory = path.dirname(directory)) {
     const packageManager = await readPackageManagerField(directory);
     if (packageManager != null) return packageManager;
 
     for (const [lockfile, manager] of LOCKFILES) {
-      if (await exists(path.join(directory, lockfile))) return manager;
+      if (await fileExists(path.join(directory, lockfile))) return manager;
     }
 
     const parent = path.dirname(directory);
@@ -96,16 +137,6 @@ function installArguments(
 
 function isPackageManager(value: string): value is PackageManager {
   return value === "npm" || value === "pnpm" || value === "yarn" || value === "bun";
-}
-
-async function exists(filePath: string): Promise<boolean> {
-  try {
-    await access(filePath);
-    return true;
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") return false;
-    throw error;
-  }
 }
 
 const LOCKFILES: ReadonlyArray<readonly [string, PackageManager]> = [
