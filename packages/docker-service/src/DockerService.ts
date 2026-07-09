@@ -73,7 +73,6 @@ export type DockerServiceConfig = (ImageConfig | DockerFileConfig | DefaultDocke
   network?: string;
   registry?: string;
   auth?: DockerRegistryAuthConfig;
-  environment?: Record<string, string>;
   volumes?: string[];
   ports?: string[];
   command?: string[];
@@ -91,7 +90,6 @@ export class DockerService extends ServiceDefinition {
   readonly image?: string;
   readonly dockerfile?: string;
   readonly buildContext?: string;
-  readonly environment: Record<string, string>;
   readonly volumes: string[];
   readonly ports: string[];
   readonly command: string[];
@@ -138,7 +136,6 @@ export class DockerService extends ServiceDefinition {
       this.buildContext = hasDockerfile ? config.buildContext : config.name;
     }
 
-    this.environment = config.environment ?? {};
     this.volumes = config.volumes ?? [];
     this.ports = config.ports ?? [];
     this.command = config.command ?? [];
@@ -210,7 +207,7 @@ export class DockerService extends ServiceDefinition {
   protected async getContainerEnvironment(stage: string): Promise<Record<string, string>> {
     return {
       ...(await this.getDependenciesEnvironmentVariables(stage)),
-      ...this.environment,
+      ...(await this.getStageEnvironmentVariables(stage)),
     };
   }
 
@@ -245,7 +242,10 @@ export class DockerService extends ServiceDefinition {
   protected async buildDockerfileImage(stage: string, deploy: boolean) {
     if (this.dockerfile == null) return;
 
-    await this.buildImage(this.getImage(stage, deploy));
+    await this.buildImage(
+      this.getImage(stage, deploy),
+      deploy && this.host != null ? this.host.platform : undefined,
+    );
   }
 
   protected async pushDockerfileImage(stage: string) {
@@ -284,12 +284,13 @@ export class DockerService extends ServiceDefinition {
     return `saws-${repository}:latest`;
   }
 
-  private async buildImage(image: string) {
+  private async buildImage(image: string, platform?: string) {
     const dockerfile = path.resolve(this.dockerfile!);
     const buildContext = path.resolve(this.buildContext ?? path.dirname(this.dockerfile!));
     await runLocal(
       [
         "docker build",
+        ...(platform == null ? [] : [`--platform ${shellQuote(platform)}`]),
         `-f ${shellQuote(dockerfile)}`,
         `-t ${shellQuote(image)}`,
         shellQuote(buildContext),

@@ -1,7 +1,7 @@
 import { randomBytes } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { SecretsManager } from "@saws/core";
+import { SecretsManager, type ServiceEnvironmentTarget } from "@saws/core";
 import type { Outputs } from "@saws/core/utils/stage-outputs";
 import { DockerService, type DockerServiceConfig } from "@saws/docker-service";
 
@@ -54,8 +54,11 @@ export class RedisService extends DockerService {
     this.dataDirectory = config.dataDirectory ?? "/data";
   }
 
-  override async getEnvironmentVariables(stage: string): Promise<Record<string, string>> {
-    const connection = await this.getConnectionInfo(stage, "container");
+  override async getEnvironmentVariables(
+    stage: string,
+    target: ServiceEnvironmentTarget = "container",
+  ): Promise<Record<string, string>> {
+    const connection = await this.getConnectionInfo(stage, target);
     const prefix = this.environmentVariablePrefix;
 
     return {

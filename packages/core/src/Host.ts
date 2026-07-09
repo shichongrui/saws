@@ -11,6 +11,8 @@ import {
   readinessConfigureScript,
 } from "./host-readiness.js";
 
+export type HostPlatform = `${string}/${string}` | `${string}/${string}/${string}`;
+
 export interface HostConfig {
   name: string;
   address: string;
@@ -26,6 +28,8 @@ export interface HostConfig {
   exposure?: HostExposure;
   /** Public TCP ports permitted in addition to SSH. Defaults to 80/443. */
   allowedTcpPorts?: number[];
+  /** Docker image platform to build for this host, such as "linux/amd64". */
+  platform?: HostPlatform;
   dryRun?: boolean;
 }
 
@@ -50,6 +54,7 @@ export class Host {
   readonly sshPort: number;
   readonly exposure: HostExposure;
   readonly allowedTcpPorts: number[];
+  readonly platform?: HostPlatform;
   readonly dryRun: boolean;
   private readinessVerified = false;
 
@@ -75,6 +80,8 @@ export class Host {
     if (this.exposure === "tunnel" && this.allowedTcpPorts.length > 0) {
       throw new Error(`Host "${config.name}" cannot allow public TCP ports in tunnel mode`);
     }
+    this.platform =
+      config.platform == null ? undefined : requireDockerPlatform(config.platform, "Host platform");
     this.dryRun = config.dryRun ?? false;
   }
 
@@ -275,6 +282,18 @@ function requireLinuxUser(user: string, label: string) {
     throw new Error(`${label} is not a valid Linux username`);
   }
   return user;
+}
+
+function requireDockerPlatform(platform: HostPlatform, label: string) {
+  requireNonempty(platform, label);
+  if (
+    !/^[a-z0-9]+(?:[._-][a-z0-9]+)*\/[a-z0-9]+(?:[._-][a-z0-9]+)*(?:\/[a-z0-9]+(?:[._-][a-z0-9]+)*)?$/.test(
+      platform,
+    )
+  ) {
+    throw new Error(`${label} must be a Docker platform like "linux/amd64"`);
+  }
+  return platform;
 }
 
 const execFileAsync = promisify(execFile);

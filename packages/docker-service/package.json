@@ -1,6 +1,6 @@
 {
   "name": "@saws/docker-service",
-  "version": "1.0.0",
+  "version": "2.0.0-beta.3",
   "description": "",
   "license": "ISC",
   "author": "",
@@ -13,6 +13,6 @@
     }
   },
   "dependencies": {
-    "@saws/core": "^1.0.11"
+    "@saws/core": "2.0.0-beta.3"
   }
 }

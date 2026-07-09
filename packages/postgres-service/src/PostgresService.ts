@@ -1,7 +1,12 @@
 import { randomBytes } from "node:crypto";
 import { mkdir, readFile, stat } from "node:fs/promises";
 import path from "node:path";
-import { SecretsManager, ServiceDefinition, type SecretReference } from "@saws/core";
+import {
+  SecretsManager,
+  ServiceDefinition,
+  type SecretReference,
+  type ServiceEnvironmentTarget,
+} from "@saws/core";
 import { hasDependency, installDependencies } from "@saws/core/utils/dependency-management";
 import { fileExists } from "@saws/core/utils/file-exists";
 import { listFiles } from "@saws/core/utils/list-files";
@@ -101,8 +106,11 @@ export class PostgresService extends DockerService {
     }
   }
 
-  override async getEnvironmentVariables(stage: string): Promise<Record<string, string>> {
-    const connection = await this.getConnectionInfo(stage, "container");
+  override async getEnvironmentVariables(
+    stage: string,
+    target: ServiceEnvironmentTarget = "container",
+  ): Promise<Record<string, string>> {
+    const connection = await this.getConnectionInfo(stage, target);
     const prefix = this.environmentVariablePrefix;
 
     return {

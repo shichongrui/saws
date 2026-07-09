@@ -70,6 +70,7 @@ const host = new Host({
   address: "203.0.113.10",
   user: "deploy",
   sshPrivateKey: secrets.global.reference("main-deployment-ssh-private-key"),
+  platform: "linux/amd64",
 });
 ```
 

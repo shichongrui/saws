@@ -77,7 +77,7 @@ export class HonoService extends DockerService {
       logSink: this.getRuntimeLogSink(),
       serviceName: this.name,
     });
-    await installDependencies(["tsx", "@tsconfig/node26", "@types/node"], {
+    await installDependencies(["typescript", "tsx", "@tsconfig/node26", "@types/node"], {
       workspace: this.name,
       development: true,
       logSink: this.getRuntimeLogSink(),
@@ -88,8 +88,12 @@ export class HonoService extends DockerService {
   override async dev() {
     await ServiceDefinition.prototype.dev.call(this);
 
-    const environment = await this.getContainerEnvironment("local");
     const port = String(this.getPort());
+    const environment = {
+      ...(await this.getDependenciesEnvironmentVariables("local", "host")),
+      ...(await this.getStageEnvironmentVariables("local")),
+      PORT: port,
+    };
     this.writeRuntimeLog(`Start Hono dev server ${this.name} on port ${port}\n`);
     this.honoDevProcess = spawn("npx", ["tsx", "watch", "src/index.ts"], {
       cwd: path.resolve(this.name),
@@ -97,7 +101,6 @@ export class HonoService extends DockerService {
         ...process.env,
         ...environment,
         NODE_ENV: "development",
-        PORT: port,
       },
       stdio: ["ignore", "pipe", "pipe"],
     });
@@ -105,19 +108,7 @@ export class HonoService extends DockerService {
   }
 
   override async deploy(stage: string) {
-    await ServiceDefinition.prototype.deploy.call(this, stage);
-    await this.buildDockerfileImage(stage, true);
-    await this.pushDockerfileImage(stage);
-    const config = await this.getDockerRunConfig(stage, true);
-    config.configHash = this.getContainerConfigHash(config);
-
-    if (this.host == null) {
-      await this.runLocalDetachedContainer(stage, config);
-      return;
-    }
-
-    await this.installTraefik(stage, this.host);
-    await this.deployBlueGreen(stage, config);
+    await DockerService.prototype.deploy.call(this, stage);
   }
 
   override exit() {
@@ -139,18 +130,7 @@ export class HonoService extends DockerService {
 
     return {
       ...config,
-      ports: deploy && this.host != null ? [] : [`${port}:${port}`],
-      labels:
-        deploy && this.host != null
-          ? {
-              ...config.labels,
-              "traefik.enable": "true",
-              [`traefik.http.routers.${this.traefikRouterName(stage)}.rule`]: this.getTraefikRule(),
-              [`traefik.http.routers.${this.traefikRouterName(stage)}.entrypoints`]: "web",
-              [`traefik.http.services.${this.traefikServiceName(stage)}.loadbalancer.server.port`]:
-                String(port),
-            }
-          : config.labels,
+      ports: [`${port}:${port}`],
     } satisfies DockerRunConfig;
   }
 
@@ -361,7 +341,7 @@ COPY package.json ./
 RUN npm install
 
 COPY . .
-RUN npx tsc -b
+RUN npx --no-install tsc -b
 
 FROM node:26-slim AS runtime
 WORKDIR /app

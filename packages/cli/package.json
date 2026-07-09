@@ -1,13 +1,13 @@
 {
   "name": "@saws/cli",
-  "version": "1.0.11",
+  "version": "2.0.0-beta.3",
   "description": "",
   "bin": {
     "saws": "./dist/bin/saws.js"
   },
   "type": "module",
   "dependencies": {
-    "@saws/core": "^1.0.11",
+    "@saws/core": "2.0.0-beta.3",
     "commander": "^15.0.0",
     "find-package-json": "^1.2.0"
   },

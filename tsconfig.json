@@ -8,11 +8,13 @@
     { "path": "./packages/core/tsconfig.json" },
     { "path": "./packages/cli/tsconfig.json" },
     { "path": "./packages/docker-service/tsconfig.json" },
+    { "path": "./packages/files-client/tsconfig.json" },
     { "path": "./packages/hono-service/tsconfig.json" },
     { "path": "./packages/postgres-client/tsconfig.json" },
     { "path": "./packages/postgres-service/tsconfig.json" },
     { "path": "./packages/powersync-service/tsconfig.json" },
     { "path": "./packages/redis-service/tsconfig.json" },
-    { "path": "./packages/redis-client/tsconfig.json" }
+    { "path": "./packages/redis-client/tsconfig.json" },
+    { "path": "./packages/rustfs-file-service/tsconfig.json" }
   ]
 }

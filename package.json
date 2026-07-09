@@ -12,7 +12,7 @@
     "url": "git+https://github.com/shichongrui/saws.git"
   },
   "workspaces": [
-    "./packages/*"
+    "packages/*"
   ],
   "type": "module",
   "scripts": {
@@ -22,7 +22,10 @@
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
     "tsc": "tsc --noEmit",
-    "check": "npm run lint && npm run fmt && npm run tsc"
+    "check": "npm run lint && npm run fmt && npm run tsc",
+    "release:publish": "node scripts/publish-packages.mjs",
+    "test": "npm run test --workspaces --if-present",
+    "version:bump": "node scripts/version-packages.mjs"
   },
   "devDependencies": {
     "@tsconfig/node26": "^26.0.0",

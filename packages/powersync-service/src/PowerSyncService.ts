@@ -37,7 +37,7 @@ export class PowerSyncService extends DockerService {
 
   readonly applicationDatabase: PostgresService;
   readonly powersyncDatabase: PostgresService;
-  readonly port?: number;
+  readonly port: number;
   readonly maxOldSpaceSize: number;
   protected override readonly serviceType = "powersync";
 
@@ -53,7 +53,7 @@ export class PowerSyncService extends DockerService {
       ],
       healthCheck: config.healthCheck ?? {
         command:
-          "node -e \"fetch('http://localhost:${PS_PORT:-8080}/probes/liveness').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))\"",
+          "node -e \"fetch('http://localhost:${PS_PORT}/probes/liveness').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))\"",
         interval: "5s",
         timeout: "1s",
         retries: 15,
@@ -62,7 +62,7 @@ export class PowerSyncService extends DockerService {
 
     this.applicationDatabase = config.applicationDatabase;
     this.powersyncDatabase = config.powersyncDatabase;
-    this.port = config.port;
+    this.port = config.port ?? Number(process.env["PS_PORT"] ?? 8080);
     this.maxOldSpaceSize = config.maxOldSpaceSize ?? 1000;
   }
 
@@ -80,8 +80,8 @@ export class PowerSyncService extends DockerService {
     const serviceConfigPath = this.getLocalPowerSyncFilePath("service.yaml");
     if (!(await fileExists(serviceConfigPath))) {
       await this.runPowerSyncCli(["init", "self-hosted"]);
-      await this.configureGeneratedServiceConfig(serviceConfigPath);
     }
+    await this.configureGeneratedServiceConfig(serviceConfigPath);
   }
 
   override async deploy(stage: string) {
@@ -111,7 +111,7 @@ export class PowerSyncService extends DockerService {
       "container",
     );
     const powersyncDatabase = await this.powersyncDatabase.getConnectionInfo(stage, "container");
-    const port = String(this.getPort());
+    const port = String(this.port);
 
     return {
       ...(await super.getContainerEnvironment(stage)),
@@ -134,7 +134,7 @@ export class PowerSyncService extends DockerService {
     return {
       ...config,
       volumes: [...this.getConfigVolumes(stage), ...(config.volumes ?? [])],
-      ports: [`${this.getPort()}:${this.getPort()}`],
+      ports: [`${this.port}:${this.port}`],
     } satisfies DockerRunConfig;
   }
 
@@ -157,10 +157,6 @@ export class PowerSyncService extends DockerService {
     ];
   }
 
-  private getPort() {
-    return this.port ?? Number(process.env["PS_PORT"] ?? 8080);
-  }
-
   private getLocalPowerSyncFilePath(fileName: string) {
     return path.resolve(this.name, POWERSYNC_DIRECTORY, fileName);
   }
@@ -179,7 +175,10 @@ function isPowerSyncService(service: ServiceDefinition): service is PowerSyncSer
 }
 
 function configurePowerSyncServiceConfig(contents: string) {
-  let configured = replaceTopLevelYamlBlock(contents, "storage", [
+  let configured = replaceTopLevelYamlEntry(contents, "port", ["port: !env PS_PORT"]);
+  configured = removeTopLevelYamlBlockEntry(configured, "api", "port");
+
+  configured = replaceTopLevelYamlBlock(configured, "storage", [
     "storage:",
     "  sslmode: disable",
     "  type: postgresql",
@@ -206,6 +205,71 @@ function hasActiveTopLevelYamlBlock(contents: string, key: string) {
 
 function appendTopLevelYamlBlock(contents: string, block: string[]) {
   return `${contents.replace(/\s*$/, "\n\n")}${block.join("\n")}\n`;
+}
+
+function replaceTopLevelYamlEntry(contents: string, key: string, replacement: string[]) {
+  const lines = contents.split(/\r?\n/);
+  const start = lines.findIndex((line) =>
+    new RegExp(`^${escapeRegExp(key)}:\\s*(?:.*)?$`).test(line),
+  );
+  if (start === -1) {
+    return [...lines, ...replacement].join("\n");
+  }
+
+  let end = start + 1;
+  while (end < lines.length) {
+    const line = lines[end]!;
+    if (/^[^\s#][^:]*:\s*(?:.*)?$/.test(line)) break;
+    end += 1;
+  }
+
+  return [...lines.slice(0, start), ...replacement, ...lines.slice(end)].join("\n");
+}
+
+function removeTopLevelYamlBlockEntry(
+  contents: string,
+  blockKey: string,
+  entryKey: string,
+) {
+  const lines = contents.split(/\r?\n/);
+  const blockStart = lines.findIndex((line) =>
+    new RegExp(`^${escapeRegExp(blockKey)}:\\s*(?:#.*)?$`).test(line),
+  );
+  if (blockStart === -1) {
+    return contents;
+  }
+
+  let blockEnd = blockStart + 1;
+  while (blockEnd < lines.length) {
+    const line = lines[blockEnd]!;
+    if (/^[^\s#][^:]*:\s*(?:#.*)?$/.test(line)) break;
+    blockEnd += 1;
+  }
+
+  const entryPattern = new RegExp(`^\\s+${escapeRegExp(entryKey)}:\\s*(?:.*)?$`);
+  const entryStart = lines.findIndex(
+    (line, index) => index > blockStart && index < blockEnd && entryPattern.test(line),
+  );
+  if (entryStart === -1) {
+    return contents;
+  }
+
+  let entryEnd = entryStart + 1;
+  while (entryEnd < blockEnd) {
+    const line = lines[entryEnd]!;
+    if (/^\s{2}\S[^:]*:\s*(?:.*)?$/.test(line)) break;
+    entryEnd += 1;
+  }
+
+  const updated = [...lines.slice(0, entryStart), ...lines.slice(entryEnd)];
+  const hasRemainingBlockEntries = updated
+    .slice(blockStart + 1, blockEnd - (entryEnd - entryStart))
+    .some((line) => line.trim() !== "" && !line.trimStart().startsWith("#"));
+  if (hasRemainingBlockEntries) {
+    return updated.join("\n");
+  }
+
+  return [...updated.slice(0, blockStart), ...updated.slice(blockStart + 1)].join("\n");
 }
 
 function replaceTopLevelYamlBlock(contents: string, key: string, replacement: string[]) {

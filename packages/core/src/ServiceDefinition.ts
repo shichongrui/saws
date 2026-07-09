@@ -1,6 +1,7 @@
 import { Readable } from "node:stream";
 import { writeStageOutputs, type Outputs } from "./utils/stage-outputs.js";
 import { parameterizedEnvVarName } from "./utils/parameterized-env-var-name.js";
+import { SecretReference } from "./secrets-manager.js";
 
 export interface RuntimeLogEntry {
   serviceName: string;
@@ -11,14 +12,24 @@ export interface RuntimeLogEntry {
 
 export type RuntimeLogSink = (entry: RuntimeLogEntry) => void;
 
+export type ServiceEnvironmentVariableValue = string | SecretReference;
+export type ServiceEnvironmentTarget = "container" | "host";
+
+export type StageEnvironmentVariables = Record<
+  string,
+  Record<string, ServiceEnvironmentVariableValue>
+>;
+
 export interface ServiceDefinitionConfig {
   name: string;
   dependencies?: ServiceDefinition[];
+  environment?: StageEnvironmentVariables;
 }
 
 export class ServiceDefinition {
   name: string;
   dependencies: ServiceDefinition[];
+  readonly environment: StageEnvironmentVariables;
   outputs: Outputs = {};
   deved: boolean = false;
   deployed: boolean = false;
@@ -27,6 +38,7 @@ export class ServiceDefinition {
   constructor(config: ServiceDefinitionConfig) {
     this.name = config.name;
     this.dependencies = config.dependencies ?? [];
+    this.environment = config.environment ?? {};
   }
 
   async init() {
@@ -124,16 +136,34 @@ export class ServiceDefinition {
   }
 
   // this needs to be recursive down dependencies
-  async getEnvironmentVariables(stage: string): Promise<Record<string, string>> {
+  async getEnvironmentVariables(
+    stage: string,
+    _target: ServiceEnvironmentTarget = "container",
+  ): Promise<Record<string, string>> {
     return {};
   }
 
-  async getDependenciesEnvironmentVariables(stage: string): Promise<Record<string, string>> {
+  async getDependenciesEnvironmentVariables(
+    stage: string,
+    target: ServiceEnvironmentTarget = "container",
+  ): Promise<Record<string, string>> {
     const environmentVariables: Record<string, string> = {};
     await this.forEachDependencyAsync(async (definition) => {
-      Object.assign(environmentVariables, await definition.getEnvironmentVariables(stage));
+      Object.assign(environmentVariables, await definition.getEnvironmentVariables(stage, target));
     });
     return environmentVariables;
+  }
+
+  protected async getStageEnvironmentVariables(stage: string): Promise<Record<string, string>> {
+    const environment = this.environment[stage] ?? {};
+    return Object.fromEntries(
+      await Promise.all(
+        Object.entries(environment).map(async ([name, value]) => [
+          name,
+          value instanceof SecretReference ? await value.resolve({ stage }) : value,
+        ]),
+      ),
+    );
   }
 
   getStdOut(): Readable | null | undefined {
