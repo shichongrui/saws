@@ -31,7 +31,7 @@ export class HonoService extends DockerService {
     super({
       ...config,
       dockerfile: path.join(config.name, "Dockerfile"),
-      buildContext: config.name,
+      buildContext: ".",
       healthCheck: {
         command:
           "node -e \"fetch('http://localhost:${PORT:-3000}/health').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))\"",
@@ -69,7 +69,10 @@ export class HonoService extends DockerService {
       ) + "\n",
     );
     await writeFileIfMissing(path.resolve(this.name, "src", "index.ts"), honoIndexTemplate());
-    await writeFileIfMissing(path.resolve(this.name, "Dockerfile"), dockerfileTemplate());
+    await writeFileIfMissing(
+      path.resolve(this.name, "Dockerfile"),
+      dockerfileTemplate(this.name),
+    );
     await addWorkspace(this.name);
     await addTsconfigReference(`./${this.name}/tsconfig.json`);
     await installDependencies(["hono", "@hono/node-server"], {
@@ -333,25 +336,30 @@ serve(
 `;
 }
 
-function dockerfileTemplate() {
+function dockerfileTemplate(servicePath: string) {
+  const dockerServicePath = servicePath.split(path.sep).join(path.posix.sep);
+
   return `FROM node:26-slim AS build
 WORKDIR /app
 
-COPY package.json ./
-RUN npm install
+COPY package*.json ./
+COPY ${dockerServicePath}/package*.json ./${dockerServicePath}/
+RUN npm ci --workspace ./${dockerServicePath} --include-workspace-root=false
 
-COPY . .
-RUN npx --no-install tsc -b
+COPY ${dockerServicePath} ./${dockerServicePath}
+RUN npx --no-install tsc -p ${dockerServicePath}/tsconfig.json
 
 FROM node:26-slim AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
 
-COPY package.json ./
-RUN npm install --omit=dev
+COPY package*.json ./
+COPY ${dockerServicePath}/package*.json ./${dockerServicePath}/
+RUN npm ci --omit=dev --workspace ./${dockerServicePath} --include-workspace-root=false
 
-COPY --from=build /app/dist ./dist
+COPY --from=build /app/${dockerServicePath}/dist ./${dockerServicePath}/dist
 
+WORKDIR /app/${dockerServicePath}
 CMD ["node", "dist/index.js"]
 `;
 }

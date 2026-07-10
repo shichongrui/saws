@@ -13,7 +13,9 @@ export const devCommand = async (path: string) => {
   const serviceDefinition = await getSawsConfig(path);
   const services = collectServices(serviceDefinition);
   const useTui = process.stdout.isTTY && process.stdin.isTTY;
-  const tui = new DevTui(services.map((service) => service.name));
+  const tui = new DevTui(
+    services.flatMap((service) => [service.name, ...service.getOnDevLogTabs()]),
+  );
 
   const shutdown = () => {
     try {

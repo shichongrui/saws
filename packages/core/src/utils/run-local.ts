@@ -6,6 +6,7 @@ export async function runLocal(
   options: {
     dryRun?: boolean;
     input?: string;
+    cwd?: string;
     logSink?: RuntimeLogSink;
     serviceName?: string;
     signal?: AbortSignal;
@@ -34,6 +35,7 @@ export async function runLocal(
     const captureOutput = options.logSink != null;
     const serviceName = options.serviceName ?? "system";
     const child = spawn(command, {
+      cwd: options.cwd,
       shell: true,
       detached: true,
       stdio: [

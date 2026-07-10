@@ -191,6 +191,18 @@ export class DockerService extends ServiceDefinition {
     await this.onContainerStarted(stage);
   }
 
+  override async logs(stage: string) {
+    if (stage === "local") return;
+
+    const command = this.getDockerLogsCommand(stage);
+    if (this.host == null) {
+      await this.runLocalLogsCommand(command);
+      return;
+    }
+
+    await this.host.exec(command);
+  }
+
   override exit() {
     super.exit();
     this.localRunAbortController.abort();
@@ -718,18 +730,21 @@ export class DockerService extends ServiceDefinition {
     stage: string,
     relativePath: string,
     contents: string,
-    dryRun?: boolean,
+    options: boolean | { dryRun?: boolean; mode?: number } = {},
   ): Promise<RuntimeFile> {
+    const dryRun = typeof options === "boolean" ? options : options.dryRun;
+    const mode = typeof options === "boolean" ? 0o600 : (options.mode ?? 0o600);
     const localDir = path.resolve(".saws", "hosts", this.host!.name, stage);
     await mkdir(localDir, { recursive: true });
 
     const localPath = path.join(localDir, relativePath);
     await mkdir(path.dirname(localPath), { recursive: true });
-    await writeFile(localPath, contents, { mode: 0o600 });
+    await writeFile(localPath, contents, { mode });
 
     const remotePath = path.posix.join(this.getAppDirectory(stage), relativePath);
     await this.host!.exec(`mkdir -p ${shellQuote(path.posix.dirname(remotePath))}`, { dryRun });
     await this.host!.copyFile(localPath, remotePath, { dryRun });
+    await this.host!.exec(`chmod ${mode.toString(8)} ${shellQuote(remotePath)}`, { dryRun });
     return { localPath, remotePath };
   }
 
@@ -779,6 +794,43 @@ export class DockerService extends ServiceDefinition {
     const localPath = this.devEnvironmentFile;
     this.devEnvironmentFile = undefined;
     await rm(localPath, { force: true });
+  }
+
+  private getDockerLogsCommand(stage: string) {
+    return [
+      `CONTAINERS=$(docker ps --filter label=saws.service=${shellQuote(this.name)} --filter label=saws.stage=${shellQuote(stage)} --format '{{.Names}}')`,
+      'if [ -z "$CONTAINERS" ]; then',
+      `echo ${shellQuote(`No running containers found for ${this.name} (${stage})`)} >&2`,
+      "exit 1",
+      "fi",
+      "PIDS=",
+      "cleanup() { for pid in $PIDS; do kill \"$pid\" >/dev/null 2>&1 || true; done; }",
+      "trap cleanup INT TERM EXIT",
+      "for container in $CONTAINERS; do",
+      'docker logs --tail 100 -f "$container" &',
+      'PIDS="$PIDS $!"',
+      "done",
+      "wait",
+    ].join("\n");
+  }
+
+  private async runLocalLogsCommand(command: string) {
+    await new Promise<void>((resolve, reject) => {
+      const child = spawn(command, {
+        shell: true,
+        stdio: "inherit",
+      });
+
+      child.on("error", reject);
+      child.on("exit", (code) => {
+        if (code === 0) {
+          resolve();
+          return;
+        }
+
+        reject(new Error(`docker logs exited with code ${code}`));
+      });
+    });
   }
 
   private removeActiveEphemeralContainers() {

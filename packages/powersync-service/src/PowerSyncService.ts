@@ -90,11 +90,13 @@ export class PowerSyncService extends DockerService {
         stage,
         `${this.name}/${POWERSYNC_DIRECTORY}/service.yaml`,
         await readFile(this.getLocalPowerSyncFilePath("service.yaml"), "utf8"),
+        { mode: 0o644 },
       );
       await this.writeRemoteRuntimeFile(
         stage,
         `${this.name}/${POWERSYNC_DIRECTORY}/sync-config.yaml`,
         await readFile(this.getLocalPowerSyncFilePath("sync-config.yaml"), "utf8"),
+        { mode: 0o644 },
       );
     }
 

@@ -56,6 +56,16 @@ npx saws deploy --stage <stage>
 
 This command will deploy all the services in your `saws.js` file to AWS. You will need to have your AWS session configured in your terminal for this command to succeed.
 
+### `logs`
+
+```bash
+npx saws logs --stage <stage>
+npx saws logs <service> --stage <stage>
+```
+
+This command will tail logs for deployed services in your `saws.js` file. Pass a
+service name to tail only one service. The `local` stage is a no-op.
+
 ### `host configure`
 
 Define the encrypted global key reference with the host in `saws.ts`:

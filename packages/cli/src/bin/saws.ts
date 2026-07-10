@@ -13,6 +13,7 @@ import { createCommand as createDeployCommand } from "../commands/deploy/index.j
 // import { createCommand as createExecuteCommand } from "../commands/execute/index.js";
 import { createCommand as createInitCommand } from "../commands/init/index.js";
 import { createCommand as createHostCommand } from "../commands/host/index.js";
+import { createCommand as createLogsCommand } from "../commands/logs/index.js";
 import { createCommand as createSecretsCommand } from "../commands/secrets/index.js";
 
 const pkg = finder(import.meta.dirname).next().value;
@@ -27,6 +28,7 @@ program.addCommand(createDeployCommand());
 // program.addCommand(createExecuteCommand());
 program.addCommand(createInitCommand());
 program.addCommand(createHostCommand());
+program.addCommand(createLogsCommand());
 program.addCommand(createSecretsCommand());
 
 type ServiceConstructor = typeof ServiceDefinition & {

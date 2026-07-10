@@ -1,6 +1,6 @@
 {
   "name": "@saws/postgres-client",
-  "version": "2.0.0-beta.3",
+  "version": "2.0.0-beta.4",
   "description": "",
   "license": "ISC",
   "author": "",
@@ -15,5 +15,8 @@
   "dependencies": {
     "@types/pg": "^8.15.5",
     "pg": "^8.16.3"
-  }
+  },
+  "files": [
+    "./dist"
+  ]
 }

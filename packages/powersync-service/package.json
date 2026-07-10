@@ -1,6 +1,6 @@
 {
   "name": "@saws/powersync-service",
-  "version": "2.0.0-beta.3",
+  "version": "2.0.0-beta.4",
   "description": "",
   "license": "ISC",
   "author": "",
@@ -13,9 +13,12 @@
     }
   },
   "dependencies": {
-    "@saws/core": "2.0.0-beta.3",
-    "@saws/docker-service": "2.0.0-beta.3",
-    "@saws/postgres-service": "2.0.0-beta.3",
+    "@saws/core": "2.0.0-beta.4",
+    "@saws/docker-service": "2.0.0-beta.4",
+    "@saws/postgres-service": "2.0.0-beta.4",
     "commander": "^15.0.0"
-  }
+  },
+  "files": [
+    "./dist"
+  ]
 }
