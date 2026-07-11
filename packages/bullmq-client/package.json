@@ -1,9 +1,12 @@
 {
-  "name": "@saws/rustfs-file-service",
+  "name": "@saws/bullmq-client",
   "version": "2.0.0-beta.5",
   "description": "",
   "license": "ISC",
   "author": "",
+  "files": [
+    "./dist"
+  ],
   "type": "module",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -13,10 +16,6 @@
     }
   },
   "dependencies": {
-    "@saws/core": "2.0.0-beta.5",
-    "@saws/docker-service": "2.0.0-beta.5"
-  },
-  "files": [
-    "./dist"
-  ]
+    "bullmq": "^5.69.0"
+  }
 }

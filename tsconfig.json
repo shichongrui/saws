@@ -8,6 +8,8 @@
     { "path": "./packages/core/tsconfig.json" },
     { "path": "./packages/cli/tsconfig.json" },
     { "path": "./packages/docker-service/tsconfig.json" },
+    { "path": "./packages/bullmq-client/tsconfig.json" },
+    { "path": "./packages/bullmq-service/tsconfig.json" },
     { "path": "./packages/files-client/tsconfig.json" },
     { "path": "./packages/hono-service/tsconfig.json" },
     { "path": "./packages/postgres-client/tsconfig.json" },

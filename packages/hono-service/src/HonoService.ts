@@ -50,7 +50,7 @@ export class HonoService extends DockerService {
     await mkdir(path.resolve(this.name, "src"), { recursive: true });
     await writeFileIfMissing(
       path.resolve(this.name, "package.json"),
-      JSON.stringify({ type: "module" }, null, 2) + "\n",
+      JSON.stringify({ name: this.name, type: "module" }, null, 2) + "\n",
     );
     await writeFileIfMissing(
       path.resolve(this.name, "tsconfig.json"),
@@ -69,10 +69,7 @@ export class HonoService extends DockerService {
       ) + "\n",
     );
     await writeFileIfMissing(path.resolve(this.name, "src", "index.ts"), honoIndexTemplate());
-    await writeFileIfMissing(
-      path.resolve(this.name, "Dockerfile"),
-      dockerfileTemplate(this.name),
-    );
+    await writeFileIfMissing(path.resolve(this.name, "Dockerfile"), dockerfileTemplate(this.name));
     await addWorkspace(this.name);
     await addTsconfigReference(`./${this.name}/tsconfig.json`);
     await installDependencies(["hono", "@hono/node-server"], {
