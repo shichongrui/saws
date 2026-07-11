@@ -4,6 +4,10 @@
   "description": "",
   "license": "ISC",
   "author": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shichongrui/saws.git"
+  },
   "files": [
     "./dist"
   ],

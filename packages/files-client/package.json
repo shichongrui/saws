@@ -4,6 +4,13 @@
   "description": "",
   "license": "ISC",
   "author": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shichongrui/saws.git"
+  },
+  "files": [
+    "./dist"
+  ],
   "type": "module",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -15,8 +22,5 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1081.0",
     "@aws-sdk/s3-request-presigner": "^3.1081.0"
-  },
-  "files": [
-    "./dist"
-  ]
+  }
 }

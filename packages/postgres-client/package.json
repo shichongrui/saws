@@ -4,6 +4,13 @@
   "description": "",
   "license": "ISC",
   "author": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shichongrui/saws.git"
+  },
+  "files": [
+    "./dist"
+  ],
   "type": "module",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -15,8 +22,5 @@
   "dependencies": {
     "@types/pg": "^8.15.5",
     "pg": "^8.16.3"
-  },
-  "files": [
-    "./dist"
-  ]
+  }
 }
