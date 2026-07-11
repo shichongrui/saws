@@ -1,0 +1,4 @@
+interface:
+  display_name: "SAWS Services"
+  short_description: "Build and maintain composable SAWS services"
+  default_prompt: "Use $saws-services to create or modify a SAWS service correctly."
