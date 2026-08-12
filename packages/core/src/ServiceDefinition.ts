@@ -150,7 +150,7 @@ export class ServiceDefinition {
   }
 
   getOnDevLogTabs() {
-    return this.onDev.map((_hook, index) => this.getHookLogTabName("onDev", index));
+    return this.onDev.map((hook, index) => this.getHookLogTabName("onDev", index, hook));
   }
 
   // this needs to be recursive down dependencies
@@ -211,7 +211,7 @@ export class ServiceDefinition {
       void this.runHook(hook, "onDev", index, this.onDevAbortController.signal).catch((error) => {
         if (this.onDevAbortController.signal.aborted) return;
         this.writeHookLog(
-          this.getHookLogTabName("onDev", index),
+          this.getHookLogTabName("onDev", index, hook),
           `${(error as Error).message}\n`,
           "stderr",
         );
@@ -225,7 +225,7 @@ export class ServiceDefinition {
     index: number,
     signal = new AbortController().signal,
   ) {
-    const serviceName = this.getHookLogTabName(hookName, index);
+    const serviceName = this.getHookLogTabName(hookName, index, hook);
     if (typeof hook === "function") {
       await hook({
         signal,
@@ -257,7 +257,11 @@ export class ServiceDefinition {
     return path.resolve(this.name);
   }
 
-  private getHookLogTabName(hookName: "onDev" | "onDeploy", index: number) {
+  private getHookLogTabName(hookName: "onDev" | "onDeploy", index: number, hook?: ServiceHook) {
+    if (hookName === "onDev" && typeof hook === "string") {
+      return `${this.name}: ${hook}`;
+    }
+
     return `${this.name}: ${hookName} ${index + 1}`;
   }
 }

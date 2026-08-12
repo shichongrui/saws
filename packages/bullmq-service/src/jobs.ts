@@ -67,6 +67,35 @@ export const getPrefixedQueueName = (baseName: string) => {
 export const createQueue = (baseName: string) =>
   new Queue(getPrefixedQueueName(baseName), { connection: getRedisConnection() });
 
+const configuredQueues = new Map<string, Queue>();
+
+/**
+ * Returns the queue configured for the current BullMQ worker service.
+ *
+ * BullMQService injects QUEUE_NAME from its `queue` setting, which defaults to
+ * the service name in saws.ts.
+ */
+export function getConfiguredQueueName(): string {
+  const queueName = process.env.QUEUE_NAME;
+  if (queueName == null || queueName.trim().length === 0) {
+    throw new UnrecoverableError(
+      "QUEUE_NAME must be set by a BullMQService before background jobs can be enqueued",
+    );
+  }
+  return queueName;
+}
+
+/** Creates a queue for the BullMQService that is running this job. */
+export function createConfiguredQueue() {
+  const queueName = getConfiguredQueueName();
+  let queue = configuredQueues.get(queueName);
+  if (queue == null) {
+    queue = new Queue(queueName, { connection: getRedisConnection() });
+    configuredQueues.set(queueName, queue);
+  }
+  return queue;
+}
+
 export const createFlowProducer = () => new FlowProducer({ connection: getRedisConnection() });
 
 export function createSandboxedWorker(
@@ -84,20 +113,40 @@ export function createSandboxedWorker(
   return worker;
 }
 
-export const createWorker = (
+export function createWorker(
+  jobMapping: Record<string, BackgroundJobConstructor>,
+  options?: Partial<WorkerOptions>,
+): Worker;
+/** @deprecated Pass the job mapping directly; BullMQService injects the queue name. */
+export function createWorker(
   queueName: string,
   jobMapping: Record<string, BackgroundJobConstructor>,
+  options?: Partial<WorkerOptions>,
+): Worker;
+export function createWorker(
+  queueNameOrJobMapping: string | Record<string, BackgroundJobConstructor>,
+  jobMappingOrOptions: Record<string, BackgroundJobConstructor> | Partial<WorkerOptions> = {},
   options: Partial<WorkerOptions> = {},
-) => {
+) {
+  const queueName =
+    typeof queueNameOrJobMapping === "string" ? queueNameOrJobMapping : getConfiguredQueueName();
+  const jobMapping =
+    typeof queueNameOrJobMapping === "string"
+      ? (jobMappingOrOptions as Record<string, BackgroundJobConstructor>)
+      : queueNameOrJobMapping;
+  const workerOptions =
+    typeof queueNameOrJobMapping === "string"
+      ? options
+      : (jobMappingOrOptions as Partial<WorkerOptions>);
   const worker = new Worker(queueName, createProcessor(jobMapping), {
     connection: getRedisConnection(),
-    ...options,
+    ...workerOptions,
   });
   attachWorkerDebugLogging(worker, queueName);
   worker.on("error", errorHandler(queueName));
   worker.on("failed", reportPermanentFailure(queueName));
   return worker;
-};
+}
 
 const attachWorkerDebugLogging = (worker: Worker, queueName: string) => {
   worker.on("active", (job) => {
@@ -153,7 +202,11 @@ export const createProcessor = (jobMapping: Record<string, BackgroundJobConstruc
 
 export abstract class BackgroundJob<DataType = any, ReturnType = any, JobDataType = DataType> {
   abstract name: string;
-  abstract queue: Queue;
+  /**
+   * The queue configured by the owning BullMQService. Subclasses normally only
+   * need to provide a name and run implementation.
+   */
+  readonly queue = createConfiguredQueue();
   data: DataType;
   job?: Job<JobDataType>;
 

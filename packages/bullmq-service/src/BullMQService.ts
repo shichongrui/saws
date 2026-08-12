@@ -58,10 +58,7 @@ export class BullMQService extends DockerService {
         2,
       ) + "\n",
     );
-    await writeFileIfMissing(
-      path.resolve(this.name, "src", "index.ts"),
-      workerIndexTemplate(this.queue),
-    );
+    await writeFileIfMissing(path.resolve(this.name, "src", "index.ts"), workerIndexTemplate());
     await writeFileIfMissing(path.resolve(this.name, "Dockerfile"), dockerfileTemplate(this.name));
     await addWorkspace(this.name);
     await addTsconfigReference(`./${this.name}/tsconfig.json`);
@@ -84,6 +81,7 @@ export class BullMQService extends DockerService {
     const environment = {
       ...(await this.getDependenciesEnvironmentVariables("local", "host")),
       ...(await this.getStageEnvironmentVariables("local")),
+      ...(await this.getEnvironmentVariables("local", "host")),
       REDIS_URL: (await this.redis.getConnectionInfo("local", "host")).url,
       QUEUE_NAME: this.queue,
     };
@@ -121,6 +119,7 @@ export class BullMQService extends DockerService {
   protected override async getContainerEnvironment(stage: string): Promise<Record<string, string>> {
     return {
       ...(await super.getContainerEnvironment(stage)),
+      ...(await this.getEnvironmentVariables(stage, "container")),
       REDIS_URL: (await this.redis.getConnectionInfo(stage, "container")).url,
       QUEUE_NAME: this.queue,
     };
@@ -185,14 +184,12 @@ async function addTsconfigReference(reference: string) {
   await writeFile(tsconfigPath, JSON.stringify(tsconfig, null, 2) + "\n");
 }
 
-function workerIndexTemplate(defaultQueue: string) {
+function workerIndexTemplate() {
   return `import {
   createWorker,
   type BackgroundJobConstructor,
   type JobsFromMapping,
 } from "@saws/bullmq-service";
-
-const queueName = process.env.QUEUE_NAME ?? ${JSON.stringify(defaultQueue)};
 
 const jobs = {
   // Register jobs here, for example: "send-email": SendEmailJob,
@@ -200,7 +197,7 @@ const jobs = {
 
 export type Jobs = JobsFromMapping<typeof jobs>;
 
-createWorker(queueName, jobs);
+createWorker(jobs);
 `;
 }
 

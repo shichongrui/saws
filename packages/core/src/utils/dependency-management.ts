@@ -27,16 +27,22 @@ export async function installDependencies(
   if (dependencies.length === 0) return;
 
   const rootDirectory = path.resolve(options.cwd ?? process.cwd());
-  const installDirectory =
-    options.workspace == null ? rootDirectory : path.resolve(rootDirectory, options.workspace);
-  const packageManager = await detectPackageManager(installDirectory);
-  const args = installArguments(packageManager, dependencies, options.development ?? false);
+  const packageManager = await detectPackageManager(rootDirectory);
+  const args = installArguments(
+    packageManager,
+    dependencies,
+    options.development ?? false,
+    options.workspace,
+  );
 
   await new Promise<void>((resolve, reject) => {
     const captureOutput = options.logSink != null;
     const serviceName = options.serviceName ?? "system";
     const child = spawn(packageManager, args, {
-      cwd: installDirectory,
+      // Workspace-aware package managers must be run from the workspace root.
+      // Running npm from within a workspace can install into the root package
+      // instead of updating the generated service's package.json.
+      cwd: rootDirectory,
       env: process.env,
       stdio: captureOutput ? ["ignore", "pipe", "pipe"] : "inherit",
     });
@@ -124,14 +130,34 @@ function installArguments(
   packageManager: PackageManager,
   dependencies: string[],
   development: boolean,
+  workspace?: string,
 ): string[] {
   switch (packageManager) {
     case "npm":
-      return ["install", development ? "--save-dev" : "--save-prod", ...dependencies];
+      return [
+        "install",
+        ...(workspace == null ? [] : ["--workspace", workspace]),
+        development ? "--save-dev" : "--save-prod",
+        ...dependencies,
+      ];
     case "pnpm":
+      return [
+        ...(workspace == null ? [] : ["--filter", workspace]),
+        "add",
+        ...(development ? ["--dev"] : []),
+        ...dependencies,
+      ];
     case "yarn":
+      return workspace == null
+        ? ["add", ...(development ? ["--dev"] : []), ...dependencies]
+        : ["workspace", workspace, "add", ...(development ? ["--dev"] : []), ...dependencies];
     case "bun":
-      return ["add", ...(development ? ["--dev"] : []), ...dependencies];
+      return [
+        "add",
+        ...(workspace == null ? [] : ["--filter", workspace]),
+        ...(development ? ["--dev"] : []),
+        ...dependencies,
+      ];
   }
 }
 

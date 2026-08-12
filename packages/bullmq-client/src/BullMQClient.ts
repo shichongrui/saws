@@ -9,7 +9,7 @@ export type JobData<Jobs, Name extends JobName<Jobs>> =
     : never;
 
 export interface BullMQClientOptions {
-  /** Required only when the worker service was configured with a custom queue name. */
+  /** Explicit queue name. Usually unnecessary because SAWS injects it for the worker service. */
   queue?: string;
   /** Explicit environment source for application adapters. */
   environment?: Record<string, string | undefined>;
@@ -22,7 +22,7 @@ export class BullMQClient<Jobs extends { name: string; data: unknown }> {
 
   constructor(serviceName: string, options: BullMQClientOptions = {}) {
     const { queue, environment, connection } = options;
-    this.queue = new Queue(queue ?? serviceName, {
+    this.queue = new Queue(queue ?? resolveBullMQServiceQueueName(serviceName, environment), {
       connection: connection ?? { url: resolveBullMQServiceRedisUrl(serviceName, environment) },
     });
   }
@@ -62,8 +62,30 @@ export function resolveBullMQServiceRedisUrl(
   return value;
 }
 
+export function resolveBullMQServiceQueueName(
+  serviceName: string,
+  environment?: Record<string, string | undefined>,
+) {
+  const variableName = bullMQServiceQueueNameEnvironmentVariable(serviceName);
+  const value =
+    environment?.[variableName] ??
+    getRuntimeEnvironment()?.[variableName] ??
+    getProcessEnvironment()?.[variableName];
+  if (value == null || value.trim().length === 0) {
+    throw new Error(
+      `BullMQ service "${serviceName}" is not configured: ` +
+        `${variableName} must be present in the SAWS environment`,
+    );
+  }
+  return value;
+}
+
 export function bullMQServiceRedisUrlEnvironmentVariable(serviceName: string) {
   return `${serviceName.replace(/[^a-zA-Z\d]/g, "_").toUpperCase()}_REDIS_URL`;
+}
+
+export function bullMQServiceQueueNameEnvironmentVariable(serviceName: string) {
+  return `${serviceName.replace(/[^a-zA-Z\d]/g, "_").toUpperCase()}_QUEUE_NAME`;
 }
 
 function getRuntimeEnvironment() {
