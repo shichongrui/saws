@@ -1,10 +1,7 @@
 import { spawn, type ChildProcess } from "node:child_process";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { ServiceDefinition } from "@saws/core";
 import { BullMQService } from "@saws/bullmq-service";
-import { installDependencies } from "@saws/core/utils/dependency-management";
-import { fileExists } from "@saws/core/utils/file-exists";
 import {
   DockerService,
   type DockerRunConfig,
@@ -13,6 +10,8 @@ import {
 import { RedisService } from "@saws/redis-service";
 
 const DEFAULT_PORT = 3000;
+const PACKAGE_DIRECTORY = path.resolve(import.meta.dirname, "..");
+const DASHBOARD_ENTRYPOINT = path.join(import.meta.dirname, "run-dashboard.js");
 
 export interface BullMQDashboardServiceConfig extends Omit<
   DockerServiceConfig,
@@ -60,8 +59,8 @@ export class BullMQDashboardService extends DockerService {
     super({
       ...config,
       dependencies: [...(config.dependencies ?? []), config.redis, ...bullMQServices],
-      dockerfile: path.join(config.name, "Dockerfile"),
-      buildContext: ".",
+      dockerfile: path.join(PACKAGE_DIRECTORY, "Dockerfile"),
+      buildContext: PACKAGE_DIRECTORY,
       healthCheck: {
         command:
           "node -e \"fetch('http://localhost:' + process.env.PORT).then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))\"",
@@ -77,46 +76,6 @@ export class BullMQDashboardService extends DockerService {
     this.port = port;
   }
 
-  override async init() {
-    await super.init();
-    await mkdir(path.resolve(this.name, "src"), { recursive: true });
-    await writeFileIfMissing(
-      path.resolve(this.name, "package.json"),
-      JSON.stringify({ name: this.name, type: "module" }, null, 2) + "\n",
-    );
-    await writeFileIfMissing(
-      path.resolve(this.name, "tsconfig.json"),
-      JSON.stringify(
-        {
-          extends: "@tsconfig/node26/tsconfig.json",
-          compilerOptions: {
-            composite: true,
-            outDir: "./dist",
-            rootDir: "./src",
-            types: ["node"],
-          },
-        },
-        null,
-        2,
-      ) + "\n",
-    );
-    await writeFileIfMissing(path.resolve(this.name, "src", "index.ts"), dashboardIndexTemplate());
-    await writeFileIfMissing(path.resolve(this.name, "Dockerfile"), dockerfileTemplate(this.name));
-    await addWorkspace(this.name);
-    await addTsconfigReference(`./${this.name}/tsconfig.json`);
-    await installDependencies(["@saws/bullmq-dashboard-service"], {
-      workspace: this.name,
-      logSink: this.getRuntimeLogSink(),
-      serviceName: this.name,
-    });
-    await installDependencies(["typescript", "tsx", "@tsconfig/node26", "@types/node"], {
-      workspace: this.name,
-      development: true,
-      logSink: this.getRuntimeLogSink(),
-      serviceName: this.name,
-    });
-  }
-
   override async dev() {
     await ServiceDefinition.prototype.dev.call(this);
 
@@ -126,8 +85,7 @@ export class BullMQDashboardService extends DockerService {
       ...(await this.getRuntimeEnvironment("local", "host")),
     };
     this.writeRuntimeLog(`Start BullMQ dashboard ${this.name} on port ${this.port}\n`);
-    this.dashboardDevProcess = spawn("npx", ["tsx", "watch", "src/index.ts"], {
-      cwd: path.resolve(this.name),
+    this.dashboardDevProcess = spawn(process.execPath, [DASHBOARD_ENTRYPOINT], {
       env: {
         ...process.env,
         ...environment,
@@ -188,84 +146,4 @@ export class BullMQDashboardService extends DockerService {
       }
     });
   }
-}
-
-async function writeFileIfMissing(filePath: string, contents: string) {
-  if (await fileExists(filePath)) return;
-  await writeFile(filePath, contents);
-}
-
-async function addWorkspace(workspace: string) {
-  const packageJsonPath = path.resolve("package.json");
-  const packageJson = JSON.parse(await readFile(packageJsonPath, "utf8")) as {
-    workspaces?: string[] | { packages?: string[] };
-  };
-
-  if (Array.isArray(packageJson.workspaces)) {
-    if (!packageJson.workspaces.includes(workspace)) packageJson.workspaces.push(workspace);
-  } else {
-    packageJson.workspaces = {
-      ...packageJson.workspaces,
-      packages: [...new Set([...(packageJson.workspaces?.packages ?? []), workspace])],
-    };
-  }
-
-  await writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2) + "\n");
-}
-
-async function addTsconfigReference(reference: string) {
-  const tsconfigPath = path.resolve("tsconfig.json");
-  const tsconfig = JSON.parse(await readFile(tsconfigPath, "utf8")) as {
-    references?: Array<{ path: string }>;
-  };
-  tsconfig.references = tsconfig.references ?? [];
-  if (
-    !tsconfig.references.some(
-      (entry) => entry.path === reference || entry.path === `./${reference}`,
-    )
-  ) {
-    tsconfig.references.push({ path: reference });
-  }
-  await writeFile(tsconfigPath, JSON.stringify(tsconfig, null, 2) + "\n");
-}
-
-function dashboardIndexTemplate() {
-  return `import { startBullMQDashboard } from "@saws/bullmq-dashboard-service";
-
-const dashboard = startBullMQDashboard();
-const shutdown = async () => {
-  await dashboard.close();
-};
-
-process.once("SIGINT", shutdown);
-process.once("SIGTERM", shutdown);
-`;
-}
-
-function dockerfileTemplate(servicePath: string) {
-  const dockerServicePath = servicePath.split(path.sep).join(path.posix.sep);
-
-  return `FROM node:26-slim AS build
-WORKDIR /app
-
-COPY package*.json ./
-COPY ${dockerServicePath}/package*.json ./${dockerServicePath}/
-RUN npm ci --workspace ./${dockerServicePath} --include-workspace-root=false
-
-COPY ${dockerServicePath} ./${dockerServicePath}
-RUN npx --no-install tsc -p ${dockerServicePath}/tsconfig.json
-
-FROM node:26-slim AS runtime
-WORKDIR /app
-ENV NODE_ENV=production
-
-COPY package*.json ./
-COPY ${dockerServicePath}/package*.json ./${dockerServicePath}/
-RUN npm ci --omit=dev --workspace ./${dockerServicePath} --include-workspace-root=false
-
-COPY --from=build /app/${dockerServicePath}/dist ./${dockerServicePath}/dist
-
-WORKDIR /app/${dockerServicePath}
-CMD ["node", "dist/index.js"]
-`;
 }

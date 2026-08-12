@@ -9,7 +9,8 @@
     "url": "git+https://github.com/shichongrui/saws.git"
   },
   "files": [
-    "./dist"
+    "./dist",
+    "./Dockerfile"
   ],
   "type": "module",
   "types": "./dist/index.d.ts",
