@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig-node.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "tsBuildInfoFile": "./dist/.tsbuildinfo"
+  },
+  "references": [
+    { "path": "../bullmq-service/tsconfig.json" },
+    { "path": "../core/tsconfig.json" },
+    { "path": "../docker-service/tsconfig.json" },
+    { "path": "../redis-service/tsconfig.json" }
+  ]
+}
