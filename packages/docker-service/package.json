@@ -19,6 +19,9 @@
       "import": "./dist/index.js"
     }
   },
+  "scripts": {
+    "test": "tsc -b && node --test tests/*.test.mjs"
+  },
   "dependencies": {
     "@saws/core": "2.0.0-beta.8"
   }

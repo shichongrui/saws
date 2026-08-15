@@ -59,12 +59,22 @@ export type DockerRunConfig = {
   restart?: RestartConfig;
   healthCheck?: DockerHealthCheckConfig | false;
   pull?: boolean;
+  /** Content digests for runtime files. Values are safe to persist in the config hash. */
+  runtimeFileDigests?: Record<string, string>;
   configHash?: string;
 };
 
 export type RuntimeFile = {
   localPath: string;
   remotePath: string;
+};
+
+/** A file whose contents affect the behavior of a container. */
+export type ContainerRuntimeFile = {
+  /** Stable identifier for the file, preferably its path inside the container. */
+  path: string;
+  /** Exact bytes that will be made available to the container. */
+  contents: string | Uint8Array;
 };
 
 export type DockerServiceConfig = (ImageConfig | DockerFileConfig | DefaultDockerFileConfig) & {
@@ -224,6 +234,10 @@ export class DockerService extends ServiceDefinition {
   }
 
   protected async getDockerRunConfig(stage: string, deploy: boolean): Promise<DockerRunConfig> {
+    const runtimeFileDigests = this.getContainerRuntimeFileDigests(
+      await this.getContainerRuntimeFiles(stage, deploy),
+    );
+
     return {
       name: this.getContainerName(stage),
       image: this.getImage(stage, deploy),
@@ -235,6 +249,7 @@ export class DockerService extends ServiceDefinition {
       command: this.command,
       restart: this.restart,
       healthCheck: this.healthCheck,
+      runtimeFileDigests,
       labels: {
         ...this.labels,
         "saws.service": this.name,
@@ -245,6 +260,18 @@ export class DockerService extends ServiceDefinition {
   }
 
   protected async onContainerStarted(_stage: string) {}
+
+  /**
+   * Registers generated or copied files whose contents affect the running container.
+   * Only SHA-256 digests of these contents participate in deployment change detection.
+   * Subclasses must generate or copy the files before calling `super.deploy(stage)`.
+   */
+  protected async getContainerRuntimeFiles(
+    _stage: string,
+    _deploy: boolean,
+  ): Promise<readonly ContainerRuntimeFile[]> {
+    return [];
+  }
 
   protected getImage(stage: string, deploy: boolean) {
     if (this.image != null) return this.image;
@@ -660,6 +687,10 @@ export class DockerService extends ServiceDefinition {
           ports: [...(config.ports ?? [])].sort(),
           command: config.command ?? [],
           labels: sortRecord(labels),
+          runtimeFileDigests:
+            config.runtimeFileDigests == null
+              ? undefined
+              : sortRecord(config.runtimeFileDigests),
           restart: config.restart ?? "unless-stopped",
           healthCheck:
             config.healthCheck === false
@@ -676,6 +707,24 @@ export class DockerService extends ServiceDefinition {
         }),
       )
       .digest("hex");
+  }
+
+  private getContainerRuntimeFileDigests(files: readonly ContainerRuntimeFile[]) {
+    if (files.length === 0) return undefined;
+
+    const digests: Record<string, string> = {};
+    for (const file of files) {
+      if (file.path.length === 0) {
+        throw new Error("Container runtime file path cannot be empty");
+      }
+      if (digests[file.path] != null) {
+        throw new Error(
+          `Container runtime file path "${file.path}" is registered more than once`,
+        );
+      }
+      digests[file.path] = createHash("sha256").update(file.contents).digest("hex");
+    }
+    return sortRecord(digests);
   }
 
   protected async writeRemoteEnvironmentFile(

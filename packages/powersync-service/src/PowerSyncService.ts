@@ -4,6 +4,7 @@ import { ServiceDefinition } from "@saws/core";
 import { hasDependency, installDependencies } from "@saws/core/utils/dependency-management";
 import { fileExists } from "@saws/core/utils/file-exists";
 import {
+  type ContainerRuntimeFile,
   DockerService,
   type DockerRunConfig,
   type DockerServiceConfig,
@@ -14,6 +15,7 @@ import { createPowerSyncCommand, runPowerSyncCli } from "./powersync-command.js"
 const POWERSYNC_CONFIG_PATH = "/config/service.yaml";
 const POWERSYNC_SYNC_CONFIG_PATH = "/config/sync-config.yaml";
 const POWERSYNC_DIRECTORY = "powersync";
+type PowerSyncRuntimeFile = ContainerRuntimeFile & { contents: string };
 
 export interface PowerSyncServiceConfig extends Omit<
   DockerServiceConfig,
@@ -40,6 +42,7 @@ export class PowerSyncService extends DockerService {
   readonly port: number;
   readonly maxOldSpaceSize: number;
   protected override readonly serviceType = "powersync";
+  private deploymentRuntimeFiles?: readonly PowerSyncRuntimeFile[];
 
   constructor(config: PowerSyncServiceConfig) {
     super({
@@ -85,22 +88,29 @@ export class PowerSyncService extends DockerService {
   }
 
   override async deploy(stage: string) {
-    if (this.host != null) {
-      await this.writeRemoteRuntimeFile(
-        stage,
-        `${this.name}/${POWERSYNC_DIRECTORY}/service.yaml`,
-        await readFile(this.getLocalPowerSyncFilePath("service.yaml"), "utf8"),
-        { mode: 0o644 },
-      );
-      await this.writeRemoteRuntimeFile(
-        stage,
-        `${this.name}/${POWERSYNC_DIRECTORY}/sync-config.yaml`,
-        await readFile(this.getLocalPowerSyncFilePath("sync-config.yaml"), "utf8"),
-        { mode: 0o644 },
-      );
-    }
+    const runtimeFiles = await this.readContainerRuntimeFiles();
+    this.deploymentRuntimeFiles = runtimeFiles;
 
-    await super.deploy(stage);
+    try {
+      if (this.host != null) {
+        await this.writeRemoteRuntimeFile(
+          stage,
+          `${this.name}/${POWERSYNC_DIRECTORY}/service.yaml`,
+          runtimeFiles[0]!.contents,
+          { mode: 0o644 },
+        );
+        await this.writeRemoteRuntimeFile(
+          stage,
+          `${this.name}/${POWERSYNC_DIRECTORY}/sync-config.yaml`,
+          runtimeFiles[1]!.contents,
+          { mode: 0o644 },
+        );
+      }
+
+      await super.deploy(stage);
+    } finally {
+      this.deploymentRuntimeFiles = undefined;
+    }
   }
 
   async runPowerSyncCli(powersyncArgs: string[]) {
@@ -138,6 +148,23 @@ export class PowerSyncService extends DockerService {
       volumes: [...this.getConfigVolumes(stage), ...(config.volumes ?? [])],
       ports: [`${this.port}:${this.port}`],
     } satisfies DockerRunConfig;
+  }
+
+  protected override async getContainerRuntimeFiles(): Promise<readonly ContainerRuntimeFile[]> {
+    return this.deploymentRuntimeFiles ?? this.readContainerRuntimeFiles();
+  }
+
+  private async readContainerRuntimeFiles(): Promise<readonly PowerSyncRuntimeFile[]> {
+    return [
+      {
+        path: POWERSYNC_CONFIG_PATH,
+        contents: await readFile(this.getLocalPowerSyncFilePath("service.yaml"), "utf8"),
+      },
+      {
+        path: POWERSYNC_SYNC_CONFIG_PATH,
+        contents: await readFile(this.getLocalPowerSyncFilePath("sync-config.yaml"), "utf8"),
+      },
+    ];
   }
 
   private getConfigVolumes(stage: string) {

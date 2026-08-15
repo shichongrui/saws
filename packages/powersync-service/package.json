@@ -19,6 +19,9 @@
       "import": "./dist/index.js"
     }
   },
+  "scripts": {
+    "test": "tsc -b && node --test --test-concurrency=1 tests/*.test.mjs"
+  },
   "dependencies": {
     "@saws/core": "2.0.0-beta.8",
     "@saws/docker-service": "2.0.0-beta.8",
