@@ -7,6 +7,8 @@
   "references": [
     { "path": "./packages/core/tsconfig.json" },
     { "path": "./packages/cli/tsconfig.json" },
+    { "path": "./packages/clickhouse-keeper-service/tsconfig.json" },
+    { "path": "./packages/clickhouse-service/tsconfig.json" },
     { "path": "./packages/docker-service/tsconfig.json" },
     { "path": "./packages/bullmq-client/tsconfig.json" },
     { "path": "./packages/bullmq-dashboard-service/tsconfig.json" },
@@ -19,6 +21,9 @@
     { "path": "./packages/powersync-service/tsconfig.json" },
     { "path": "./packages/redis-service/tsconfig.json" },
     { "path": "./packages/redis-client/tsconfig.json" },
-    { "path": "./packages/rustfs-file-service/tsconfig.json" }
+    { "path": "./packages/rustfs-file-service/tsconfig.json" },
+    { "path": "./packages/signoz-application/tsconfig.json" },
+    { "path": "./packages/signoz-otel-collector-service/tsconfig.json" },
+    { "path": "./packages/signoz-service/tsconfig.json" }
   ]
 }

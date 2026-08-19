@@ -1,0 +1,31 @@
+{
+  "name": "@saws/signoz-application",
+  "version": "2.0.0-beta.10",
+  "description": "Deploy a complete self-hosted SigNoz application with SAWS",
+  "license": "ISC",
+  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shichongrui/saws.git"
+  },
+  "files": [
+    "./dist",
+    "./README.md"
+  ],
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "dependencies": {
+    "@saws/clickhouse-keeper-service": "2.0.0-beta.10",
+    "@saws/clickhouse-service": "2.0.0-beta.10",
+    "@saws/core": "2.0.0-beta.10",
+    "@saws/postgres-service": "2.0.0-beta.10",
+    "@saws/signoz-otel-collector-service": "2.0.0-beta.10",
+    "@saws/signoz-service": "2.0.0-beta.10"
+  }
+}

@@ -54,6 +54,7 @@ export type DockerRunConfig = {
   envFiles?: string[];
   volumes?: string[];
   ports?: string[];
+  entrypoint?: string;
   command?: string[];
   labels?: Record<string, string>;
   restart?: RestartConfig;
@@ -85,6 +86,7 @@ export type DockerServiceConfig = (ImageConfig | DockerFileConfig | DefaultDocke
   auth?: DockerRegistryAuthConfig;
   volumes?: string[];
   ports?: string[];
+  entrypoint?: string;
   command?: string[];
   labels?: Record<string, string>;
   restart?: RestartConfig;
@@ -102,6 +104,7 @@ export class DockerService extends ServiceDefinition {
   readonly buildContext?: string;
   readonly volumes: string[];
   readonly ports: string[];
+  readonly entrypoint?: string;
   readonly command: string[];
   readonly labels: Record<string, string>;
   readonly restart?: RestartConfig;
@@ -148,6 +151,7 @@ export class DockerService extends ServiceDefinition {
 
     this.volumes = config.volumes ?? [];
     this.ports = config.ports ?? [];
+    this.entrypoint = config.entrypoint;
     this.command = config.command ?? [];
     this.labels = config.labels ?? {};
     this.restart = config.restart;
@@ -246,6 +250,7 @@ export class DockerService extends ServiceDefinition {
       env: await this.getContainerEnvironment(stage),
       volumes: this.volumes,
       ports: this.ports,
+      entrypoint: this.entrypoint,
       command: this.command,
       restart: this.restart,
       healthCheck: this.healthCheck,
@@ -522,6 +527,7 @@ export class DockerService extends ServiceDefinition {
       ...(config.envFiles ?? []).flatMap((envFile) => ["--env-file", envFile]),
       ...(config.volumes ?? []).flatMap((volume) => ["-v", volume]),
       ...(config.ports ?? []).flatMap((port) => ["-p", port]),
+      ...(config.entrypoint == null ? [] : ["--entrypoint", config.entrypoint]),
       ...Object.entries(config.labels ?? {}).flatMap(([key, value]) => [
         "--label",
         `${key}=${value}`,
@@ -601,6 +607,8 @@ export class DockerService extends ServiceDefinition {
       .join(" ");
     const volumeArgs = (config.volumes ?? []).map((volume) => `-v ${shellQuote(volume)}`).join(" ");
     const portArgs = (config.ports ?? []).map((port) => `-p ${shellQuote(port)}`).join(" ");
+    const entrypointArg =
+      config.entrypoint == null ? "" : `--entrypoint ${shellQuote(config.entrypoint)}`;
     const labelArgs = Object.entries(config.labels ?? {})
       .map(([key, value]) => `--label ${shellQuote(`${key}=${value}`)}`)
       .join(" ");
@@ -624,6 +632,7 @@ export class DockerService extends ServiceDefinition {
       envFileArgs,
       volumeArgs,
       portArgs,
+      entrypointArg,
       labelArgs,
       healthCheckArgs,
       shellQuote(config.image),
@@ -685,12 +694,11 @@ export class DockerService extends ServiceDefinition {
           envFiles: [...(config.envFiles ?? [])].sort(),
           volumes: [...(config.volumes ?? [])].sort(),
           ports: [...(config.ports ?? [])].sort(),
+          entrypoint: config.entrypoint,
           command: config.command ?? [],
           labels: sortRecord(labels),
           runtimeFileDigests:
-            config.runtimeFileDigests == null
-              ? undefined
-              : sortRecord(config.runtimeFileDigests),
+            config.runtimeFileDigests == null ? undefined : sortRecord(config.runtimeFileDigests),
           restart: config.restart ?? "unless-stopped",
           healthCheck:
             config.healthCheck === false
@@ -718,9 +726,7 @@ export class DockerService extends ServiceDefinition {
         throw new Error("Container runtime file path cannot be empty");
       }
       if (digests[file.path] != null) {
-        throw new Error(
-          `Container runtime file path "${file.path}" is registered more than once`,
-        );
+        throw new Error(`Container runtime file path "${file.path}" is registered more than once`);
       }
       digests[file.path] = createHash("sha256").update(file.contents).digest("hex");
     }
@@ -853,7 +859,7 @@ export class DockerService extends ServiceDefinition {
       "exit 1",
       "fi",
       "PIDS=",
-      "cleanup() { for pid in $PIDS; do kill \"$pid\" >/dev/null 2>&1 || true; done; }",
+      'cleanup() { for pid in $PIDS; do kill "$pid" >/dev/null 2>&1 || true; done; }',
       "trap cleanup INT TERM EXIT",
       "for container in $CONTAINERS; do",
       'docker logs --tail 100 -f "$container" &',

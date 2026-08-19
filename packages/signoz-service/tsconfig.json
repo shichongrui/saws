@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig-node.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "tsBuildInfoFile": "./dist/.tsbuildinfo"
+  },
+  "references": [
+    { "path": "../core/tsconfig.json" },
+    { "path": "../docker-service/tsconfig.json" },
+    { "path": "../clickhouse-service/tsconfig.json" },
+    { "path": "../postgres-service/tsconfig.json" }
+  ]
+}
