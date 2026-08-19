@@ -1,6 +1,6 @@
 {
   "name": "@saws/bullmq-dashboard-service",
-  "version": "2.0.0-beta.10",
+  "version": "2.0.0-beta.11",
   "description": "Run a BullMQ dashboard backed by a SAWS Redis service",
   "license": "ISC",
   "author": "",
@@ -24,10 +24,10 @@
     "@bull-board/api": "^8.6.0",
     "@bull-board/hono": "^8.6.0",
     "@hono/node-server": "^2.1.0",
-    "@saws/bullmq-service": "2.0.0-beta.10",
-    "@saws/core": "2.0.0-beta.10",
-    "@saws/docker-service": "2.0.0-beta.10",
-    "@saws/redis-service": "2.0.0-beta.10",
+    "@saws/bullmq-service": "2.0.0-beta.11",
+    "@saws/core": "2.0.0-beta.11",
+    "@saws/docker-service": "2.0.0-beta.11",
+    "@saws/redis-service": "2.0.0-beta.11",
     "bullmq": "^5.80.1",
     "hono": "^4.13.1"
   }
