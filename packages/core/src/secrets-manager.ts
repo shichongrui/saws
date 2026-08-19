@@ -14,6 +14,8 @@ export interface SecretsManagerConfig {
   /** Overrides the stage derived from the command's runtime context or STAGE. */
   stage?: string;
   rootDir?: string;
+  /** Overrides the directory containing secrets state. Defaults to `<rootDir>/.saws`. */
+  sawsDirectory?: string;
   /** Overrides SAWS_SECRETS_PASSCODE and the project-root .env file. */
   passcode?: string;
 }
@@ -116,12 +118,14 @@ export class GlobalSecrets {
 export class SecretsManager {
   readonly global: GlobalSecrets;
   readonly rootDir: string;
+  readonly sawsDirectory: string;
   private readonly configuredStage?: string;
   private readonly configuredPasscode?: string;
 
   constructor(config: SecretsManagerConfig = {}) {
     this.configuredStage = config.stage == null ? undefined : requireValidStage(config.stage);
     this.rootDir = config.rootDir ?? process.cwd();
+    this.sawsDirectory = config.sawsDirectory ?? path.resolve(this.rootDir, ".saws");
     this.configuredPasscode = config.passcode;
     this.global = new GlobalSecrets(this);
   }
@@ -170,7 +174,7 @@ export class SecretsManager {
   getSecretsFilePath(scope: SecretScope, resolutionStage?: string) {
     const fileName =
       scope === GLOBAL_SCOPE ? "global.env" : `${this.resolveStage(resolutionStage)}.env`;
-    return path.resolve(this.rootDir, ".saws", "secrets", fileName);
+    return path.resolve(this.sawsDirectory, "secrets", fileName);
   }
 
   private resolveStage(resolutionStage?: string) {

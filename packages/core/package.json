@@ -18,6 +18,7 @@
     "./ServiceDefinition": "./dist/ServiceDefinition.js",
     "./get-saws-config": "./dist/get-saws-config.js",
     "./Host": "./dist/Host.js",
+    "./global-hosts": "./dist/global-hosts.js",
     "./host-readiness": "./dist/host-readiness.js",
     "./secrets-manager": "./dist/secrets-manager.js",
     "./utils/constants": "./dist/utils/constants.js",

@@ -1,21 +1,22 @@
-import { execFile } from "node:child_process";
-import { chmod, mkdtemp, readFile, rename, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
+import { chmod, readFile, rename, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { promisify } from "node:util";
 import {
   Host,
   ParameterNotFoundError,
   SecretsManager,
   ServiceDefinition,
+  getGlobalHost,
+  getGlobalHostSecretsManager,
   getSawsConfigModule,
   hostSshPublicKeyEnvName,
 } from "@saws/core";
 import { findConfiguredHosts } from "../../hosts.js";
+import { derivePublicKey, generatePrivateKey } from "./deployment-key.js";
 
 export interface ConfigureHostCommandOptions {
   config?: string;
   dryRun?: boolean;
+  global?: boolean;
   user: string;
 }
 
@@ -23,6 +24,17 @@ export async function configureHostCommand(
   name: string | undefined,
   options: ConfigureHostCommandOptions,
 ) {
+  if (options.global) {
+    if (options.config != null) {
+      throw new Error("host configure accepts only one of --global or --config <path>");
+    }
+    if (name == null) {
+      throw new Error("host configure --global requires a host name");
+    }
+    await configureSelectedHost(getGlobalHost(name), getGlobalHostSecretsManager(), options);
+    return;
+  }
+
   const config = await getSawsConfigModule(options.config);
   if (!(config.secrets instanceof SecretsManager)) {
     throw new Error('saws.ts must export a SecretsManager instance named "secrets"');
@@ -32,7 +44,15 @@ export async function configureHostCommand(
   }
 
   const host = selectHost(findConfiguredHosts(config.default), name);
-  validatePrivateKeyReference(host, config.secrets);
+  await configureSelectedHost(host, config.secrets, options);
+}
+
+async function configureSelectedHost(
+  host: Host,
+  manager: SecretsManager,
+  options: ConfigureHostCommandOptions,
+) {
+  validatePrivateKeyReference(host, manager);
 
   if (options.dryRun) {
     await host.configure({
@@ -43,17 +63,13 @@ export async function configureHostCommand(
     return;
   }
 
-  const { privateKey, created } = await getOrCreateDeploymentKey(config.secrets, host);
+  const { privateKey, created } = await getOrCreateDeploymentKey(manager, host);
   const publicKey = await derivePublicKey(privateKey);
 
   if (created) {
-    await config.secrets.global.set(host.sshPrivateKey!.name, privateKey);
+    await manager.global.set(host.sshPrivateKey!.name, privateKey);
   }
-  await updatePublicKeyEnvironment(
-    config.secrets.rootDir,
-    hostSshPublicKeyEnvName(host.name),
-    publicKey,
-  );
+  await updatePublicKeyEnvironment(manager.rootDir, hostSshPublicKeyEnvName(host.name), publicKey);
   await host.configure({
     bootstrapUser: options.user,
     deploymentPublicKey: publicKey,
@@ -115,36 +131,6 @@ async function getOrCreateDeploymentKey(manager: SecretsManager, host: Host) {
   };
 }
 
-async function generatePrivateKey() {
-  return withTemporaryDirectory(async (directory) => {
-    const keyPath = path.join(directory, "id_ed25519");
-    await execFileAsync("ssh-keygen", ["-q", "-t", "ed25519", "-N", "", "-f", keyPath]);
-    return readFile(keyPath, "utf8");
-  });
-}
-
-async function derivePublicKey(privateKey: string) {
-  return withTemporaryDirectory(async (directory) => {
-    const keyPath = path.join(directory, "id_ed25519");
-    await writeFile(keyPath, privateKey, { mode: 0o600 });
-    const { stdout } = await execFileAsync("ssh-keygen", ["-y", "-f", keyPath]);
-    const publicKey = stdout.trim();
-    if (publicKey.length === 0) {
-      throw new Error("Could not derive the deployment public key");
-    }
-    return publicKey;
-  });
-}
-
-async function withTemporaryDirectory<T>(callback: (directory: string) => Promise<T>) {
-  const directory = await mkdtemp(path.join(tmpdir(), "saws-key-"));
-  try {
-    return await callback(directory);
-  } finally {
-    await rm(directory, { recursive: true, force: true });
-  }
-}
-
 async function updatePublicKeyEnvironment(
   rootDir: string,
   variableName: string,
@@ -184,5 +170,3 @@ async function updatePublicKeyEnvironment(
 function escapeRegExp(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
-
-const execFileAsync = promisify(execFile);

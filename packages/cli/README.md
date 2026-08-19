@@ -56,6 +56,45 @@ npx saws deploy --stage <stage>
 
 This command will deploy all the services in your `saws.js` file to AWS. You will need to have your AWS session configured in your terminal for this command to succeed.
 
+### Packaged applications
+
+A package can expose a reusable SAWS application by exporting a `create` factory:
+
+```ts
+import { ServiceDefinition, type Host } from "@saws/core";
+
+export function create({ host }: { host: Host }) {
+  return new ServiceDefinition({
+    name: "example-application",
+    dependencies: [createApplicationServices(host)],
+  });
+}
+```
+
+The factory input is a TypeScript module with a default export. Named exports are
+re-exported from the installed application's generated `saws.ts`. A packaged
+application can therefore use the same global hosts as project configurations:
+
+```ts
+import { getGlobalHost } from "@saws/core";
+
+export const host = getGlobalHost("observability");
+
+export default { host };
+```
+
+Install and deploy a named instance:
+
+```bash
+npx saws app install @example/signoz --name observability --config ./signoz.config.ts
+npx saws app deploy observability --stage production
+```
+
+Installed packages, configuration, dependencies, secrets, outputs, and other SAWS
+state live beneath `~/.saws/apps/<name>`. Set `SAWS_HOME` to use another base
+directory, such as in CI. Run standard commands that operate on named exports from
+the application instance directory.
+
 ### `logs`
 
 ```bash
@@ -68,7 +107,51 @@ service name to tail only one service. The `local` stage is a no-op.
 
 ### `host configure`
 
-Define the encrypted global key reference with the host in `saws.ts`:
+Hosts that are shared by multiple projects can be stored in the global SAWS home:
+
+```bash
+npx saws host create production \
+  --address 203.0.113.10 \
+  --user deploy \
+  --platform linux/amd64 \
+  --exposure public
+
+npx saws host configure production --global --user ubuntu
+```
+
+`host configure` generates an Ed25519 deployment key when the global host does
+not already have one. To use an existing, unencrypted SSH private key, import it
+before configuring the host:
+
+```bash
+npx saws host key import production --file ~/.ssh/production_deploy
+npx saws host configure production --global --user ubuntu
+```
+
+The import command validates the key and stores its contents only in encrypted
+global storage. It refuses to replace an existing host key unless `--force` is
+provided, and it never modifies the source key file.
+
+Reference the resulting concrete `Host` from any project's `saws.ts`:
+
+```ts
+import { getGlobalHost } from "@saws/core";
+import { HonoService } from "@saws/hono-service";
+
+export const host = getGlobalHost("production");
+
+export default new HonoService({
+  name: "api",
+  host,
+});
+```
+
+Profiles are stored beneath `~/.saws/hosts`, while their deployment keys are kept
+in the encrypted global secret store beneath `~/.saws/secrets`. `SAWS_HOME` can
+override the base directory. A global profile contains no private key material.
+
+Inline, project-owned hosts remain supported. Define the encrypted global key
+reference with the host in `saws.ts`:
 
 ```ts
 import { Host, SecretsManager } from "@saws/core";

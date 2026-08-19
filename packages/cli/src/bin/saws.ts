@@ -15,6 +15,7 @@ import { createCommand as createInitCommand } from "../commands/init/index.js";
 import { createCommand as createHostCommand } from "../commands/host/index.js";
 import { createCommand as createLogsCommand } from "../commands/logs/index.js";
 import { createCommand as createSecretsCommand } from "../commands/secrets/index.js";
+import { createCommand as createAppCommand } from "../commands/app/index.js";
 
 const pkg = finder(import.meta.dirname).next().value;
 
@@ -30,6 +31,7 @@ program.addCommand(createInitCommand());
 program.addCommand(createHostCommand());
 program.addCommand(createLogsCommand());
 program.addCommand(createSecretsCommand());
+program.addCommand(createAppCommand());
 
 type ServiceConstructor = typeof ServiceDefinition & {
   getCommands?: (services?: ServiceDefinition[]) => Command[];
