@@ -11,6 +11,8 @@ import {
 import { runLocal } from "@saws/core/utils/run-local";
 import { shellQuote } from "@saws/core/utils/shell-quote";
 
+const initialWorkingDirectory = process.cwd();
+
 export type DockerHealthCheckConfig = {
   /** Command executed by Docker inside the container using CMD-SHELL. */
   command: string;
@@ -241,7 +243,13 @@ export class DockerService extends ServiceDefinition {
   }
 
   private getGitSha() {
-    const result = spawnSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" });
+    const ciGitSha = process.env["GITHUB_SHA"]?.trim();
+    if (ciGitSha != null && ciGitSha.length > 0) return ciGitSha;
+
+    const result = spawnSync("git", ["rev-parse", "HEAD"], {
+      cwd: initialWorkingDirectory,
+      encoding: "utf8",
+    });
     const gitSha = result.stdout.trim();
 
     if (result.status !== 0 || gitSha.length === 0) {
