@@ -1,6 +1,6 @@
 {
   "name": "@saws/postgres-service",
-  "version": "2.0.0-beta.15",
+  "version": "2.0.0-beta.16",
   "description": "",
   "license": "ISC",
   "author": "",
@@ -20,8 +20,8 @@
     }
   },
   "dependencies": {
-    "@saws/core": "2.0.0-beta.15",
-    "@saws/docker-service": "2.0.0-beta.15",
+    "@saws/core": "2.0.0-beta.16",
+    "@saws/docker-service": "2.0.0-beta.16",
     "commander": "^15.0.0"
   }
 }
