@@ -154,8 +154,8 @@ export class SigNozOtelCollectorService extends DockerService {
     return {
       ...config,
       volumes: [
-        `${this.getConfigFilePath(stage, "ingester.yaml")}:${COLLECTOR_CONFIG_PATH}:ro`,
-        `${this.getConfigFilePath(stage, "opamp.yaml")}:${OPAMP_CONFIG_PATH}:ro`,
+        `${this.getConfigFilePath(stage, path.posix.basename(COLLECTOR_CONFIG_PATH))}:${COLLECTOR_CONFIG_PATH}:ro`,
+        `${this.getConfigFilePath(stage, path.posix.basename(OPAMP_CONFIG_PATH))}:${OPAMP_CONFIG_PATH}:ro`,
       ],
       ports: [`${this.grpcPort}:${OTLP_GRPC_PORT}`, `${this.httpPort}:${OTLP_HTTP_PORT}`],
     } satisfies DockerRunConfig;
