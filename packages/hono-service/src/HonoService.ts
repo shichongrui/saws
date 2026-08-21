@@ -35,7 +35,7 @@ export class HonoService extends DockerService {
       healthCheck: {
         command:
           "node -e \"fetch('http://localhost:${PORT:-3000}/health').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))\"",
-        interval: "5s",
+        interval: "15s",
         timeout: "2s",
         retries: 12,
         startPeriod: "5s",
