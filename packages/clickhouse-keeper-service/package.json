@@ -1,6 +1,6 @@
 {
   "name": "@saws/clickhouse-keeper-service",
-  "version": "2.0.0-beta.13",
+  "version": "2.0.0-beta.14",
   "description": "Run ClickHouse Keeper as a SAWS Docker service",
   "license": "ISC",
   "author": "",
@@ -20,7 +20,7 @@
     }
   },
   "dependencies": {
-    "@saws/core": "2.0.0-beta.13",
-    "@saws/docker-service": "2.0.0-beta.13"
+    "@saws/core": "2.0.0-beta.14",
+    "@saws/docker-service": "2.0.0-beta.14"
   }
 }
