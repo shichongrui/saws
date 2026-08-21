@@ -234,7 +234,24 @@ export class DockerService extends ServiceDefinition {
     return {
       ...(await this.getDependenciesEnvironmentVariables(stage)),
       ...(await this.getStageEnvironmentVariables(stage)),
+      SAWS_SERVICE_NAME: this.name,
+      SAWS_STAGE: stage,
+      SAWS_GIT_SHA: this.getGitSha(),
     };
+  }
+
+  private getGitSha() {
+    const result = spawnSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" });
+    const gitSha = result.stdout.trim();
+
+    if (result.status !== 0 || gitSha.length === 0) {
+      const detail = result.error?.message ?? result.stderr.trim();
+      throw new Error(
+        `Unable to determine Git SHA for Docker service "${this.name}"${detail.length === 0 ? "" : `: ${detail}`}`,
+      );
+    }
+
+    return gitSha;
   }
 
   protected async getDockerRunConfig(stage: string, deploy: boolean): Promise<DockerRunConfig> {
