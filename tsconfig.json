@@ -14,6 +14,8 @@
     { "path": "./packages/bullmq-dashboard-service/tsconfig.json" },
     { "path": "./packages/bullmq-service/tsconfig.json" },
     { "path": "./packages/files-client/tsconfig.json" },
+    { "path": "./packages/hermes-agent-service/tsconfig.json" },
+    { "path": "./packages/hermes-application/tsconfig.json" },
     { "path": "./packages/hono-service/tsconfig.json" },
     { "path": "./packages/n8n-service/tsconfig.json" },
     { "path": "./packages/postgres-client/tsconfig.json" },

@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig-node.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "tsBuildInfoFile": "./dist/.tsbuildinfo"
+  },
+  "references": [
+    { "path": "../core/tsconfig.json" },
+    { "path": "../hermes-agent-service/tsconfig.json" }
+  ]
+}

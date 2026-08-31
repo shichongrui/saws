@@ -1,0 +1,27 @@
+{
+  "name": "@saws/hermes-application",
+  "version": "2.0.0-beta.16",
+  "description": "Deploy a self-hosted Hermes Agent application with SAWS",
+  "license": "ISC",
+  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shichongrui/saws.git"
+  },
+  "files": [
+    "./dist",
+    "./README.md"
+  ],
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "dependencies": {
+    "@saws/core": "2.0.0-beta.16",
+    "@saws/hermes-agent-service": "2.0.0-beta.16"
+  }
+}
