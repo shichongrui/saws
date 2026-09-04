@@ -21,7 +21,7 @@ import {
 } from "@saws/docker-service";
 import { createMigrateCommand } from "./migrate-command.js";
 
-const POSTGRES_VOLUME_DIRECTORY = "/var/lib/postgresql";
+const DEFAULT_POSTGRES_DATA_DIRECTORY = "/var/lib/postgresql";
 
 export type PostgresConnectionTarget = "container" | "host";
 
@@ -49,6 +49,8 @@ export interface PostgresServiceConfig extends Omit<
   password?: SecretReference;
   /** Override the Docker volume name. By default SAWS derives a stable stage/service volume. */
   volume?: string;
+  /** Container directory where the database volume is mounted. Defaults to PostgreSQL 18's /var/lib/postgresql. */
+  dataDirectory?: string;
   /** Enable logical WAL for replication/change data capture use cases. */
   wal_enabled?: boolean;
   /** dbmate image used to apply migrations in an ephemeral sibling container. */
@@ -65,6 +67,7 @@ export class PostgresService extends DockerService {
   readonly username: string;
   readonly password?: SecretReference;
   readonly volume?: string;
+  readonly dataDirectory: string;
   readonly walEnabled: boolean;
   readonly migrationImage: string;
   protected override readonly serviceType = "postgres";
@@ -87,6 +90,7 @@ export class PostgresService extends DockerService {
     this.username = config.username ?? "postgres";
     this.password = config.password;
     this.volume = config.volume;
+    this.dataDirectory = config.dataDirectory ?? DEFAULT_POSTGRES_DATA_DIRECTORY;
     this.walEnabled = config.wal_enabled ?? false;
     this.migrationImage = config.migrationImage ?? "ghcr.io/amacneil/dbmate:2.33.0";
   }
@@ -187,7 +191,7 @@ export class PostgresService extends DockerService {
 
     return {
       ...config,
-      volumes: [`${this.getVolumeName(stage)}:${POSTGRES_VOLUME_DIRECTORY}`],
+      volumes: [`${this.getVolumeName(stage)}:${this.dataDirectory}`],
       ports: deploy && this.port == null ? [] : [`${this.getHostPort(stage)}:5432`],
       command: this.walEnabled ? ["postgres", "-c", "wal_level=logical"] : config.command,
     };

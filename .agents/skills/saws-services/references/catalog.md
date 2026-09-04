@@ -68,6 +68,8 @@ Config:
 - `username` default `postgres`.
 - Optional password `SecretReference`; otherwise generate and persist a stage secret.
 - Optional volume; default `<stage>-<name>-postgres-data`.
+- Data directory default `/var/lib/postgresql`; override `dataDirectory` for images with a different
+  persistent mount path, such as `/var/lib/postgresql/data` for PostgreSQL 17 and earlier.
 - `wal_enabled` enables `wal_level=logical`.
 - Migration image default `ghcr.io/amacneil/dbmate:2.33.0`.
 

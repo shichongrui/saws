@@ -34,4 +34,5 @@ and ClickHouse Keeper remain private to the stage-specific Docker network.
 
 The input accepts `name`, `network`, `appDirectory`, port overrides, image overrides, and
 stage-specific environment for the SigNoz and collector containers. PostgreSQL uses a generated,
-stage-scoped SAWS secret unless `postgresPassword` is supplied.
+stage-scoped SAWS secret unless `postgresPassword` is supplied. The bundled PostgreSQL 16 service
+mounts its persistent volume at `/var/lib/postgresql/data`, as required by that image version.

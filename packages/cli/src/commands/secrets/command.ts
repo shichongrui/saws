@@ -1,4 +1,7 @@
-import { getSawsConfigModule, SecretsManager, type GlobalSecrets } from "@saws/core";
+import { getSawsConfigModule, SecretsManager } from "@saws/core";
+
+type SecretsStore = Pick<SecretsManager, "get" | "set">;
+type SecretsManagerLike = SecretsStore & { global: SecretsStore };
 
 export interface SecretsCommandOptions {
   config?: string;
@@ -22,12 +25,15 @@ export async function secretsCommand(name: string, options: SecretsCommandOption
   }
 
   const config = await getSawsConfigModule(options.config);
-  const manager = config.secrets;
-  if (!(manager instanceof SecretsManager)) {
+  const manager =
+    Object.values(config).find(
+      (candidate): candidate is SecretsManager => candidate instanceof SecretsManager,
+    ) ?? config.secrets;
+  if (!isSecretsManagerLike(manager)) {
     throw new Error('saws.ts must export a SecretsManager instance named "secrets"');
   }
 
-  const secrets: SecretsManager | GlobalSecrets = options.global ? manager.global : manager;
+  const secrets = options.global ? manager.global : manager;
 
   if (options.get) {
     console.log(await secrets.get(name));
@@ -39,4 +45,17 @@ export async function secretsCommand(name: string, options: SecretsCommandOption
   }
   await secrets.set(name, value);
   console.log("Set secret");
+}
+
+function isSecretsManagerLike(value: unknown): value is SecretsManagerLike {
+  if (value == null || typeof value !== "object") return false;
+
+  const candidate = value as Partial<SecretsManagerLike>;
+  return (
+    typeof candidate.get === "function" &&
+    typeof candidate.set === "function" &&
+    candidate.global != null &&
+    typeof candidate.global.get === "function" &&
+    typeof candidate.global.set === "function"
+  );
 }

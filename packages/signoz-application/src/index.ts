@@ -69,6 +69,7 @@ export function createSigNozServices(config: SigNozApplicationConfig): SigNozApp
     database: "signoz",
     username: "signoz",
     password: config.postgresPassword,
+    dataDirectory: "/var/lib/postgresql/data",
   });
   const keeper = new ClickHouseKeeperService({
     ...common,
