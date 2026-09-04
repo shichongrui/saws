@@ -1,6 +1,6 @@
 {
   "name": "@saws/signoz-service",
-  "version": "2.0.0-beta.18",
+  "version": "2.0.0-beta.19",
   "description": "Run the SigNoz API and UI as a SAWS Docker service",
   "license": "ISC",
   "author": "",
@@ -20,9 +20,9 @@
     }
   },
   "dependencies": {
-    "@saws/clickhouse-service": "2.0.0-beta.18",
-    "@saws/core": "2.0.0-beta.18",
-    "@saws/docker-service": "2.0.0-beta.18",
-    "@saws/postgres-service": "2.0.0-beta.18"
+    "@saws/clickhouse-service": "2.0.0-beta.19",
+    "@saws/core": "2.0.0-beta.19",
+    "@saws/docker-service": "2.0.0-beta.19",
+    "@saws/postgres-service": "2.0.0-beta.19"
   }
 }
