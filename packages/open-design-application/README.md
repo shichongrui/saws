@@ -5,7 +5,12 @@ installations. The gateway is the only published process. OpenDesign listens on 
 container and remains inaccessible until the application password and configured agent requirement
 are satisfied.
 
-Create `open-design.config.ts`:
+Install the application, then edit its generated `config.ts`:
+
+```sh
+npx saws app install @saws/open-design-application --name design
+${EDITOR:-vi} "${SAWS_HOME:-$HOME/.saws}/apps/design/config.ts"
+```
 
 ```ts
 import { getGlobalHost, SecretsManager } from "@saws/core";
@@ -21,12 +26,14 @@ export default {
 };
 ```
 
-Store `open-design-application-password` in each deployment stage, then install and deploy:
+Store `open-design-application-password` in each deployment stage, then deploy:
 
 ```sh
-npx saws app install @saws/open-design-application --name design --config ./open-design.config.ts
 npx saws app deploy design --stage production
 ```
+
+Run `npx saws app update design` to install a newer npm `latest` version. Updates never overwrite
+`config.ts`.
 
 Visit the deployed URL and enter the application password. Codex uses its structured ChatGPT
 device-code protocol: open the displayed verification URL, sign in, and enter the one-time code.

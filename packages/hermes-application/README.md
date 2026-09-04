@@ -3,7 +3,12 @@
 Deploy the official Nous Research Hermes Agent image through SAWS. Hermes configuration, memory,
 sessions, and installed skills persist in a stage-specific Docker volume.
 
-Create an application input file:
+Install the application, then edit its generated `config.ts`:
+
+```sh
+npx saws app install @saws/hermes-application --name hermes
+${EDITOR:-vi} "${SAWS_HOME:-$HOME/.saws}/apps/hermes/config.ts"
+```
 
 ```ts
 import { getGlobalHost, SecretsManager } from "@saws/core";
@@ -26,12 +31,14 @@ export default {
 };
 ```
 
-Install and deploy it:
+Deploy it:
 
 ```sh
-npx saws app install @saws/hermes-application --name hermes --config ./hermes.config.ts
 npx saws app deploy hermes --stage production
 ```
+
+Run `npx saws app update hermes` to install a newer npm `latest` version. Updates never overwrite
+`config.ts`.
 
 The API server and dashboard are disabled unless configured. When enabled, their defaults are ports
 `8642` and `9119`; those ports must also be permitted by the target host's SAWS configuration.

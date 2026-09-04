@@ -10,6 +10,7 @@ CLI for interacting with your SAWS application.
 
 - [Installation](#installation)
 - [Commands](#commands)
+- [Deployment guide](./docs/global-hosts-and-applications.md)
 
 ## Installation <a id='installation'>
 
@@ -58,6 +59,9 @@ This command will deploy all the services in your `saws.js` file to AWS. You wil
 
 ### Packaged applications
 
+See [Global hosts and packaged applications](./docs/global-hosts-and-applications.md) for the full
+machine bootstrap, application configuration, secrets, deployment, and troubleshooting workflow.
+
 A package can expose a reusable SAWS application by exporting a `create` factory:
 
 ```ts
@@ -71,9 +75,9 @@ export function create({ host }: { host: Host }) {
 }
 ```
 
-The factory input is a TypeScript module with a default export. Named exports are
-re-exported from the installed application's generated `saws.ts`. A packaged
-application can therefore use the same global hosts as project configurations:
+The installer creates a type-checked `config.ts` module with a default export. Named exports are
+re-exported from the installed application's generated `saws.ts`. A packaged application can
+therefore use the same global hosts as project configurations:
 
 ```ts
 import { getGlobalHost } from "@saws/core";
@@ -86,14 +90,23 @@ export default { host };
 Install and deploy a named instance:
 
 ```bash
-npx saws app install @example/signoz --name observability --config ./signoz.config.ts
+npx saws app install @example/signoz --name observability
+# Edit ~/.saws/apps/observability/config.ts, then deploy it.
 npx saws app deploy observability --stage production
 ```
 
 Installed packages, configuration, dependencies, secrets, outputs, and other SAWS
 state live beneath `~/.saws/apps/<name>`. Set `SAWS_HOME` to use another base
-directory, such as in CI. Run standard commands that operate on named exports from
-the application instance directory.
+directory, such as in CI. `app install` refuses to replace an existing instance. Use
+`saws app update <name>` to install a newer npm `latest` version without overwriting
+`config.ts`. The first update of a legacy instance renames its `input.ts` to `config.ts`.
+Run standard commands that operate on named exports from the application instance directory.
+
+List every installed instance with its package, version, and configuration state:
+
+```bash
+npx saws app list
+```
 
 ### `logs`
 
@@ -106,6 +119,9 @@ This command will tail logs for deployed services in your `saws.js` file. Pass a
 service name to tail only one service. The `local` stage is a no-op.
 
 ### `host configure`
+
+See [Global hosts and packaged applications](./docs/global-hosts-and-applications.md) for the full
+global-host setup and security model.
 
 Hosts that are shared by multiple projects can be stored in the global SAWS home:
 
