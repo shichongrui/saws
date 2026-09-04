@@ -1,6 +1,6 @@
 {
   "name": "@saws/reverse-proxy-application",
-  "version": "2.0.0-beta.20",
+  "version": "2.0.0-beta.21",
   "description": "Deploy a Caddy reverse proxy application with SAWS",
   "license": "ISC",
   "author": "",
@@ -21,7 +21,7 @@
     }
   },
   "dependencies": {
-    "@saws/core": "2.0.0-beta.20",
-    "@saws/reverse-proxy-service": "2.0.0-beta.20"
+    "@saws/core": "2.0.0-beta.21",
+    "@saws/reverse-proxy-service": "2.0.0-beta.21"
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@saws/redis-service",
-  "version": "2.0.0-beta.20",
+  "version": "2.0.0-beta.21",
   "description": "",
   "license": "ISC",
   "author": "",
@@ -20,7 +20,7 @@
     }
   },
   "dependencies": {
-    "@saws/core": "2.0.0-beta.20",
-    "@saws/docker-service": "2.0.0-beta.20"
+    "@saws/core": "2.0.0-beta.21",
+    "@saws/docker-service": "2.0.0-beta.21"
   }
 }
