@@ -18,6 +18,7 @@ const ui = {
 let csrf;
 let codexPoll;
 let terminalSocket;
+let agentStatus = { codex: false, claude: false };
 
 async function request(path, options = {}) {
   const response = await fetch(path, {
@@ -39,9 +40,19 @@ function showNotice(message, error = false) {
   ui.notice.classList.toggle("error", error);
 }
 
-function setAgentStatus(element, connected) {
-  element.textContent = connected ? "Connected" : "Not connected";
+function setAgentStatus(element, button, agent, connected, selectedAgent) {
+  const selected = selectedAgent === agent;
+  element.textContent = selected
+    ? connected
+      ? "Selected"
+      : "Selected · disconnected"
+    : connected
+      ? "Connected"
+      : "Not connected";
   element.classList.toggle("ok", connected);
+  button.textContent = connected
+    ? `Use ${agent === "codex" ? "Codex" : "Claude Code"}`
+    : `Connect ${agent === "codex" ? "Codex" : "Claude Code"}`;
 }
 
 async function refresh() {
@@ -53,10 +64,25 @@ async function refresh() {
   }
   ui.passwordForm.hidden = true;
   ui.agents.hidden = false;
-  setAgentStatus(ui.codexStatus, status.codex);
-  setAgentStatus(ui.claudeStatus, status.claude);
-  ui.requirement.textContent = `Access requires ${status.requirement === "any" ? "Codex or Claude Code" : status.requirement === "all" ? "both Codex and Claude Code" : status.requirement}.`;
+  agentStatus = { codex: status.codex, claude: status.claude };
+  setAgentStatus(ui.codexStatus, ui.codexConnect, "codex", status.codex, status.selectedAgent);
+  setAgentStatus(ui.claudeStatus, ui.claudeConnect, "claude", status.claude, status.selectedAgent);
+  const requirementText = `Access requires ${status.requirement === "any" ? "Codex or Claude Code" : status.requirement === "all" ? "both Codex and Claude Code" : status.requirement}.`;
+  const selectionText =
+    status.selectedAgent == null && (status.codex || status.claude)
+      ? " Choose which connected agent OpenDesign should use."
+      : "";
+  ui.requirement.textContent = `${requirementText}${selectionText}`;
   if (status.satisfied) location.replace("/");
+}
+
+async function selectAgent(agent) {
+  await request("/__saws/agent", {
+    method: "POST",
+    body: JSON.stringify({ agent }),
+  });
+  showNotice(`${agent === "codex" ? "Codex" : "Claude Code"} selected.`);
+  await refresh();
 }
 
 ui.passwordForm.addEventListener("submit", async (event) => {
@@ -76,6 +102,15 @@ ui.passwordForm.addEventListener("submit", async (event) => {
 
 ui.codexConnect.addEventListener("click", async () => {
   ui.codexConnect.disabled = true;
+  if (agentStatus.codex) {
+    try {
+      await selectAgent("codex");
+    } catch (error) {
+      showNotice(error.message, true);
+      ui.codexConnect.disabled = false;
+    }
+    return;
+  }
   showNotice("Starting Codex device login…");
   try {
     await request("/__saws/login/codex", { method: "POST", body: "{}" });
@@ -116,6 +151,15 @@ async function pollCodex() {
 
 ui.claudeConnect.addEventListener("click", async () => {
   ui.claudeConnect.disabled = true;
+  if (agentStatus.claude) {
+    try {
+      await selectAgent("claude");
+    } catch (error) {
+      showNotice(error.message, true);
+      ui.claudeConnect.disabled = false;
+    }
+    return;
+  }
   showNotice("");
   try {
     const login = await request("/__saws/login/claude", { method: "POST", body: "{}" });
@@ -162,6 +206,10 @@ function openTerminal(id) {
     if (message.type === "exit") {
       terminal.write(`\r\n[authentication process exited]\r\n`);
       ui.claudeConnect.disabled = false;
+      if (message.error) {
+        showNotice(message.error, true);
+        return;
+      }
       await refresh();
     }
   });

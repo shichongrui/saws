@@ -49,6 +49,13 @@ browser terminal. The terminal cannot launch a shell or arbitrary commands. Afte
 requirement (`any`, `codex`, `claude`, or `all`) is met, the gateway proxies OpenDesign while
 continuing to enforce the password session and current CLI authentication status.
 
+Connecting Codex or Claude Code also selects that local CLI in OpenDesign and marks OpenDesign's
+own onboarding complete. If a CLI is already connected but no selection has been persisted, the
+gateway remains visible with a `Use Codex` or `Use Claude Code` action. Selecting either agent
+updates only `onboardingCompleted` and `agentId` in the persistent OpenDesign app config, preserving
+all other preferences. This prevents the upstream first-run UI from falling through to the optional
+Open Design Cloud/Vela login flow.
+
 ## Persistence and workspace
 
 Three stage-specific volumes are created by default:

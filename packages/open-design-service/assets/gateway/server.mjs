@@ -1,6 +1,6 @@
 import { createHmac, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
 import { createReadStream } from "node:fs";
-import { mkdir, open, readFile } from "node:fs/promises";
+import { mkdir, open, readFile, rename, unlink, writeFile } from "node:fs/promises";
 import http from "node:http";
 import net from "node:net";
 import path from "node:path";
@@ -15,6 +15,8 @@ const internalOrigin = new URL(process.env.GATEWAY_INTERNAL_ORIGIN || "http://12
 const setupPassword = requiredEnvironment("GATEWAY_SETUP_PASSWORD");
 const requirement = parseRequirement(process.env.GATEWAY_AUTH_REQUIREMENT || "any");
 const workspace = process.env.GATEWAY_WORKSPACE || "/workspace";
+const openDesignDataDirectory = process.env.OD_DATA_DIR || "/app/.od";
+const openDesignAppConfigPath = path.join(openDesignDataDirectory, "app-config.json");
 const sessionDirectory = path.join(process.env.HOME || "/agent-home", ".saws-open-design");
 const sessionKey = await loadOrCreateSessionKey();
 const passwordSalt = randomBytes(32);
@@ -31,6 +33,7 @@ let shuttingDown = false;
 let openDesignProcess;
 let openDesignRunning = false;
 let openDesignRestartTimer;
+let openDesignConfigWrites = Promise.resolve();
 
 await preparePersistentDirectories();
 startOpenDesign();
@@ -69,11 +72,13 @@ const server = http.createServer(async (request, response) => {
     if (url.pathname === "/__saws/status" && request.method === "GET") {
       if (!session) return json(response, 200, { session: false });
       const auth = await getAuthenticationStatus(true);
+      const selectedAgent = await getSelectedOpenDesignAgent();
       return json(response, 200, {
         session: true,
         requirement,
         ...auth,
-        satisfied: isSatisfied(auth),
+        selectedAgent,
+        satisfied: isAccessReady(auth, selectedAgent),
       });
     }
     if (!session) {
@@ -93,10 +98,20 @@ const server = http.createServer(async (request, response) => {
       enforceCsrf(request);
       return json(response, 202, startClaudeLogin());
     }
+    if (url.pathname === "/__saws/agent" && request.method === "POST") {
+      enforceCsrf(request);
+      const body = await readJson(request, 8192);
+      const agent = parseAgent(body?.agent);
+      const auth = await getAuthenticationStatus(true);
+      if (!auth[agent]) throw httpError(409, `${agentDisplayName(agent)} is not connected`);
+      await selectOpenDesignAgent(agent);
+      return json(response, 200, { selectedAgent: agent });
+    }
     if (url.pathname.startsWith("/__saws/")) return json(response, 404, { error: "Not found" });
 
     const auth = await getAuthenticationStatus();
-    if (!isSatisfied(auth)) return serveIndex(response);
+    const selectedAgent = await getSelectedOpenDesignAgent();
+    if (!isAccessReady(auth, selectedAgent)) return serveIndex(response);
     return proxyHttp(request, response);
   } catch (error) {
     const status = error.statusCode || 500;
@@ -119,7 +134,9 @@ server.on("upgrade", async (request, socket, head) => {
     }
 
     const auth = await getAuthenticationStatus();
-    if (!isSatisfied(auth)) throw httpError(403, "Agent authentication required");
+    const selectedAgent = await getSelectedOpenDesignAgent();
+    if (!isAccessReady(auth, selectedAgent))
+      throw httpError(403, "Agent authentication and selection required");
     proxyUpgrade(request, socket, head);
   } catch (error) {
     socket.end(`HTTP/1.1 ${error.statusCode || 500} Unauthorized\r\nConnection: close\r\n\r\n`);
@@ -224,6 +241,10 @@ function isSatisfied(auth) {
   return auth.codex || auth.claude;
 }
 
+function isAccessReady(auth, selectedAgent) {
+  return isSatisfied(auth) && selectedAgent != null && auth[selectedAgent];
+}
+
 function commandSucceeds(command, args) {
   return new Promise((resolve) => {
     const child = spawn(command, args, { cwd: workspace, env: process.env, stdio: "ignore" });
@@ -240,7 +261,8 @@ function commandSucceeds(command, args) {
 }
 
 async function startCodexLogin() {
-  if (codexLogin && ["starting", "waiting"].includes(codexLogin.state)) return publicCodexLogin();
+  if (codexLogin && ["starting", "waiting", "configuring"].includes(codexLogin.state))
+    return publicCodexLogin();
   const child = spawn("codex", ["app-server", "--stdio"], {
     cwd: workspace,
     env: process.env,
@@ -313,12 +335,26 @@ function sendCodex(message) {
 }
 
 function finishCodexLogin(success, error) {
-  if (!codexLogin || ["complete", "error"].includes(codexLogin.state)) return;
-  clearTimeout(codexLogin.timeout);
-  codexLogin.state = success ? "complete" : "error";
-  if (!success) codexLogin.error = String(error).slice(0, 240);
-  codexLogin.child.kill("SIGTERM");
+  if (!codexLogin || !["starting", "waiting"].includes(codexLogin.state)) return;
+  const login = codexLogin;
+  clearTimeout(login.timeout);
+  login.child.kill("SIGTERM");
   authCache = undefined;
+  if (!success) {
+    login.state = "error";
+    login.error = String(error).slice(0, 240);
+    return;
+  }
+  login.state = "configuring";
+  selectOpenDesignAgent("codex").then(
+    () => {
+      login.state = "complete";
+    },
+    (configurationError) => {
+      login.state = "error";
+      login.error = `Codex connected, but OpenDesign setup failed: ${safeError(configurationError)}`;
+    },
+  );
 }
 
 function publicCodexLogin() {
@@ -364,8 +400,16 @@ function startClaudeLogin() {
     login.exited = true;
     authCache = undefined;
     const authenticated = await commandSucceeds("claude", ["auth", "status"]);
+    let error;
+    if (authenticated) {
+      try {
+        await selectOpenDesignAgent("claude");
+      } catch (configurationError) {
+        error = `Claude Code connected, but OpenDesign setup failed: ${safeError(configurationError)}`;
+      }
+    }
     for (const socket of login.sockets)
-      sendSocket(socket, { type: "exit", exitCode, authenticated });
+      sendSocket(socket, { type: "exit", exitCode, authenticated, error });
     setTimeout(() => claudeLogins.delete(id), 60_000);
   });
   return { id };
@@ -536,8 +580,53 @@ async function preparePersistentDirectories() {
       recursive: true,
       mode: 0o700,
     }),
+    mkdir(openDesignDataDirectory, { recursive: true, mode: 0o700 }),
     mkdir(workspace, { recursive: true, mode: 0o700 }),
   ]);
+}
+
+async function getSelectedOpenDesignAgent() {
+  await openDesignConfigWrites;
+  const config = await readOpenDesignAppConfig();
+  return config.onboardingCompleted === true && ["codex", "claude"].includes(config.agentId)
+    ? config.agentId
+    : null;
+}
+
+function selectOpenDesignAgent(agent) {
+  const write = openDesignConfigWrites.then(async () => {
+    const config = await readOpenDesignAppConfig();
+    const next = { ...config, onboardingCompleted: true, agentId: agent };
+    const temporaryPath = `${openDesignAppConfigPath}.${process.pid}.${randomBytes(8).toString("hex")}.tmp`;
+    try {
+      await writeFile(temporaryPath, `${JSON.stringify(next, null, 2)}\n`, {
+        encoding: "utf8",
+        flag: "wx",
+        mode: 0o600,
+      });
+      await rename(temporaryPath, openDesignAppConfigPath);
+    } catch (error) {
+      await unlink(temporaryPath).catch(() => {});
+      throw error;
+    }
+  });
+  openDesignConfigWrites = write.catch(() => {});
+  return write;
+}
+
+async function readOpenDesignAppConfig() {
+  let contents;
+  try {
+    contents = await readFile(openDesignAppConfigPath, "utf8");
+  } catch (error) {
+    if (error.code === "ENOENT") return {};
+    throw error;
+  }
+  const config = JSON.parse(contents);
+  if (config == null || typeof config !== "object" || Array.isArray(config)) {
+    throw new Error("OpenDesign app config must contain an object");
+  }
+  return config;
 }
 
 function parseCookies(header = "") {
@@ -604,6 +693,15 @@ function parseRequirement(value) {
   if (!["any", "codex", "claude", "all"].includes(value))
     throw new Error("Invalid authentication requirement");
   return value;
+}
+
+function parseAgent(value) {
+  if (!["codex", "claude"].includes(value)) throw httpError(400, "Invalid agent selection");
+  return value;
+}
+
+function agentDisplayName(agent) {
+  return agent === "codex" ? "Codex" : "Claude Code";
 }
 
 function requiredEnvironment(name) {
