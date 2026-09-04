@@ -1,6 +1,6 @@
 {
   "name": "@saws/hermes-application",
-  "version": "2.0.0-beta.16",
+  "version": "2.0.0-beta.17",
   "description": "Deploy a self-hosted Hermes Agent application with SAWS",
   "license": "ISC",
   "author": "",
@@ -21,7 +21,7 @@
     }
   },
   "dependencies": {
-    "@saws/core": "2.0.0-beta.16",
-    "@saws/hermes-agent-service": "2.0.0-beta.16"
+    "@saws/core": "2.0.0-beta.17",
+    "@saws/hermes-agent-service": "2.0.0-beta.17"
   }
 }

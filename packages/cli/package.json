@@ -1,6 +1,6 @@
 {
   "name": "@saws/cli",
-  "version": "2.0.0-beta.16",
+  "version": "2.0.0-beta.17",
   "description": "",
   "repository": {
     "type": "git",
@@ -14,7 +14,7 @@
   ],
   "type": "module",
   "dependencies": {
-    "@saws/core": "2.0.0-beta.16",
+    "@saws/core": "2.0.0-beta.17",
     "commander": "^15.0.0",
     "find-package-json": "^1.2.0"
   },

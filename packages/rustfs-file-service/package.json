@@ -1,6 +1,6 @@
 {
   "name": "@saws/rustfs-file-service",
-  "version": "2.0.0-beta.16",
+  "version": "2.0.0-beta.17",
   "description": "",
   "license": "ISC",
   "author": "",
@@ -20,7 +20,7 @@
     }
   },
   "dependencies": {
-    "@saws/core": "2.0.0-beta.16",
-    "@saws/docker-service": "2.0.0-beta.16"
+    "@saws/core": "2.0.0-beta.17",
+    "@saws/docker-service": "2.0.0-beta.17"
   }
 }
