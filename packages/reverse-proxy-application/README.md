@@ -31,7 +31,7 @@ Deploy it:
 npx saws app deploy edge --stage production
 ```
 
-Run `npx saws app update edge` to install a newer npm `latest` version. Updates never overwrite
+Run `npx saws app update edge` to install a newer version from the application's npm release channel. Updates never overwrite
 `config.ts`.
 
 Before deployment, point every route's public DNS name at the host and configure the host with public

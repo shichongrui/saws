@@ -1,6 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import { gt, valid } from "semver";
+import { gt, prerelease, valid } from "semver";
 import { applicationWrapper, pathExists } from "./files.js";
 import { getInstalledApplicationPackage, getInstalledVersion } from "./metadata.js";
 import { getAppDirectory } from "./paths.js";
@@ -11,11 +11,12 @@ export async function updateAppCommand(name: string) {
   const packageName = await getInstalledApplicationPackage(appDirectory, name);
   const installedVersion = await getInstalledVersion(appDirectory, packageName);
   const migrated = await migrateLegacyConfig(appDirectory, packageName);
-  const latestVersion = await getLatestVersion(appDirectory, packageName);
+  const npmTag = prerelease(installedVersion)?.[0] === "beta" ? "beta" : "latest";
+  const latestVersion = await getLatestVersion(appDirectory, packageName, npmTag);
 
   if (!gt(latestVersion, installedVersion)) {
     const status = gt(installedVersion, latestVersion)
-      ? "is newer than npm latest"
+      ? `is newer than npm ${npmTag}`
       : "is up to date";
     console.log(
       `Application "${name}" ${status} (${installedVersion})${migrated ? "; migrated input.ts to config.ts" : ""}`,
@@ -35,15 +36,15 @@ export async function updateAppCommand(name: string) {
   );
 }
 
-async function getLatestVersion(appDirectory: string, packageName: string) {
+async function getLatestVersion(appDirectory: string, packageName: string, npmTag: string) {
   const output = await getProcessOutput(
     "npm",
-    ["view", `${packageName}@latest`, "version", "--json"],
+    ["view", `${packageName}@${npmTag}`, "version", "--json"],
     appDirectory,
   );
   const version = JSON.parse(output) as unknown;
   if (typeof version !== "string" || valid(version) == null) {
-    throw new Error(`npm latest for ${packageName} is not a valid semantic version`);
+    throw new Error(`npm ${npmTag} for ${packageName} is not a valid semantic version`);
   }
   return version;
 }

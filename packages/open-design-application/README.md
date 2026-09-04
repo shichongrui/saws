@@ -32,7 +32,7 @@ Store `open-design-application-password` in each deployment stage, then deploy:
 npx saws app deploy design --stage production
 ```
 
-Run `npx saws app update design` to install a newer npm `latest` version. Updates never overwrite
+Run `npx saws app update design` to install a newer version from the application's npm release channel. Updates never overwrite
 `config.ts`.
 
 Visit the deployed URL and enter the application password. Codex uses its structured ChatGPT

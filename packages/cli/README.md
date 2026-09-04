@@ -98,8 +98,9 @@ npx saws app deploy observability --stage production
 Installed packages, configuration, dependencies, secrets, outputs, and other SAWS
 state live beneath `~/.saws/apps/<name>`. Set `SAWS_HOME` to use another base
 directory, such as in CI. `app install` refuses to replace an existing instance. Use
-`saws app update <name>` to install a newer npm `latest` version without overwriting
-`config.ts`. The first update of a legacy instance renames its `input.ts` to `config.ts`.
+`saws app update <name>` to install a newer version without overwriting `config.ts`.
+Stable applications follow npm's `latest` tag, while beta applications follow the `beta`
+tag. The first update of a legacy instance renames its `input.ts` to `config.ts`.
 Run standard commands that operate on named exports from the application instance directory.
 
 List every installed instance with its package, version, and configuration state:

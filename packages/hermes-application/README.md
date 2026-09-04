@@ -37,7 +37,7 @@ Deploy it:
 npx saws app deploy hermes --stage production
 ```
 
-Run `npx saws app update hermes` to install a newer npm `latest` version. Updates never overwrite
+Run `npx saws app update hermes` to install a newer version from the application's npm release channel. Updates never overwrite
 `config.ts`.
 
 The API server and dashboard are disabled unless configured. When enabled, their defaults are ports

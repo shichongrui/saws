@@ -219,16 +219,17 @@ shared across stages.
 
 ### Update an installed application
 
-Update an instance when npm's `latest` version is newer than its installed semantic version:
+Update an instance when the version on its npm release channel is newer than its installed semantic
+version:
 
 ```sh
 npx saws app update edge-proxy
 ```
 
-Update never overwrites `config.ts`. If the instance was installed by an older SAWS CLI, its first
-update renames `input.ts` to `config.ts` without changing the contents. If both files exist, update
-stops and asks you to resolve the ambiguity. Prereleases are not selected unless npm's `latest`
-dist-tag points to one.
+Update never overwrites `config.ts`. Stable applications follow npm's `latest` dist-tag, while
+applications already on a beta version follow the `beta` dist-tag. If the instance was installed by
+an older SAWS CLI, its first update renames `input.ts` to `config.ts` without changing the contents.
+If both files exist, update stops and asks you to resolve the ambiguity.
 
 ### Set application secrets
 

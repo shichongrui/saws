@@ -25,7 +25,7 @@ Deploy it:
 npx saws app deploy observability --stage production
 ```
 
-Run `npx saws app update observability` to install a newer npm `latest` version. Updates never
+Run `npx saws app update observability` to install a newer version from the application's npm release channel. Updates never
 overwrite `config.ts`.
 
 The defaults publish the SigNoz UI on port `8080` and OTLP ingestion on ports `4317` and `4318`.
