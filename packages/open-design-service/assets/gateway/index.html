@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <title>OpenDesign authentication</title>
+    <link rel="stylesheet" href="/__saws/assets/xterm.css" />
+    <link rel="stylesheet" href="/__saws/assets/style.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="card">
+        <p class="eyebrow">SAWS · OpenDesign</p>
+        <h1>Connect your design agents</h1>
+        <p class="lede">
+          This gateway protects OpenDesign and keeps your Codex and Claude Code sessions in
+          persistent container storage.
+        </p>
+        <div id="notice" class="notice" hidden></div>
+        <form id="password-form" hidden>
+          <label for="password">Application password</label>
+          <div class="row">
+            <input
+              id="password"
+              name="password"
+              type="password"
+              autocomplete="current-password"
+              required
+            />
+            <button type="submit">Continue</button>
+          </div>
+        </form>
+        <section id="agents" hidden>
+          <div class="requirement" id="requirement"></div>
+          <div class="agent-grid">
+            <article class="agent">
+              <div>
+                <h2>Codex</h2>
+                <span id="codex-status" class="pill">Checking</span>
+              </div>
+              <p>
+                Sign in with your ChatGPT subscription using OpenAI’s headless device-code flow.
+              </p>
+              <button id="codex-connect">Connect Codex</button>
+              <div id="codex-device" class="device" hidden>
+                <a id="codex-url" target="_blank" rel="noreferrer">Open verification page</a>
+                <code id="codex-code"></code>
+                <p>
+                  Enter this one-time code after signing in. Device login must be enabled in your
+                  ChatGPT security or workspace settings.
+                </p>
+              </div>
+            </article>
+            <article class="agent">
+              <div>
+                <h2>Claude Code</h2>
+                <span id="claude-status" class="pill">Checking</span>
+              </div>
+              <p>
+                Sign in with a Claude.ai Pro or Max subscription through the supported Claude Code
+                login command.
+              </p>
+              <button id="claude-connect">Connect Claude Code</button>
+            </article>
+          </div>
+          <div id="terminal-wrap" hidden>
+            <div class="terminal-head">
+              <span>Claude Code authentication</span
+              ><button id="terminal-close" class="quiet">Cancel</button>
+            </div>
+            <div id="terminal"></div>
+            <p class="hint">
+              This terminal is constrained to <code>claude auth login</code>; it is not a shell.
+              Follow the displayed URL and paste only when Claude Code asks.
+            </p>
+          </div>
+        </section>
+      </section>
+    </main>
+    <script src="/__saws/assets/xterm.js"></script>
+    <script src="/__saws/assets/addon-fit.js"></script>
+    <script src="/__saws/assets/app.js"></script>
+  </body>
+</html>

@@ -56,12 +56,19 @@ export type DockerRunConfig = {
   envFiles?: string[];
   volumes?: string[];
   ports?: string[];
+  /** Hostname mappings passed to Docker with --add-host. */
+  extraHosts?: string[];
   entrypoint?: string;
   command?: string[];
   labels?: Record<string, string>;
   restart?: RestartConfig;
   healthCheck?: DockerHealthCheckConfig | false;
   pull?: boolean;
+  readOnly?: boolean;
+  tmpfs?: string[];
+  securityOptions?: string[];
+  memory?: string;
+  pidsLimit?: number;
   /** Content digests for runtime files. Values are safe to persist in the config hash. */
   runtimeFileDigests?: Record<string, string>;
   configHash?: string;
@@ -88,11 +95,18 @@ export type DockerServiceConfig = (ImageConfig | DockerFileConfig | DefaultDocke
   auth?: DockerRegistryAuthConfig;
   volumes?: string[];
   ports?: string[];
+  /** Hostname mappings passed to Docker with --add-host. */
+  extraHosts?: string[];
   entrypoint?: string;
   command?: string[];
   labels?: Record<string, string>;
   restart?: RestartConfig;
   healthCheck?: DockerHealthCheckConfig | false;
+  readOnly?: boolean;
+  tmpfs?: string[];
+  securityOptions?: string[];
+  memory?: string;
+  pidsLimit?: number;
 } & ServiceDefinitionConfig;
 
 export class DockerService extends ServiceDefinition {
@@ -106,11 +120,17 @@ export class DockerService extends ServiceDefinition {
   readonly buildContext?: string;
   readonly volumes: string[];
   readonly ports: string[];
+  readonly extraHosts: string[];
   readonly entrypoint?: string;
   readonly command: string[];
   readonly labels: Record<string, string>;
   readonly restart?: RestartConfig;
   readonly healthCheck?: DockerHealthCheckConfig | false;
+  readonly readOnly: boolean;
+  readonly tmpfs: string[];
+  readonly securityOptions: string[];
+  readonly memory?: string;
+  readonly pidsLimit?: number;
   protected readonly serviceType: string = "docker";
   protected devProcess?: ChildProcess;
   private devEnvironmentFile?: string;
@@ -153,11 +173,17 @@ export class DockerService extends ServiceDefinition {
 
     this.volumes = config.volumes ?? [];
     this.ports = config.ports ?? [];
+    this.extraHosts = config.extraHosts ?? [];
     this.entrypoint = config.entrypoint;
     this.command = config.command ?? [];
     this.labels = config.labels ?? {};
     this.restart = config.restart;
     this.healthCheck = config.healthCheck;
+    this.readOnly = config.readOnly ?? false;
+    this.tmpfs = config.tmpfs ?? [];
+    this.securityOptions = config.securityOptions ?? [];
+    this.memory = config.memory;
+    this.pidsLimit = config.pidsLimit;
   }
 
   override async dev() {
@@ -268,10 +294,16 @@ export class DockerService extends ServiceDefinition {
       env: await this.getContainerEnvironment(stage),
       volumes: this.volumes,
       ports: this.ports,
+      extraHosts: this.extraHosts,
       entrypoint: this.entrypoint,
       command: this.command,
       restart: this.restart,
       healthCheck: this.healthCheck,
+      readOnly: this.readOnly,
+      tmpfs: this.tmpfs,
+      securityOptions: this.securityOptions,
+      memory: this.memory,
+      pidsLimit: this.pidsLimit,
       runtimeFileDigests,
       labels: {
         ...this.labels,
@@ -307,7 +339,16 @@ export class DockerService extends ServiceDefinition {
     await this.buildImage(
       this.getImage(stage, deploy),
       deploy && this.host != null ? this.host.platform : undefined,
+      await this.getDockerBuildArgs(stage, deploy),
     );
+  }
+
+  /** Build arguments supplied by subclasses that own a bundled Dockerfile. */
+  protected async getDockerBuildArgs(
+    _stage: string,
+    _deploy: boolean,
+  ): Promise<Record<string, string>> {
+    return {};
   }
 
   protected async pushDockerfileImage(stage: string) {
@@ -346,13 +387,20 @@ export class DockerService extends ServiceDefinition {
     return `saws-${repository}:latest`;
   }
 
-  private async buildImage(image: string, platform?: string) {
+  private async buildImage(
+    image: string,
+    platform?: string,
+    buildArgs: Record<string, string> = {},
+  ) {
     const dockerfile = path.resolve(this.dockerfile!);
     const buildContext = path.resolve(this.buildContext ?? path.dirname(this.dockerfile!));
     await runLocal(
       [
         "docker build",
         ...(platform == null ? [] : [`--platform ${shellQuote(platform)}`]),
+        ...Object.entries(buildArgs).map(
+          ([key, value]) => `--build-arg ${shellQuote(`${key}=${value}`)}`,
+        ),
         `-f ${shellQuote(dockerfile)}`,
         `-t ${shellQuote(image)}`,
         shellQuote(buildContext),
@@ -545,7 +593,13 @@ export class DockerService extends ServiceDefinition {
       ...(config.envFiles ?? []).flatMap((envFile) => ["--env-file", envFile]),
       ...(config.volumes ?? []).flatMap((volume) => ["-v", volume]),
       ...(config.ports ?? []).flatMap((port) => ["-p", port]),
+      ...(config.extraHosts ?? []).flatMap((host) => ["--add-host", host]),
       ...(config.entrypoint == null ? [] : ["--entrypoint", config.entrypoint]),
+      ...(config.readOnly ? ["--read-only"] : []),
+      ...(config.tmpfs ?? []).flatMap((mount) => ["--tmpfs", mount]),
+      ...(config.securityOptions ?? []).flatMap((option) => ["--security-opt", option]),
+      ...(config.memory == null ? [] : ["--memory", config.memory]),
+      ...(config.pidsLimit == null ? [] : ["--pids-limit", String(config.pidsLimit)]),
       ...Object.entries(config.labels ?? {}).flatMap(([key, value]) => [
         "--label",
         `${key}=${value}`,
@@ -625,8 +679,19 @@ export class DockerService extends ServiceDefinition {
       .join(" ");
     const volumeArgs = (config.volumes ?? []).map((volume) => `-v ${shellQuote(volume)}`).join(" ");
     const portArgs = (config.ports ?? []).map((port) => `-p ${shellQuote(port)}`).join(" ");
+    const extraHostArgs = (config.extraHosts ?? [])
+      .map((host) => `--add-host ${shellQuote(host)}`)
+      .join(" ");
     const entrypointArg =
       config.entrypoint == null ? "" : `--entrypoint ${shellQuote(config.entrypoint)}`;
+    const readOnlyArg = config.readOnly ? "--read-only" : "";
+    const tmpfsArgs = (config.tmpfs ?? []).map((mount) => `--tmpfs ${shellQuote(mount)}`).join(" ");
+    const securityOptionArgs = (config.securityOptions ?? [])
+      .map((option) => `--security-opt ${shellQuote(option)}`)
+      .join(" ");
+    const memoryArg = config.memory == null ? "" : `--memory ${shellQuote(config.memory)}`;
+    const pidsLimitArg =
+      config.pidsLimit == null ? "" : `--pids-limit ${shellQuote(String(config.pidsLimit))}`;
     const labelArgs = Object.entries(config.labels ?? {})
       .map(([key, value]) => `--label ${shellQuote(`${key}=${value}`)}`)
       .join(" ");
@@ -650,7 +715,13 @@ export class DockerService extends ServiceDefinition {
       envFileArgs,
       volumeArgs,
       portArgs,
+      extraHostArgs,
       entrypointArg,
+      readOnlyArg,
+      tmpfsArgs,
+      securityOptionArgs,
+      memoryArg,
+      pidsLimitArg,
       labelArgs,
       healthCheckArgs,
       shellQuote(config.image),
@@ -712,12 +783,18 @@ export class DockerService extends ServiceDefinition {
           envFiles: [...(config.envFiles ?? [])].sort(),
           volumes: [...(config.volumes ?? [])].sort(),
           ports: [...(config.ports ?? [])].sort(),
+          extraHosts: [...(config.extraHosts ?? [])].sort(),
           entrypoint: config.entrypoint,
           command: config.command ?? [],
           labels: sortRecord(labels),
           runtimeFileDigests:
             config.runtimeFileDigests == null ? undefined : sortRecord(config.runtimeFileDigests),
           restart: config.restart ?? "unless-stopped",
+          readOnly: config.readOnly ?? false,
+          tmpfs: [...(config.tmpfs ?? [])].sort(),
+          securityOptions: [...(config.securityOptions ?? [])].sort(),
+          memory: config.memory,
+          pidsLimit: config.pidsLimit,
           healthCheck:
             config.healthCheck === false
               ? false
