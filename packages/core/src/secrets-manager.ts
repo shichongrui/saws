@@ -1,6 +1,7 @@
 import { appendFile, chmod, mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { createCipheriv, createDecipheriv, randomBytes, scrypt } from "node:crypto";
 import path from "node:path";
+import { getSawsHome } from "./saws-home.js";
 
 const PASSCODE_ENV_NAME = "SAWS_SECRETS_PASSCODE";
 const GLOBAL_SCOPE = "global";
@@ -13,10 +14,11 @@ const SCRYPT_PARALLELIZATION = 1;
 export interface SecretsManagerConfig {
   /** Overrides the stage derived from the command's runtime context or STAGE. */
   stage?: string;
+  /** Root for stage-scoped secrets and their passcode file. Defaults to the current directory. */
   rootDir?: string;
-  /** Overrides the directory containing secrets state. Defaults to `<rootDir>/.saws`. */
+  /** Overrides the directory containing stage-scoped secrets. Defaults to `<rootDir>/.saws`. */
   sawsDirectory?: string;
-  /** Overrides SAWS_SECRETS_PASSCODE and the project-root .env file. */
+  /** Overrides SAWS_SECRETS_PASSCODE and the project-root .env file for stage secrets. */
   passcode?: string;
 }
 
@@ -36,7 +38,9 @@ export class ParameterNotFoundError extends Error {
 
 export class SecretsDecryptionError extends Error {
   constructor() {
-    super(`Unable to decrypt secrets. Check ${PASSCODE_ENV_NAME} in the project-root .env file.`);
+    super(
+      `Unable to decrypt secrets. Check ${PASSCODE_ENV_NAME} or the applicable SAWS .env file.`,
+    );
     this.name = "SecretsDecryptionError";
   }
 }
@@ -119,6 +123,7 @@ export class SecretsManager {
   readonly global: GlobalSecrets;
   readonly rootDir: string;
   readonly sawsDirectory: string;
+  private readonly globalSawsDirectory: string;
   private readonly configuredStage?: string;
   private readonly configuredPasscode?: string;
 
@@ -126,6 +131,7 @@ export class SecretsManager {
     this.configuredStage = config.stage == null ? undefined : requireValidStage(config.stage);
     this.rootDir = config.rootDir ?? process.cwd();
     this.sawsDirectory = config.sawsDirectory ?? path.resolve(this.rootDir, ".saws");
+    this.globalSawsDirectory = getSawsHome();
     this.configuredPasscode = config.passcode;
     this.global = new GlobalSecrets(this);
   }
@@ -172,9 +178,10 @@ export class SecretsManager {
 
   /** @internal */
   getSecretsFilePath(scope: SecretScope, resolutionStage?: string) {
-    const fileName =
-      scope === GLOBAL_SCOPE ? "global.env" : `${this.resolveStage(resolutionStage)}.env`;
-    return path.resolve(this.sawsDirectory, "secrets", fileName);
+    if (scope === GLOBAL_SCOPE) {
+      return path.resolve(this.globalSawsDirectory, "secrets", "global.env");
+    }
+    return path.resolve(this.sawsDirectory, "secrets", `${this.resolveStage(resolutionStage)}.env`);
   }
 
   private resolveStage(resolutionStage?: string) {
@@ -202,7 +209,7 @@ export class SecretsManager {
 
     const encrypted = parseEncryptedFile(contents);
     if (encrypted != null) {
-      const passcode = await this.getPasscode(false);
+      const passcode = await this.getPasscode(scope, false);
       if (passcode == null) {
         throw new Error(`${PASSCODE_ENV_NAME} is required to decrypt ${secretsFilePath}`);
       }
@@ -220,7 +227,7 @@ export class SecretsManager {
     scope: SecretScope,
     resolutionStage?: string,
   ) {
-    const passcode = await this.getPasscode(true);
+    const passcode = await this.getPasscode(scope, true);
     if (passcode == null) {
       throw new Error(`Unable to create ${PASSCODE_ENV_NAME}`);
     }
@@ -241,8 +248,8 @@ export class SecretsManager {
     }
   }
 
-  private async getPasscode(createIfMissing: boolean) {
-    if (this.configuredPasscode != null) {
+  private async getPasscode(scope: SecretScope, createIfMissing: boolean) {
+    if (scope !== GLOBAL_SCOPE && this.configuredPasscode != null) {
       return requireNonemptyPasscode(this.configuredPasscode);
     }
 
@@ -250,7 +257,10 @@ export class SecretsManager {
       return requireNonemptyPasscode(process.env[PASSCODE_ENV_NAME]);
     }
 
-    const envFilePath = path.resolve(this.rootDir, ".env");
+    const envFilePath = path.resolve(
+      scope === GLOBAL_SCOPE ? this.globalSawsDirectory : this.rootDir,
+      ".env",
+    );
     try {
       const environment = parseEnvFile(await readFile(envFilePath, "utf8"));
       if (environment[PASSCODE_ENV_NAME] != null) {
@@ -270,6 +280,7 @@ export class SecretsManager {
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
     }
+    await mkdir(path.dirname(envFilePath), { recursive: true });
     await appendFile(
       envFilePath,
       `${needsLeadingNewline ? "\n" : ""}${PASSCODE_ENV_NAME}=${passcode}\n`,

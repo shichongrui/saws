@@ -192,7 +192,7 @@ npx saws host configure main --user ubuntu
 
 `ubuntu` is used only for initial SSH and interactive `sudo`. SAWS creates and
 configures `deploy`, then uses `deploy` for subsequent host operations. The
-private key is encrypted in `.saws/secrets/global.env`; the public key is stored
+private key is encrypted in `${SAWS_HOME:-$HOME/.saws}/secrets/global.env`; the public key is stored
 as `SAWS_HOST_MAIN_SSH_PUBLIC_KEY` in the project-root `.env`. The private-key
 secret can use any global secret name.
 

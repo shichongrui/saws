@@ -403,6 +403,10 @@ function proxyHttp(request, response) {
       headers,
     },
     (upstreamResponse) => {
+      // The gateway CSP protects gateway-owned pages, but OpenDesign relies on inline
+      // bootstrap scripts and srcdoc previews. Preserve an upstream policy when one
+      // exists instead of imposing the gateway policy on proxied content.
+      response.removeHeader("content-security-policy");
       response.writeHead(upstreamResponse.statusCode || 502, upstreamResponse.headers);
       upstreamResponse.pipe(response);
     },

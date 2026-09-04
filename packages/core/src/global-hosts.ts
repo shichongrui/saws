@@ -1,9 +1,11 @@
 import fs from "node:fs";
 import { mkdir, writeFile } from "node:fs/promises";
-import os from "node:os";
 import path from "node:path";
 import { Host, type HostConfig, hostSshPrivateKeySecretName } from "./Host.js";
 import { SecretsManager } from "./secrets-manager.js";
+import { getSawsHome } from "./saws-home.js";
+
+export { getSawsHome } from "./saws-home.js";
 
 const GLOBAL_HOST_PROFILE_VERSION = 1;
 const managers = new Map<string, SecretsManager>();
@@ -12,14 +14,6 @@ export type GlobalHostConfig = Omit<HostConfig, "sshPrivateKey" | "dryRun">;
 
 interface StoredGlobalHost extends GlobalHostConfig {
   version: typeof GLOBAL_HOST_PROFILE_VERSION;
-}
-
-export function getSawsHome() {
-  const configuredHome = process.env.SAWS_HOME;
-  if (configuredHome != null && configuredHome.trim().length === 0) {
-    throw new Error("SAWS_HOME cannot be empty");
-  }
-  return path.resolve(configuredHome ?? path.join(os.homedir(), ".saws"));
 }
 
 export function getGlobalHost(name: string) {

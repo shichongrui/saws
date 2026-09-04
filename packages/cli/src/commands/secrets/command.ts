@@ -20,20 +20,9 @@ export async function secretsCommand(name: string, options: SecretsCommandOption
     throw new Error("secrets requires either --get or --set <value>");
   }
 
-  if (!options.global) {
-    process.env.STAGE = options.stage ?? "local";
-  }
-
-  const config = await getSawsConfigModule(options.config);
-  const manager =
-    Object.values(config).find(
-      (candidate): candidate is SecretsManager => candidate instanceof SecretsManager,
-    ) ?? config.secrets;
-  if (!isSecretsManagerLike(manager)) {
-    throw new Error('saws.ts must export a SecretsManager instance named "secrets"');
-  }
-
-  const secrets = options.global ? manager.global : manager;
+  const secrets = options.global
+    ? new SecretsManager().global
+    : await getStageSecretsManager(options.stage ?? "local", options.config);
 
   if (options.get) {
     console.log(await secrets.get(name));
@@ -45,6 +34,19 @@ export async function secretsCommand(name: string, options: SecretsCommandOption
   }
   await secrets.set(name, value);
   console.log("Set secret");
+}
+
+async function getStageSecretsManager(stage: string, configPath?: string) {
+  process.env.STAGE = stage;
+  const config = await getSawsConfigModule(configPath);
+  const manager =
+    Object.values(config).find(
+      (candidate): candidate is SecretsManager => candidate instanceof SecretsManager,
+    ) ?? config.secrets;
+  if (!isSecretsManagerLike(manager)) {
+    throw new Error('saws.ts must export a SecretsManager instance named "secrets"');
+  }
+  return manager;
 }
 
 function isSecretsManagerLike(value: unknown): value is SecretsManagerLike {

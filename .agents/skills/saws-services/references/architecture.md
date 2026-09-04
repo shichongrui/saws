@@ -106,7 +106,7 @@ Clients resolve a supplied environment map, then `globalThis.ENV`, then `process
 
 ## Secrets
 
-`SecretsManager` stores stage files at `.saws/secrets/<stage>.env` and global secrets at `.saws/secrets/global.env`. Despite the extension, current files are encrypted JSON using scrypt and AES-256-GCM. The passcode comes from constructor config, `SAWS_SECRETS_PASSCODE`, or the project-root `.env`; one is generated when first writing if absent.
+`SecretsManager` stores stage files at `<project>/.saws/secrets/<stage>.env` and machine-global secrets at `${SAWS_HOME:-~/.saws}/secrets/global.env`. Despite the extension, current files are encrypted JSON using scrypt and AES-256-GCM. Stage-secret passcodes come from constructor config, `SAWS_SECRETS_PASSCODE`, or the project-root `.env`. Global-secret passcodes come from `SAWS_SECRETS_PASSCODE` or `${SAWS_HOME:-~/.saws}/.env`. One is generated in the applicable `.env` file when first writing if absent.
 
 Use `manager.reference(name)` for stage-aware lazy resolution and `manager.global.reference(name)` for global values. A host SSH private key must be a global reference. Generated Postgres, Redis, and RustFS credentials are persisted per stage.
 

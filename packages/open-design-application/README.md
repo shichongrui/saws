@@ -20,13 +20,19 @@ const secrets = new SecretsManager();
 export default {
   host: getGlobalHost("design-host"),
   registry: "registry.example.com/saws",
+  registryAuth: {
+    username: "registry-user",
+    password: secrets.global.reference("container-registry-token"),
+  },
   setupPassword: secrets.reference("open-design-application-password"),
   authenticationRequirement: "any",
   allowedOrigins: ["https://design.example.com"],
 };
 ```
 
-Store `open-design-application-password` in each deployment stage, then deploy:
+Store `open-design-application-password` in each deployment stage. The registry token is
+machine-global and can be set from any directory with
+`npx saws secrets container-registry-token --global --set '<token>'`. Then deploy:
 
 ```sh
 npx saws app deploy design --stage production

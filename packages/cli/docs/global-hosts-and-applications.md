@@ -214,8 +214,8 @@ export default {
 ```
 
 `secrets.reference(...)` is stage-scoped: production and staging can use different values without
-changing the configuration file. Use `secrets.global.reference(...)` only for a value intentionally
-shared across stages.
+changing the configuration file. `secrets.global.reference(...)` is machine-global: it resolves the
+same value in every project and installed application using the same `SAWS_HOME`.
 
 ### Update an installed application
 
@@ -234,7 +234,7 @@ If both files exist, update stops and asks you to resolve the ambiguity.
 ### Set application secrets
 
 Run secret commands from the installed application directory so a default `SecretsManager` resolves
-the correct storage location:
+the correct stage-scoped storage location:
 
 ```sh
 cd "${SAWS_HOME:-$HOME/.saws}/apps/edge-proxy"
@@ -245,6 +245,17 @@ npx --package @saws/cli saws secrets example-secret \
 
 Avoid placing real secret values in shell history when that matters for your environment. The
 encrypted stage file is stored under the installed application's `.saws/secrets` directory.
+
+Global secrets are machine-wide and can be managed from any directory without a `saws.ts` file:
+
+```sh
+npx --package @saws/cli saws secrets example-registry-token \
+  --global \
+  --set 'replace-with-the-secret-value'
+```
+
+The encrypted global file is stored at `${SAWS_HOME:-$HOME/.saws}/secrets/global.env` and is shared
+by projects and installed applications on the machine.
 
 ## 5. Deploy the application
 
