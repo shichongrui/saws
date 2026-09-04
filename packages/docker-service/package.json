@@ -1,6 +1,6 @@
 {
   "name": "@saws/docker-service",
-  "version": "2.0.0-beta.19",
+  "version": "2.0.0-beta.20",
   "description": "",
   "license": "ISC",
   "author": "",
@@ -23,6 +23,6 @@
     "test": "tsc -b && node --test tests/*.test.mjs"
   },
   "dependencies": {
-    "@saws/core": "2.0.0-beta.19"
+    "@saws/core": "2.0.0-beta.20"
   }
 }

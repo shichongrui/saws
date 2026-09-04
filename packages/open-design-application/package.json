@@ -1,6 +1,6 @@
 {
   "name": "@saws/open-design-application",
-  "version": "2.0.0-beta.19",
+  "version": "2.0.0-beta.20",
   "description": "Install a protected, agent-authenticated OpenDesign application with SAWS",
   "license": "ISC",
   "author": "",
@@ -21,8 +21,8 @@
     }
   },
   "dependencies": {
-    "@saws/core": "2.0.0-beta.19",
-    "@saws/docker-service": "2.0.0-beta.19",
-    "@saws/open-design-service": "2.0.0-beta.19"
+    "@saws/core": "2.0.0-beta.20",
+    "@saws/docker-service": "2.0.0-beta.20",
+    "@saws/open-design-service": "2.0.0-beta.20"
   }
 }
