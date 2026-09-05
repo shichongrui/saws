@@ -1,6 +1,6 @@
 {
   "name": "@saws/reverse-proxy-service",
-  "version": "2.0.0-beta.23",
+  "version": "2.0.0-beta.24",
   "description": "Run a Caddy reverse proxy with automatic HTTPS as a SAWS service",
   "license": "ISC",
   "author": "",
@@ -21,7 +21,7 @@
     }
   },
   "dependencies": {
-    "@saws/core": "2.0.0-beta.23",
-    "@saws/docker-service": "2.0.0-beta.23"
+    "@saws/core": "2.0.0-beta.24",
+    "@saws/docker-service": "2.0.0-beta.24"
   }
 }
