@@ -55,6 +55,12 @@ This command will intitialize any new services in your `saws.js` file and stand 
 npx saws deploy --stage <stage>
 ```
 
+Deploy only one service and its transitive dependencies:
+
+```bash
+npx saws deploy --stage <stage> --name <service-name>
+```
+
 This command will deploy all the services in your `saws.js` file to AWS. You will need to have your AWS session configured in your terminal for this command to succeed.
 
 ### Packaged applications

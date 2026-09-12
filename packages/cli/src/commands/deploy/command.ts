@@ -1,7 +1,12 @@
 // import { createCacheDir } from "@saws/utils/create-directories";
-import { getSawsConfig } from "@saws/core";
+import { findServiceDefinition, getSawsConfig } from "@saws/core";
 
-export const deployCommand = async (path: string, { stage }: { stage: string }) => {
+interface DeployOptions {
+  stage: string;
+  name?: string;
+}
+
+export const deployCommand = async (path: string, { stage, name }: DeployOptions) => {
   if (stage == null || stage.length === 0) {
     throw new Error("deploy requires --stage <string>");
   }
@@ -15,6 +20,8 @@ export const deployCommand = async (path: string, { stage }: { stage: string }) 
   // await createCacheDir();
 
   const serviceDefinition = await getSawsConfig(path);
+  const deploymentRoot =
+    name == null ? serviceDefinition : findServiceDefinition(serviceDefinition, name);
 
-  await serviceDefinition.deploy(stage);
+  await deploymentRoot.deploy(stage);
 };
