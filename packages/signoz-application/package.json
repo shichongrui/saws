@@ -1,6 +1,6 @@
 {
   "name": "@saws/signoz-application",
-  "version": "2.0.0-beta.24",
+  "version": "2.0.0-beta.25",
   "description": "Deploy a complete self-hosted SigNoz application with SAWS",
   "license": "ISC",
   "author": "",
@@ -21,11 +21,11 @@
     }
   },
   "dependencies": {
-    "@saws/clickhouse-keeper-service": "2.0.0-beta.24",
-    "@saws/clickhouse-service": "2.0.0-beta.24",
-    "@saws/core": "2.0.0-beta.24",
-    "@saws/postgres-service": "2.0.0-beta.24",
-    "@saws/signoz-otel-collector-service": "2.0.0-beta.24",
-    "@saws/signoz-service": "2.0.0-beta.24"
+    "@saws/clickhouse-keeper-service": "2.0.0-beta.25",
+    "@saws/clickhouse-service": "2.0.0-beta.25",
+    "@saws/core": "2.0.0-beta.25",
+    "@saws/postgres-service": "2.0.0-beta.25",
+    "@saws/signoz-otel-collector-service": "2.0.0-beta.25",
+    "@saws/signoz-service": "2.0.0-beta.25"
   }
 }
