@@ -85,7 +85,7 @@ with `/app/.od` or `/agent-home`.
 
 ## Image, registry, and architecture
 
-By default SAWS derives an image from `ghcr.io/nexu-io/od:0.21.0` and pins Codex `0.151.0` and
+By default SAWS derives an image from `ghcr.io/nexu-io/od:0.23.0` and pins Codex `0.151.0` and
 Claude Code `2.1.252`. All three can be overridden. Remote Dockerfile deployments require `registry`;
 use `registryAuth.password` with a `SecretReference` when authentication is needed. A fully prebuilt
 image can instead be passed as `image`.

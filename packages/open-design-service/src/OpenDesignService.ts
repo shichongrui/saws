@@ -12,7 +12,7 @@ const OPEN_DESIGN_INTERNAL_PORT = 17_456;
 const OPEN_DESIGN_DATA_DIRECTORY = "/app/.od";
 const AGENT_HOME_DIRECTORY = "/agent-home";
 const DEFAULT_WORKSPACE_DIRECTORY = "/workspace";
-const DEFAULT_OPEN_DESIGN_IMAGE = "ghcr.io/nexu-io/od:0.21.0";
+const DEFAULT_OPEN_DESIGN_IMAGE = "ghcr.io/nexu-io/od:0.23.0";
 const DEFAULT_CODEX_VERSION = "0.151.0";
 const DEFAULT_CLAUDE_CODE_VERSION = "2.1.252";
 
@@ -35,7 +35,7 @@ export interface OpenDesignServiceConfig extends Omit<
 > {
   /** A prebuilt image containing the SAWS gateway and both agent CLIs. */
   image?: string;
-  /** OpenDesign image used as the derived image base. Defaults to the pinned 0.21.0 release. */
+  /** OpenDesign image used as the derived image base. Defaults to the pinned 0.23.0 release. */
   baseOpenDesignImage?: string;
   /** Public host port for the authenticated gateway. Defaults to 7456. */
   port?: number;
