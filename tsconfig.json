@@ -17,6 +17,7 @@
     { "path": "./packages/hermes-agent-service/tsconfig.json" },
     { "path": "./packages/hermes-application/tsconfig.json" },
     { "path": "./packages/hono-service/tsconfig.json" },
+    { "path": "./packages/languagetool-service/tsconfig.json" },
     { "path": "./packages/n8n-service/tsconfig.json" },
     { "path": "./packages/open-design-application/tsconfig.json" },
     { "path": "./packages/open-design-service/tsconfig.json" },
@@ -30,6 +31,8 @@
     { "path": "./packages/rustfs-file-service/tsconfig.json" },
     { "path": "./packages/signoz-application/tsconfig.json" },
     { "path": "./packages/signoz-otel-collector-service/tsconfig.json" },
-    { "path": "./packages/signoz-service/tsconfig.json" }
+    { "path": "./packages/signoz-service/tsconfig.json" },
+    { "path": "./packages/static-site-service/tsconfig.json" },
+    { "path": "./packages/vite-service/tsconfig.json" }
   ]
 }

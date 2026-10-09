@@ -1,0 +1,25 @@
+{
+  "name": "@saws/vite-service",
+  "version": "2.0.0-beta.25",
+  "description": "Vite React applications with local hot reload and Docker deployment",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shichongrui/saws.git"
+  },
+  "files": [
+    "./dist"
+  ],
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "dependencies": {
+    "@saws/core": "2.0.0-beta.25",
+    "@saws/docker-service": "2.0.0-beta.25"
+  }
+}
