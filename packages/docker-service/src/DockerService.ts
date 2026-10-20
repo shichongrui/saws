@@ -484,7 +484,7 @@ export class DockerService extends ServiceDefinition {
     }
     await this.withLocalEnvironmentFile(stage, config, async () => {
       await runLocal(
-        `docker rm -f ${shellQuote(config.name)} >/dev/null 2>&1 || true`,
+        this.getContainerReplacementCleanupCommand(config.name),
         this.getLocalRunOptions(),
       );
       await runLocal(
@@ -577,7 +577,7 @@ export class DockerService extends ServiceDefinition {
       await runLocal(`docker pull ${shellQuote(config.image)}`, this.getLocalRunOptions());
     }
     await runLocal(
-      `docker rm -f ${shellQuote(config.name)} >/dev/null 2>&1 || true`,
+      this.getContainerReplacementCleanupCommand(config.name),
       this.getLocalRunOptions(),
     );
 
@@ -650,7 +650,7 @@ export class DockerService extends ServiceDefinition {
         `docker start ${containerName}`,
         "fi",
         "else",
-        `docker rm -f ${containerName} >/dev/null 2>&1 || true`,
+        `${this.getContainerReplacementCleanupCommand(config.name)} || exit $?`,
         this.getDockerRunCommand(
           {
             ...config,
@@ -664,6 +664,16 @@ export class DockerService extends ServiceDefinition {
         "fi",
       ].join("\n"),
     );
+  }
+
+  private getContainerReplacementCleanupCommand(name: string) {
+    const containerName = shellQuote(name);
+    // Stop before removing so Docker can shut down the service and release its ports.
+    return [
+      `if docker container inspect ${containerName} >/dev/null 2>&1; then`,
+      `docker stop ${containerName} >/dev/null && docker rm ${containerName} >/dev/null`,
+      "fi",
+    ].join("\n");
   }
 
   protected getDockerRunCommand(
