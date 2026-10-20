@@ -911,6 +911,7 @@ export class DockerService extends ServiceDefinition {
   }
 
   private observeDevProcess(process: ChildProcess) {
+    this.trackDevProcess(process);
     process.stdout?.on("data", (chunk: Buffer) => {
       this.writeRuntimeLog(chunk.toString("utf8"), "stdout");
     });

@@ -87,6 +87,7 @@ export class ViteService extends DockerService {
       environment,
     );
     this.viteDevProcess = child;
+    this.trackDevProcess(child);
     child.once("error", (error) => this.writeRuntimeLog(`${error.message}\n`, "stderr"));
     child.once("exit", (code, signal) => {
       if (this.viteDevProcess !== child) return;

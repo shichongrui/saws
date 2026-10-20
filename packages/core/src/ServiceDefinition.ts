@@ -1,4 +1,5 @@
 import { Readable } from "node:stream";
+import type { ChildProcess } from "node:child_process";
 import path from "node:path";
 import { writeStageOutputs, type Outputs } from "./utils/stage-outputs.js";
 import { parameterizedEnvVarName } from "./utils/parameterized-env-var-name.js";
@@ -48,6 +49,8 @@ export class ServiceDefinition {
   deved: boolean = false;
   deployed: boolean = false;
   private runtimeLogSink?: RuntimeLogSink;
+  private managedDev = false;
+  private devProcessExitHandler?: (code: number) => void;
   private readonly onDevAbortController = new AbortController();
 
   constructor(config: ServiceDefinitionConfig) {
@@ -64,12 +67,35 @@ export class ServiceDefinition {
 
   async dev() {
     this.writeRuntimeLog(`Start dev ${this.name}\n`);
+    if (this.managedDev) return;
     await this.forEachDependencyAsync(async (dependency) => {
       if (dependency.deved) return;
       await dependency.dev();
       dependency.deved = true;
     });
     this.startDevHooks();
+  }
+
+  /** Run only this service; an external supervisor owns dependencies and hooks. */
+  async devManaged(onProcessExit: (code: number) => void) {
+    this.managedDev = true;
+    this.devProcessExitHandler = onProcessExit;
+    await this.dev();
+  }
+
+  /** Run one development hook in its own supervised process. */
+  async devHook(index: number) {
+    this.managedDev = true;
+    const hook = this.onDev[index];
+    if (hook == null) throw new Error(`Unknown development hook ${index} for ${this.name}`);
+    await this.runHook(hook, "onDev", index, this.onDevAbortController.signal);
+  }
+
+  protected trackDevProcess(child: ChildProcess) {
+    child.once("error", () => this.devProcessExitHandler?.(1));
+    child.once("close", (code, signal) => {
+      this.devProcessExitHandler?.(code ?? (signal == null ? 0 : 1));
+    });
   }
 
   async deploy(stage: string) {
@@ -149,14 +175,10 @@ export class ServiceDefinition {
     return all;
   }
 
-  getOnDevLogTabs() {
-    return this.onDev.map((hook, index) => this.getHookLogTabName("onDev", index, hook));
-  }
-
   // this needs to be recursive down dependencies
   exit() {
     this.onDevAbortController.abort();
-    this.forEachDependency((dependency) => dependency.exit());
+    if (!this.managedDev) this.forEachDependency((dependency) => dependency.exit());
   }
 
   parameterizedEnvVarName(envVarName: string) {

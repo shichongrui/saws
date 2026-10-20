@@ -126,6 +126,7 @@ export class BullMQService extends DockerService {
   }
 
   private observeBullMQDevProcess(process: ChildProcess) {
+    this.trackDevProcess(process);
     process.stdout?.on("data", (chunk: Buffer) => this.writeRuntimeLog(chunk.toString("utf8")));
     process.stderr?.on("data", (chunk: Buffer) =>
       this.writeRuntimeLog(chunk.toString("utf8"), "stderr"),

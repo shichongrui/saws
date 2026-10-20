@@ -2,6 +2,7 @@
 
 process.on("uncaughtException", (e) => {
   console.log(e);
+  process.exitCode = 1;
 });
 
 import { default as finder } from "find-package-json";
