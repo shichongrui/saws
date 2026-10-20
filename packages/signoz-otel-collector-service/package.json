@@ -1,6 +1,6 @@
 {
   "name": "@saws/signoz-otel-collector-service",
-  "version": "2.0.0-beta.28",
+  "version": "2.0.0-beta.29",
   "description": "Run SigNoz schema migrations and OpenTelemetry ingestion with SAWS",
   "license": "ISC",
   "author": "",
@@ -20,9 +20,9 @@
     }
   },
   "dependencies": {
-    "@saws/clickhouse-service": "2.0.0-beta.28",
-    "@saws/core": "2.0.0-beta.28",
-    "@saws/docker-service": "2.0.0-beta.28",
-    "@saws/signoz-service": "2.0.0-beta.28"
+    "@saws/clickhouse-service": "2.0.0-beta.29",
+    "@saws/core": "2.0.0-beta.29",
+    "@saws/docker-service": "2.0.0-beta.29",
+    "@saws/signoz-service": "2.0.0-beta.29"
   }
 }
