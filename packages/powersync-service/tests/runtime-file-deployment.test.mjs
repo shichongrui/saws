@@ -74,7 +74,10 @@ test("a sync-config-only change changes the deployed PowerSync container label w
     const secondHash = deployedConfigHash(host.commands);
 
     assert.notEqual(secondHash, firstHash);
-    assert.match(host.commands.join("\n"), /docker rm -f/);
+    assert.match(
+      host.commands.join("\n"),
+      /docker stop 'production-powersync' >\/dev\/null && docker rm 'production-powersync' >\/dev\/null/,
+    );
 
     const observableOutput = `${host.commands.join("\n")}\n${logs.join("\n")}`;
     assert.doesNotMatch(observableOutput, /SYNC_CONFIG_SECRET_(?:BEFORE|AFTER)/);
