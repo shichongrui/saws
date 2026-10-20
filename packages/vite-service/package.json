@@ -1,6 +1,6 @@
 {
   "name": "@saws/vite-service",
-  "version": "2.0.0-beta.26",
+  "version": "2.0.0-beta.27",
   "description": "Vite React applications with local hot reload and Docker deployment",
   "license": "ISC",
   "repository": {
@@ -19,7 +19,7 @@
     }
   },
   "dependencies": {
-    "@saws/core": "2.0.0-beta.26",
-    "@saws/docker-service": "2.0.0-beta.26"
+    "@saws/core": "2.0.0-beta.27",
+    "@saws/docker-service": "2.0.0-beta.27"
   }
 }
