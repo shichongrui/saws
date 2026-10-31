@@ -20,7 +20,7 @@ export interface LanguageToolServiceConfig extends Omit<
   DockerServiceConfig,
   "image" | "dockerfile" | "buildContext" | "ports" | "entrypoint" | "command"
 > {
-  /** Defaults to meyay/languagetool:6.8-12. Overrides must support the same environment contract. */
+  /** Defaults to meyay/languagetool:latest. Overrides must support the same environment contract. */
   image?: string;
   /** Host port. Local dev defaults to 8081; deploys stay private unless explicitly set. */
   port?: number;
@@ -67,7 +67,7 @@ export class LanguageToolService extends DockerService {
 
     super({
       ...config,
-      image: config.image ?? "meyay/languagetool:6.8-12",
+      image: config.image ?? "meyay/languagetool:latest",
       healthCheck: config.healthCheck ?? {
         command: `wget -q -O /dev/null http://127.0.0.1:${LANGUAGETOOL_PORT}/v2/languages`,
         interval: "30s",
