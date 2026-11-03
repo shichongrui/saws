@@ -17,6 +17,7 @@
     { "path": "./packages/hermes-agent-service/tsconfig.json" },
     { "path": "./packages/hermes-application/tsconfig.json" },
     { "path": "./packages/hono-service/tsconfig.json" },
+    { "path": "./packages/languagetool-application/tsconfig.json" },
     { "path": "./packages/languagetool-service/tsconfig.json" },
     { "path": "./packages/n8n-service/tsconfig.json" },
     { "path": "./packages/open-design-application/tsconfig.json" },

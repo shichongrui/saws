@@ -18,6 +18,7 @@
   "scripts": {
     "dev": "tsc -b --watch --force & chokidar 'dist/bin/saws.js' -c 'chmod +x dist/bin/saws.js'",
     "build": "tsc -b",
+    "build:languagetool-application": "tsc -b packages/languagetool-application",
     "build:languagetool-service": "tsc -b packages/core packages/docker-service packages/languagetool-service",
     "build:vite-service": "tsc -b packages/core packages/docker-service packages/vite-service",
     "lint": "oxlint",
